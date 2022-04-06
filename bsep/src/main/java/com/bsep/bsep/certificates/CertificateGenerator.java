@@ -47,15 +47,7 @@ public class CertificateGenerator {
 
 			//Konvertuje objekat u sertifikat
 			return certConverter.getCertificate(certHolder);
-		} catch (CertificateEncodingException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (OperatorCreationException e) {
-			e.printStackTrace();
-		} catch (CertificateException e) {
+		} catch (IllegalArgumentException | IllegalStateException | OperatorCreationException | CertificateException e) {
 			e.printStackTrace();
 		}
 		return null;

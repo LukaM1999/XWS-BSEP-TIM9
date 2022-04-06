@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,7 +16,9 @@ public class UserCertificate {
 
     @Id
     @Column
-    private String certificateSerialNumber;
+    @SequenceGenerator(name = "crt_id_gen", sequenceName = "crt_id_seq", initialValue = 1, allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "crt_id_gen")
+    private Long certificateSerialNumber;
     @Column
     private String email;
     @Column

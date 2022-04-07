@@ -24,9 +24,7 @@ public class KeyStoreReader {
 	public KeyStoreReader() {
 		try {
 			keyStore = KeyStore.getInstance("JKS", "SUN");
-		} catch (KeyStoreException e) {
-			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
+		} catch (KeyStoreException | NoSuchProviderException e) {
 			e.printStackTrace();
 		}
 	}

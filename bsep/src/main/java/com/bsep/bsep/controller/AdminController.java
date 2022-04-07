@@ -3,14 +3,15 @@ package com.bsep.bsep.controller;
 import com.bsep.bsep.data.IssuerData;
 import com.bsep.bsep.dto.CertificateDTO;
 import com.bsep.bsep.service.impl.CertificateService;
+import org.bouncycastle.crypto.tls.CertificateType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin")
@@ -22,6 +23,27 @@ public class AdminController {
     @PostMapping("/createCertificate")
     public void createCertificate(@RequestBody CertificateDTO certificateDTO){
         certificateService.createCertificate(certificateDTO);
+    }
+
+    @GetMapping("/getEndCertificates")
+    public List<CertificateDTO> getAllEndUserCertificates() throws CertificateEncodingException, ParseException {
+        List<X509Certificate> certificateList = certificateService.getAllEndUserCertificates();
+
+        return certificateService.certificateToDTO(certificateList, "endEntity");
+    }
+
+    @GetMapping("/getRootCertificates")
+    public List<CertificateDTO> getAllRootCertificates() throws CertificateEncodingException, ParseException {
+        List<X509Certificate> certificateList = certificateService.getAllRootCertificates();
+
+        return certificateService.certificateToDTO(certificateList, "root");
+    }
+
+    @GetMapping("/getCACertificates")
+    public List<CertificateDTO> getAllCaCertificates() throws CertificateEncodingException, ParseException {
+        List<X509Certificate> certificateList = certificateService.getAllCACertificates();
+
+        return certificateService.certificateToDTO(certificateList, "ca");
     }
 
 }

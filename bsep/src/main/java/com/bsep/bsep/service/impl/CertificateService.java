@@ -10,21 +10,27 @@ import com.bsep.bsep.repository.UserCertificateRepository;
 import com.bsep.bsep.util.CertificateChainGenerator;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.Subject;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
+import java.io.*;
+import java.security.*;
+import java.security.cert.*;
+import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
 
 @PropertySource("classpath:application.properties")
 @Service
@@ -84,5 +90,169 @@ public class CertificateService {
 
         return new IssuerData(privateKey, x500NameBuilder.build());
 
+    }
+
+    public List<X509Certificate> getAllEndUserCertificates() {
+        List<X509Certificate> retList = new ArrayList<>();
+        List<X509Certificate> certificates = readAllCertificate("./src/main/resources/keystores/endEntity.jks", "12345");
+        for (X509Certificate certificate : certificates) {
+            //if (_ocspListService.checkCertificateValidity(certificate)) {
+            retList.add(certificate);
+            //}
+        }
+
+        return retList;
+    }
+
+    public List<X509Certificate> getAllRootCertificates() {
+        List<X509Certificate> retList = new ArrayList<>();
+        List<X509Certificate> certificates = readAllCertificate("./src/main/resources/keystores/root.jks", "12345");
+        for (X509Certificate certificate : certificates) {
+            //if (_ocspListService.checkCertificateValidity(certificate)) {
+            retList.add(certificate);
+            //}
+        }
+
+        return retList;
+    }
+
+    public List<X509Certificate> getAllCACertificates() {
+        List<X509Certificate> retList = new ArrayList<>();
+        List<X509Certificate> certificates = readAllCertificate("./src/main/resources/keystores/ca.jks", "12345");
+        for (X509Certificate certificate : certificates) {
+            //if (_ocspListService.checkCertificateValidity(certificate)) {
+            retList.add(certificate);
+            //}
+        }
+
+        return retList;
+    }
+
+    private List<X509Certificate> readAllCertificate(String keyStoreFile, String keyStorePass) {
+        List<String> aliases = readAliases(keyStoreFile, keyStorePass);
+        List<X509Certificate> certificates = new ArrayList<>();
+        for (String a : aliases){
+            certificates.add(readCertificate(keyStoreFile, keyStorePass,a));
+        }
+        return certificates;
+    }
+
+    private List<String> readAliases(String keyStoreFile, String keyStorePass) {
+        List<String> temp = new ArrayList();
+        try{
+            KeyStore ks;
+            ks = KeyStore.getInstance("JKS", "SUN");
+            BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
+            ks.load(in, keyStorePass.toCharArray());
+            //Enumeration interface generates a series of elements
+            Enumeration<String> keys = ks.aliases();
+            while(keys.hasMoreElements()){
+                String key = keys.nextElement();
+                temp.add(key);
+            }
+        } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
+            e.printStackTrace();
+        }
+        return temp;
+    }
+
+    private X509Certificate readCertificate(String keyStoreFile, String keyStorePass, String alias) {
+        try {
+            KeyStore ks = KeyStore.getInstance("JKS", "SUN");
+            BufferedInputStream in = new BufferedInputStream(new FileInputStream(keyStoreFile));
+            ks.load(in, keyStorePass.toCharArray());
+
+            if(ks.isKeyEntry(alias)) {
+                Certificate cert = ks.getCertificate(alias);
+                CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+                InputStream inp = new ByteArrayInputStream(cert.getEncoded());
+                return (X509Certificate)certFactory.generateCertificate(inp);
+            }
+        } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<CertificateDTO> certificateToDTO(List<X509Certificate> certificateList, String authority) throws CertificateEncodingException, ParseException {
+        List<CertificateDTO> dto = new ArrayList<>();
+
+        for(X509Certificate certificate : certificateList){
+            CertificateDTO certDto = new CertificateDTO();
+            JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) certificate);
+            X500Name subject = certHolder.getSubject();
+            X500Name issuer = certHolder.getIssuer();
+            String temp;
+            RDN cn;
+            if(subject.getRDNs(BCStyle.CN).length > 0) {
+                cn = subject.getRDNs(BCStyle.CN)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setCommonNameSubject(temp);
+            }
+            if(subject.getRDNs(BCStyle.NAME).length > 0) {
+                cn = subject.getRDNs(BCStyle.NAME)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setNameSubject(temp);
+            }
+            if(subject.getRDNs(BCStyle.SURNAME).length > 0) {
+                cn = subject.getRDNs(BCStyle.SURNAME)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setSurnameSubject(temp);
+            }
+            if(subject.getRDNs(BCStyle.EmailAddress).length > 0) {
+                cn = subject.getRDNs(BCStyle.EmailAddress)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setEmailSubject(temp);
+            }
+            if(subject.getRDNs(BCStyle.C).length > 0) {
+                cn = subject.getRDNs(BCStyle.C)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setCountrySubject(temp);
+            }
+            if(subject.getRDNs(BCStyle.SERIALNUMBER).length > 0) {
+                cn = subject.getRDNs(BCStyle.SERIALNUMBER)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setSerialNumberSubject(temp);
+            }
+
+            //--------------------------------------------------------------------------
+
+            if(issuer.getRDNs(BCStyle.CN).length > 0) {
+                cn = issuer.getRDNs(BCStyle.CN)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setCommonNameIssuer(temp);
+            }
+            if(issuer.getRDNs(BCStyle.NAME).length > 0) {
+                cn = issuer.getRDNs(BCStyle.NAME)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setNameIssuer(temp);
+            }
+            if(issuer.getRDNs(BCStyle.SURNAME).length > 0) {
+                cn = issuer.getRDNs(BCStyle.SURNAME)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setSurnameIssuer(temp);
+            }
+            if(issuer.getRDNs(BCStyle.EmailAddress).length > 0) {
+                cn = issuer.getRDNs(BCStyle.EmailAddress)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setEmailIssuer(temp);
+            }
+            if(issuer.getRDNs(BCStyle.C).length > 0) {
+                cn = issuer.getRDNs(BCStyle.C)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setCountryIssuer(temp);
+            }
+            if(issuer.getRDNs(BCStyle.SERIALNUMBER).length > 0) {
+                cn = issuer.getRDNs(BCStyle.SERIALNUMBER)[0];
+                temp = IETFUtils.valueToString(cn.getFirst().getValue());
+                certDto.setSerialNumberIssuer(temp);
+            }
+            certDto.setStartDate(certificate.getNotBefore());
+            certDto.setEndDate(certificate.getNotAfter());
+            certDto.setAuthority(authority);
+            dto.add(certDto);
+        }
+
+        return dto;
     }
 }

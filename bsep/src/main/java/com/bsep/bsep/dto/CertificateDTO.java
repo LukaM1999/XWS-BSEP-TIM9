@@ -1,5 +1,6 @@
 package com.bsep.bsep.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +20,7 @@ public class CertificateDTO {
     private String surnameSubject;
     private String emailSubject;
     private String countrySubject;
+    private String serialNumberSubject;
     private Date startDate;
     private Date endDate;
 

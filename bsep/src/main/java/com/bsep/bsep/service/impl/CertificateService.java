@@ -31,6 +31,7 @@ import java.security.cert.X509Certificate;
 import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @PropertySource("classpath:application.properties")
@@ -440,4 +441,21 @@ public class CertificateService {
         return certificateToDTO(List.of(results));
     }
 
+    private Boolean isCertificateDateValid(X509Certificate certificate) throws CertificateEncodingException {
+        X509Certificate issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "ca.jks", "12345", getIssuerSerialNum(certificate));
+
+        if(issuer == null) {
+            issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "root.jks", "12345", getIssuerSerialNum(certificate));
+        }
+
+        if(!certificate.getNotBefore().before(new Date()) || !certificate.getNotAfter().after(new Date())){
+            return true;
+        }
+
+        if(issuer.getNotBefore().after(certificate.getNotBefore())
+                || issuer.getNotAfter().before(certificate.getNotBefore()))
+            return true;
+
+        return false;
+    }
 }

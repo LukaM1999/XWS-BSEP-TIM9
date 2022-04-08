@@ -29,11 +29,15 @@ public class CertificateChainGenerator {
         KeyStoreWriter rootKs = new KeyStoreWriter();
         KeyStoreWriter caKs = new KeyStoreWriter();
         KeyStoreWriter endKs = new KeyStoreWriter();
+        KeyStoreWriter keys = new KeyStoreWriter();
+
 
         char[] password = "12345".toCharArray();
         rootKs.loadKeyStore(null, password);
         caKs.loadKeyStore(null, password);
         endKs.loadKeyStore(null, password);
+        keys.loadKeyStore(null, password);
+
 
         KeyPair keyPairRoot = generateKeyPair();
         KeyPair keyPairCA = generateKeyPair();
@@ -46,7 +50,6 @@ public class CertificateChainGenerator {
         CertificateDTO dtoRoot = new CertificateDTO("root","root", new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7)), "1");
         X509Certificate x509Certificate = certificateGenerator.generateCertificate(subjectDataRoot, issuerDataRoot, dtoRoot);
 
-
         rootKs.write("1", keyPairRoot.getPrivate(), password, x509Certificate);
         rootKs.saveKeyStore("./src/main/resources/keystores/root.jks", password);
 
@@ -58,6 +61,16 @@ public class CertificateChainGenerator {
 
         caKs.write("2", keyPairRoot.getPrivate(), password, x509Certificate2);
         caKs.saveKeyStore("./src/main/resources/keystores/ca.jks", password);
+
+        IssuerData issuerDataCANew = generateIssuerDataRoot(keyPairCA.getPrivate());
+        CertificateGenerator certificateGeneratorCA = new CertificateGenerator();
+        dtoCA = new CertificateDTO("ca", "ca", new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5)), "2");
+        X509Certificate x509CertificateCA = certificateGeneratorCA.generateCertificate(subjectDataCA, issuerDataCANew, dtoCA);
+
+        // Sacuvaj CA privatni kljuc da bi mogao da se dobavi pri potpisivanju novog sertifikata
+        keys.write("2", keyPairCA.getPrivate(), password, x509CertificateCA);
+        keys.saveKeyStore("./src/main/resources/keystores/keys.jks", password);
+
 
         SubjectData subjectDataEE = generateSubjectDataEndEntity(keyPairEE.getPublic());
         IssuerData issuerDataEE = generateIssuerDataCA(keyPairCA.getPrivate());

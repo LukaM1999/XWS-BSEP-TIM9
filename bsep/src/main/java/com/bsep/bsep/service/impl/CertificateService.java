@@ -48,7 +48,6 @@ public class CertificateService {
     public X509Certificate createCertificate(CertificateDTO certificateDTO) {
         CertificateGenerator certificateGenerator = new CertificateGenerator();
         KeyPair keyPair = new CertificateChainGenerator().generateKeyPair();
-        KeyPair issuerKeyPair = new CertificateChainGenerator().generateKeyPair();
         KeyStoreWriter keystore = new KeyStoreWriter();
 
         char[] password = "12345".toCharArray();
@@ -56,11 +55,24 @@ public class CertificateService {
         UserCertificate userCertificate = userCertificateRepository.save(new UserCertificate(null, certificateDTO.getEmailSubject(), false));
 
         SubjectData subjectData = generateSubjectData(certificateDTO, userCertificate.getCertificateSerialNumber().toString(), keyPair.getPublic());
-//        IssuerData issuerData = new KeyStoreReader().readIssuerFromStore(env.getProperty("keystore.path") + "ca.jks", certificateDTO.getSerialNumberIssuer(), password, password);
-//        if(issuerData == null)
-//            issuerData = new KeyStoreReader().readIssuerFromStore(env.getProperty("keystore.path") + "root.jks", certificateDTO.getSerialNumberIssuer(), password, password);
+        IssuerData issuerData = new KeyStoreReader().readIssuerFromStore(env.getProperty("keystore.path") + "keys.jks", certificateDTO.getSerialNumberIssuer(), password, password);
 
-        IssuerData issuerData = generateIssuerData(certificateDTO, issuerKeyPair.getPrivate());
+        if(issuerData == null) {
+            issuerData = new KeyStoreReader().readIssuerFromStore(env.getProperty("keystore.path") + "root.jks", certificateDTO.getSerialNumberIssuer(), password, password);
+        }
+
+        //Cuva privatni kljuc od subjecta ako je CA
+        if(certificateDTO.getAuthoritySubject().equals("ca")){
+            KeyStoreWriter privateKeys = new KeyStoreWriter();
+            IssuerData newIssuerData = generateIssuerData(certificateDTO, keyPair.getPrivate());
+            privateKeys.loadKeyStore(env.getProperty("keystore.path") + "keys.jks", password);
+            CertificateGenerator certificateGeneratorCA = new CertificateGenerator();
+            CertificateDTO dtoCA = new CertificateDTO("ca", "ca", new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5)), "2");
+            X509Certificate x509CertificateCA = certificateGeneratorCA.generateCertificate(subjectData, newIssuerData, dtoCA);
+            privateKeys.write(userCertificate.getCertificateSerialNumber().toString(), newIssuerData.getPrivateKey(), password, x509CertificateCA);
+            privateKeys.saveKeyStore(env.getProperty("keystore.path") + "keys.jks", password);
+        }
+        //IssuerData issuerData = generateIssuerData(certificateDTO, issuerKeyPair.getPrivate());
         X509Certificate x509Certificate = certificateGenerator.generateCertificate(subjectData, issuerData, certificateDTO);
         keystore.loadKeyStore( env.getProperty("keystore.path") + certificateDTO.getAuthoritySubject() + ".jks", password);
         keystore.write(userCertificate.getCertificateSerialNumber().toString(), issuerData.getPrivateKey(), password, x509Certificate);
@@ -306,10 +318,6 @@ public class CertificateService {
         }
         X509Certificate[] results = new X509Certificate[path.size()];
 
-//        String auth = "endEntity";
-//        if(results.length == 1) auth = "root";
-//        else if(!startingPoint.getIssuerX500Principal().equals(startingPoint.getSubjectX500Principal()))
-//            auth = "ca";
         path.toArray(results);
         return certificateToDTO(List.of(results));
     }

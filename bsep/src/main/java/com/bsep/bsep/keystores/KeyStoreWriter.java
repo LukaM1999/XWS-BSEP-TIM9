@@ -26,24 +26,6 @@ public class KeyStoreWriter {
 			e.printStackTrace();
 		}
 	}
-
-	//Check if certificate chain is valid using bouncy castle OCSP
-	public boolean isCertificateChainValid(Certificate[] chain) {
-		try {
-			CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509", "BC");
-			CertPath certPath = certificateFactory.generateCertPath(Arrays.asList(chain));
-			CertPathValidator validator = CertPathValidator.getInstance("PKIX", "BC");
-			PKIXParameters params = new PKIXParameters(keyStore);
-			params.setRevocationEnabled(false);
-			validator.validate(certPath, params);
-			return true;
-		} catch (CertPathValidatorException | CertificateException | NoSuchProviderException | KeyStoreException | InvalidAlgorithmParameterException | NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-
-
 	
 	public void loadKeyStore(String fileName, char[] password) {
 		try {

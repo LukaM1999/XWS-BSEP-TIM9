@@ -51,4 +51,11 @@ public class AdminController {
         return certificateService.getCertificateChain(certificateDTO);
     }
 
+    @PostMapping("/revokeCertificate")
+    public boolean revokeCertificate(@RequestBody CertificateDTO certificateDTO)
+            throws CertificateException, NoSuchAlgorithmException, ParseException,
+            InvalidKeyException, NoSuchProviderException {
+        return certificateService.revokeCertificate(certificateDTO);
+    }
+
 }

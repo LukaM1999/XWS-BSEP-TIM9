@@ -196,7 +196,7 @@ public class CertificateService {
 
         for(X509Certificate certificate : certificateList){
             CertificateDTO certDto = new CertificateDTO();
-            JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) certificate);
+            JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder(certificate);
             X500Name subject = certHolder.getSubject();
             X500Name issuer = certHolder.getIssuer();
             String authority = "ca";
@@ -348,5 +348,65 @@ public class CertificateService {
             return false;
         }
     }
+
+    public boolean revokeCertificate(CertificateDTO chainStart) throws CertificateEncodingException {
+        if(userCertificateRepository.findBySerialNum(Long.parseLong(chainStart.getSerialNumberSubject())).isRevoked()) return false;
+
+        X509Certificate startingPoint = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + chainStart.getAuthoritySubject() + ".jks", "12345", chainStart.getSerialNumberSubject());
+        List<X509Certificate> certificates = new ArrayList<>(getAllCACertificates());
+        certificates.addAll(getAllEndUserCertificates());
+
+        LinkedList toRevoke = new LinkedList();
+        toRevoke.add(startingPoint);
+
+        List<X509Certificate> issuers = new ArrayList<>();
+
+        //one kojima sam izdao
+        for (X509Certificate cert: certificates) {
+            if(getSubjectSerialNum(startingPoint).equals(getIssuerSerialNum(cert))){
+                issuers.add(cert);
+                toRevoke.add(cert);
+            }
+        }
+        //oni kojima je izdato od strane mojih izdatih
+        for (int i = 0; i < issuers.size(); i++) {
+            for (X509Certificate cert: certificates) {
+                if(getSubjectSerialNum(issuers.get(i)).equals(getIssuerSerialNum(cert))){
+                    issuers.add(cert);
+                    toRevoke.add(cert);
+                }
+            }
+        }
+
+        X509Certificate[] results = new X509Certificate[toRevoke.size()];
+        toRevoke.toArray(results);
+        RevokeCertificateOCSP(results);
+        return true;
+    }
+
+    private String getIssuerSerialNum(X509Certificate cert) throws CertificateEncodingException {
+        JcaX509CertificateHolder holder = new JcaX509CertificateHolder(cert);
+        RDN cn = holder.getIssuer().getRDNs(BCStyle.SERIALNUMBER)[0];
+        return IETFUtils.valueToString(cn.getFirst().getValue());
+
+    }
+
+    private String getSubjectSerialNum(X509Certificate cert) throws CertificateEncodingException {
+        JcaX509CertificateHolder holder = new JcaX509CertificateHolder(cert);
+        RDN cn = holder.getSubject().getRDNs(BCStyle.SERIALNUMBER)[0];
+        return IETFUtils.valueToString(cn.getFirst().getValue());
+
+    }
+
+    private void RevokeCertificateOCSP(X509Certificate[] results) throws CertificateEncodingException {
+        for (X509Certificate cert: results) {
+            UserCertificate certificate = userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert)));
+            if(certificate != null) {
+                certificate.setRevoked(true);
+                userCertificateRepository.save(certificate);
+            }
+        }
+    }
+
 
 }

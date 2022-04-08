@@ -2,23 +2,37 @@ package com.bsep.bsep.certificates;
 
 import com.bsep.bsep.data.IssuerData;
 import com.bsep.bsep.data.SubjectData;
+import com.bsep.bsep.dto.CertificateDTO;
+import com.bsep.bsep.keystores.KeyStoreReader;
+import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+@Component
 public class CertificateGenerator {
+
+	@Autowired
+	private Environment env;
+
 	public CertificateGenerator() {}
 	
-	public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData) {
+	public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, CertificateDTO certificateDTO) {
 		try {
 			//Posto klasa za generisanje sertifiakta ne moze da primi direktno privatni kljuc pravi se builder za objekat
 			//Ovaj objekat sadrzi privatni kljuc izdavaoca sertifikata i koristiti se za potpisivanje sertifikata
@@ -37,6 +51,27 @@ public class CertificateGenerator {
 					subjectData.getEndDate(),
 					subjectData.getX500name(),
 					subjectData.getPublicKey());
+
+			boolean isCA = !certificateDTO.getAuthoritySubject().equals("endEntity");
+			certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCA));
+
+			int allKeyUsages = 0;
+			for (Integer i : certificateDTO.getKeyUsages()) {
+				allKeyUsages = allKeyUsages | i;
+			}
+			certGen.addExtension(Extension.keyUsage, true, new KeyUsage(allKeyUsages));
+
+			JcaX509ExtensionUtils utils = new JcaX509ExtensionUtils();
+
+			SubjectKeyIdentifier ski = utils.createSubjectKeyIdentifier(subjectData.getPublicKey());
+			certGen.addExtension(Extension.subjectKeyIdentifier, false, ski);
+
+			if (!certificateDTO.getAuthoritySubject().equals("root")) {
+				java.security.cert.Certificate certIssuer = new KeyStoreReader().readCertificate("./src/main/resources/keystores/root.jks", "12345", certificateDTO.getSerialNumberIssuer());
+				if(certIssuer == null) certIssuer = new KeyStoreReader().readCertificate("./src/main/resources/keystores/ca.jks", "12345", certificateDTO.getSerialNumberIssuer());
+				AuthorityKeyIdentifier authorityKey = utils.createAuthorityKeyIdentifier(certIssuer.getPublicKey());
+				certGen.addExtension(Extension.authorityKeyIdentifier, false, authorityKey);
+			}
 			//Generise se sertifikat
 			X509CertificateHolder certHolder = certGen.build(contentSigner);
 
@@ -47,7 +82,7 @@ public class CertificateGenerator {
 
 			//Konvertuje objekat u sertifikat
 			return certConverter.getCertificate(certHolder);
-		} catch (IllegalArgumentException | IllegalStateException | OperatorCreationException | CertificateException e) {
+		} catch (IllegalArgumentException | IllegalStateException | OperatorCreationException | CertificateException | CertIOException | NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
 		return null;

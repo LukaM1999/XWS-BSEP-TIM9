@@ -8,7 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.List;
@@ -26,24 +30,25 @@ public class AdminController {
     }
 
     @GetMapping("/getEndCertificates")
-    public List<CertificateDTO> getAllEndUserCertificates() throws CertificateEncodingException, ParseException {
-        List<X509Certificate> certificateList = certificateService.getAllEndUserCertificates();
-
-        return certificateService.certificateToDTO(certificateList, "endEntity");
+    public List<CertificateDTO> getAllEndUserCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        return certificateService.certificateToDTO(certificateService.getAllEndUserCertificates());
     }
 
     @GetMapping("/getRootCertificates")
-    public List<CertificateDTO> getAllRootCertificates() throws CertificateEncodingException, ParseException {
-        List<X509Certificate> certificateList = certificateService.getAllRootCertificates();
-
-        return certificateService.certificateToDTO(certificateList, "root");
+    public List<CertificateDTO> getAllRootCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        return certificateService.certificateToDTO(certificateService.getAllRootCertificates());
     }
 
     @GetMapping("/getCACertificates")
-    public List<CertificateDTO> getAllCaCertificates() throws CertificateEncodingException, ParseException {
-        List<X509Certificate> certificateList = certificateService.getAllCACertificates();
+    public List<CertificateDTO> getAllCaCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        return certificateService.certificateToDTO(certificateService.getAllCACertificates());
+    }
 
-        return certificateService.certificateToDTO(certificateList, "ca");
+    @PostMapping("/getCertificateChain")
+    public List<CertificateDTO> getCertificateChain(@RequestBody CertificateDTO certificateDTO)
+            throws CertificateException, NoSuchAlgorithmException, ParseException,
+            InvalidKeyException, NoSuchProviderException {
+        return certificateService.getCertificateChain(certificateDTO);
     }
 
 }

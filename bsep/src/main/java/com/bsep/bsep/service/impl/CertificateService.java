@@ -5,6 +5,7 @@ import com.bsep.bsep.data.IssuerData;
 import com.bsep.bsep.data.SubjectData;
 import com.bsep.bsep.data.UserCertificate;
 import com.bsep.bsep.dto.CertificateDTO;
+import com.bsep.bsep.keystores.KeyStoreReader;
 import com.bsep.bsep.keystores.KeyStoreWriter;
 import com.bsep.bsep.repository.UserCertificateRepository;
 import com.bsep.bsep.util.CertificateChainGenerator;
@@ -23,14 +24,14 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.Subject;
 import java.io.*;
 import java.security.*;
-import java.security.cert.*;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 @PropertySource("classpath:application.properties")
 @Service
@@ -46,27 +47,31 @@ public class CertificateService {
 
     public X509Certificate createCertificate(CertificateDTO certificateDTO) {
         CertificateGenerator certificateGenerator = new CertificateGenerator();
-        KeyPair keyPairIssuer = new CertificateChainGenerator().generateKeyPair();
+        KeyPair keyPair = new CertificateChainGenerator().generateKeyPair();
+        KeyPair issuerKeyPair = new CertificateChainGenerator().generateKeyPair();
         KeyStoreWriter keystore = new KeyStoreWriter();
 
         char[] password = "12345".toCharArray();
 
         UserCertificate userCertificate = userCertificateRepository.save(new UserCertificate(null, certificateDTO.getEmailSubject(), false));
 
-        SubjectData subjectData = generateSubjectData(certificateDTO, userCertificate.getCertificateSerialNumber().toString());
-        IssuerData issuerData = generateIssuerData(certificateDTO, keyPairIssuer.getPrivate());
+        SubjectData subjectData = generateSubjectData(certificateDTO, userCertificate.getCertificateSerialNumber().toString(), keyPair.getPublic());
+//        IssuerData issuerData = new KeyStoreReader().readIssuerFromStore(env.getProperty("keystore.path") + "ca.jks", certificateDTO.getSerialNumberIssuer(), password, password);
+//        if(issuerData == null)
+//            issuerData = new KeyStoreReader().readIssuerFromStore(env.getProperty("keystore.path") + "root.jks", certificateDTO.getSerialNumberIssuer(), password, password);
 
-        X509Certificate x509Certificate = certificateGenerator.generateCertificate(subjectData, issuerData);
+        IssuerData issuerData = generateIssuerData(certificateDTO, issuerKeyPair.getPrivate());
+        X509Certificate x509Certificate = certificateGenerator.generateCertificate(subjectData, issuerData, certificateDTO);
+        keystore.loadKeyStore( env.getProperty("keystore.path") + certificateDTO.getAuthoritySubject() + ".jks", password);
+        keystore.write(userCertificate.getCertificateSerialNumber().toString(), issuerData.getPrivateKey(), password, x509Certificate);
+        keystore.saveKeyStore(env.getProperty("keystore.path") + certificateDTO.getAuthoritySubject() + ".jks", password);
 
-        keystore.loadKeyStore( env.getProperty("keystore.path") + certificateDTO.getAuthority() + ".jks", password);
-        keystore.write(userCertificate.getCertificateSerialNumber().toString(), keyPairIssuer.getPrivate(), password, x509Certificate);
-        keystore.saveKeyStore(env.getProperty("keystore.path") + certificateDTO.getAuthority() + ".jks", password);
+        //System.out.println(Arrays.toString(keyStoreReader.readCertificateChain(env.getProperty("keystore.path") + certificateDTO.getAuthority() + ".jks", "12345", userCertificate.getCertificateSerialNumber().toString())));
 
         return x509Certificate;
     }
 
-    private SubjectData generateSubjectData(CertificateDTO certificateDTO, String serialNumber) {
-        KeyPair keyPairSubject = new CertificateChainGenerator().generateKeyPair();
+    private SubjectData generateSubjectData(CertificateDTO certificateDTO, String serialNumber, PublicKey publicKey) {
         X500NameBuilder x500NameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
         x500NameBuilder.addRDN(BCStyle.CN, certificateDTO.getCommonNameSubject());
         x500NameBuilder.addRDN(BCStyle.NAME, certificateDTO.getNameSubject());
@@ -75,7 +80,7 @@ public class CertificateService {
         x500NameBuilder.addRDN(BCStyle.C, certificateDTO.getCountrySubject());
         x500NameBuilder.addRDN(BCStyle.SERIALNUMBER, serialNumber);
 
-        return new SubjectData(keyPairSubject.getPublic(), x500NameBuilder.build(), serialNumber, certificateDTO.getStartDate(), certificateDTO.getEndDate());
+        return new SubjectData(publicKey, x500NameBuilder.build(), serialNumber, certificateDTO.getStartDate(), certificateDTO.getEndDate());
 
     }
 
@@ -174,7 +179,7 @@ public class CertificateService {
         return null;
     }
 
-    public List<CertificateDTO> certificateToDTO(List<X509Certificate> certificateList, String authority) throws CertificateEncodingException, ParseException {
+    public List<CertificateDTO> certificateToDTO(List<X509Certificate> certificateList) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         List<CertificateDTO> dto = new ArrayList<>();
 
         for(X509Certificate certificate : certificateList){
@@ -182,6 +187,9 @@ public class CertificateService {
             JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) certificate);
             X500Name subject = certHolder.getSubject();
             X500Name issuer = certHolder.getIssuer();
+            String authority = "ca";
+            if(isSelfSigned(certificate)) authority = "root";
+            else if(certificate.getBasicConstraints() == -1) authority = "endEntity";
             String temp;
             RDN cn;
             if(subject.getRDNs(BCStyle.CN).length > 0) {
@@ -249,10 +257,88 @@ public class CertificateService {
             }
             certDto.setStartDate(certificate.getNotBefore());
             certDto.setEndDate(certificate.getNotAfter());
-            certDto.setAuthority(authority);
+            certDto.setAuthoritySubject(authority);
             dto.add(certDto);
         }
 
         return dto;
     }
+
+    public List<CertificateDTO> getCertificateChain(
+            CertificateDTO chainStart
+    ) throws NoSuchAlgorithmException, InvalidKeyException,
+            NoSuchProviderException, CertificateException, ParseException {
+
+        X509Certificate startingPoint = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + chainStart.getAuthoritySubject() + ".jks", "12345", chainStart.getSerialNumberSubject());
+        List<X509Certificate> certificates = new ArrayList<>(getAllRootCertificates());
+        certificates.addAll(getAllCACertificates());
+        certificates.addAll(getAllEndUserCertificates());
+        LinkedList path = new LinkedList();
+        path.add(startingPoint);
+        boolean nodeAdded = true;
+        // Keep looping until an iteration happens where we don't add any nodes
+        // to our path.
+        while (nodeAdded) {
+            // We'll start out by assuming nothing gets added.  If something
+            // gets added, then nodeAdded will be changed to "true".
+            nodeAdded = false;
+            X509Certificate top = (X509Certificate) path.getLast();
+            if (isSelfSigned(top)) {
+                // We're self-signed, so we're done!
+                break;
+            }
+
+            // Not self-signed.  Let's see if we're signed by anyone in the
+            // collection.
+            Iterator it = certificates.iterator();
+            while (it.hasNext()) {
+                X509Certificate x509 = (X509Certificate) it.next();
+                if (verify(top, x509.getPublicKey())) {
+                    // We're signed by this guy!  Add him to the chain we're
+                    // building up.
+                    path.add(x509);
+                    nodeAdded = true;
+                    it.remove(); // Not interested in this guy anymore!
+                    break;
+                }
+                // Not signed by this guy, let's try the next guy.
+            }
+        }
+        X509Certificate[] results = new X509Certificate[path.size()];
+
+//        String auth = "endEntity";
+//        if(results.length == 1) auth = "root";
+//        else if(!startingPoint.getIssuerX500Principal().equals(startingPoint.getSubjectX500Principal()))
+//            auth = "ca";
+        path.toArray(results);
+        return certificateToDTO(List.of(results));
+    }
+
+    public static boolean isSelfSigned(X509Certificate cert)
+            throws CertificateException, InvalidKeyException,
+            NoSuchAlgorithmException, NoSuchProviderException {
+
+        return verify(cert, cert.getPublicKey());
+    }
+
+    public static boolean verify(X509Certificate cert, PublicKey key)
+            throws CertificateException, InvalidKeyException,
+            NoSuchAlgorithmException, NoSuchProviderException {
+
+        String sigAlg = cert.getSigAlgName();
+        String keyAlg = key.getAlgorithm();
+        sigAlg = sigAlg != null ? sigAlg.trim().toUpperCase() : "";
+        keyAlg = keyAlg != null ? keyAlg.trim().toUpperCase() : "";
+        if (keyAlg.length() >= 2 && sigAlg.endsWith(keyAlg)) {
+            try {
+                cert.verify(key);
+                return true;
+            } catch (SignatureException se) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
 }

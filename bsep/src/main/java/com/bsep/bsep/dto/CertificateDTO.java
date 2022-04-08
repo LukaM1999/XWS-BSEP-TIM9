@@ -9,6 +9,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Date;
+import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -23,6 +24,7 @@ public class CertificateDTO {
     private String serialNumberSubject;
     private Date startDate;
     private Date endDate;
+    private String authoritySubject;
 
     private String commonNameIssuer;
     private String nameIssuer;
@@ -30,6 +32,14 @@ public class CertificateDTO {
     private String emailIssuer;
     private String countryIssuer;
     private String serialNumberIssuer;
+    private String authorityIssuer;
 
-    private String authority;
+    private List<Integer> keyUsages;
+
+    public CertificateDTO(String authorityIssuer, String authoritySubject, List<Integer> keyUsages, String serialNumberIssuer){
+     this.authorityIssuer = authorityIssuer;
+     this.authoritySubject = authoritySubject;
+     this.keyUsages = keyUsages;
+     this.serialNumberIssuer = serialNumberIssuer;
+    }
 }

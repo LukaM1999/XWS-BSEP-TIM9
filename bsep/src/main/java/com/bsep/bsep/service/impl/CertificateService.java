@@ -364,6 +364,7 @@ public class CertificateService {
         //one kojima sam izdao
         for (X509Certificate cert: certificates) {
             if(getSubjectSerialNum(startingPoint).equals(getIssuerSerialNum(cert))){
+                if(userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert))).isRevoked()) continue;
                 issuers.add(cert);
                 toRevoke.add(cert);
             }
@@ -372,6 +373,7 @@ public class CertificateService {
         for (int i = 0; i < issuers.size(); i++) {
             for (X509Certificate cert: certificates) {
                 if(getSubjectSerialNum(issuers.get(i)).equals(getIssuerSerialNum(cert))){
+                    if(userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert))).isRevoked()) continue;
                     issuers.add(cert);
                     toRevoke.add(cert);
                 }
@@ -408,5 +410,25 @@ public class CertificateService {
         }
     }
 
+    public  List<CertificateDTO> getIssuedCertificates(CertificateDTO chainStart) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        if(userCertificateRepository.findBySerialNum(Long.parseLong(chainStart.getSerialNumberSubject())).isRevoked()) return null;
+
+        X509Certificate startingPoint = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + chainStart.getAuthoritySubject() + ".jks", "12345", chainStart.getSerialNumberSubject());
+        List<X509Certificate> certificates = new ArrayList<>(getAllCACertificates());
+        certificates.addAll(getAllEndUserCertificates());
+
+        LinkedList issued = new LinkedList();
+
+        //one kojima sam izdao
+        for (X509Certificate cert: certificates) {
+            if(getSubjectSerialNum(startingPoint).equals(getIssuerSerialNum(cert))){
+                if(!userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert))).isRevoked())
+                    issued.add(cert);
+            }
+        }
+        X509Certificate[] results = new X509Certificate[issued.size()];
+        issued.toArray(results);
+        return certificateToDTO(List.of(results));
+    }
 
 }

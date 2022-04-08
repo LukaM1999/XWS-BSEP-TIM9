@@ -56,7 +56,7 @@ public class CertificateChainGenerator {
         SubjectData subjectDataCA = generateSubjectDataCA(keyPairCA.getPublic());
         IssuerData issuerDataCA = generateIssuerDataRoot(keyPairRoot.getPrivate());
         CertificateGenerator certificateGenerator1 = new CertificateGenerator();
-        CertificateDTO dtoCA = new CertificateDTO("root", "ca", new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4)), "1");
+        CertificateDTO dtoCA = new CertificateDTO("root", "ca", new ArrayList<>(Arrays.asList(0, 1, 1, 1, 1, 0, 0, 0, 0)), "1");
         X509Certificate x509Certificate2 = certificateGenerator1.generateCertificate(subjectDataCA, issuerDataCA, dtoCA);
 
         caKs.write("2", keyPairRoot.getPrivate(), password, x509Certificate2);

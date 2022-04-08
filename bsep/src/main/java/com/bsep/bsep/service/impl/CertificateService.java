@@ -270,6 +270,15 @@ public class CertificateService {
             certDto.setStartDate(certificate.getNotBefore());
             certDto.setEndDate(certificate.getNotAfter());
             certDto.setAuthoritySubject(authority);
+            List<Integer> keyUsages = new ArrayList<>();
+            if(certificate.getKeyUsage() != null){
+                for(int i = 0; i < certificate.getKeyUsage().length; i++ ){
+                    System.out.println(certificate.getKeyUsage()[i]);
+                    if(certificate.getKeyUsage()[i])
+                        keyUsages.add(i);
+                }
+            }
+            certDto.setKeyUsages(keyUsages);
             dto.add(certDto);
         }
 

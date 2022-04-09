@@ -7,6 +7,7 @@ import Toasted from 'vue-toasted';
 import Vuesax from 'vuesax'
 import 'vuesax/dist/vuesax.css' //Vuesax styles
 import LandingPage from "@/components/LandingPage";
+import HomePage from "@/components/HomePage";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -28,8 +29,18 @@ const routes = [
     path: '/',
     name: 'landingPage',
     component: LandingPage,
-    children: []
-  }
+    children: [
+
+    ],
+  },
+  {
+    path: '/home/:user',
+    name: 'homePage',
+    component: HomePage,
+    children: [
+
+    ],
+  },
 ]
 
 export const router = new VueRouter({

@@ -9,7 +9,7 @@ module.exports = {
         }
 
     },
-    // devServer: {
-    //     proxy: "http://localhost:8090"
-    // },
+    devServer: {
+        proxy: "http://localhost:9000"
+    },
 }

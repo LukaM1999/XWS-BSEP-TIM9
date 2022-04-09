@@ -453,6 +453,7 @@ public class CertificateService {
         if(userCertificateRepository.findBySerialNum(Long.parseLong(chainStart.getSerialNumberSubject())).isRevoked()) return null;
 
         X509Certificate startingPoint = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + chainStart.getAuthoritySubject() + ".jks", "12345", chainStart.getSerialNumberSubject());
+        if(startingPoint == null) return new ArrayList<>();
         List<X509Certificate> certificates = new ArrayList<>(getAllCACertificates());
         certificates.addAll(getAllEndUserCertificates());
 

@@ -39,13 +39,9 @@ export default {
   methods: {
     async login() {
       if(this.username === "") return;
-      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/user/login/${this.username}`);
-      if(response.data){
-        console.table(response.data);
-      }
+        await this.$router.push({path: `/home/${this.username}`});
     }
   }
-
 }
 </script>
 

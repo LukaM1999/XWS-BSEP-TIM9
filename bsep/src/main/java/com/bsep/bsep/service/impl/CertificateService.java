@@ -110,39 +110,66 @@ public class CertificateService {
 
     }
 
-    public List<X509Certificate> getAllEndUserCertificates() {
+    public List<X509Certificate> getAllEndUserCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         List<X509Certificate> retList = new ArrayList<>();
         List<X509Certificate> certificates = readAllCertificate("./src/main/resources/keystores/endEntity.jks", "12345");
         for (X509Certificate certificate : certificates) {
-            //if (_ocspListService.checkCertificateValidity(certificate)) {
             retList.add(certificate);
-            //}
         }
-
         return retList;
     }
 
-    public List<X509Certificate> getAllRootCertificates() {
+    public List<X509Certificate> getAllRootCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         List<X509Certificate> retList = new ArrayList<>();
         List<X509Certificate> certificates = readAllCertificate("./src/main/resources/keystores/root.jks", "12345");
         for (X509Certificate certificate : certificates) {
-            //if (_ocspListService.checkCertificateValidity(certificate)) {
             retList.add(certificate);
-            //}
         }
-
         return retList;
     }
 
-    public List<X509Certificate> getAllCACertificates() {
+    public List<X509Certificate> getAllCACertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         List<X509Certificate> retList = new ArrayList<>();
         List<X509Certificate> certificates = readAllCertificate("./src/main/resources/keystores/ca.jks", "12345");
         for (X509Certificate certificate : certificates) {
-            //if (_ocspListService.checkCertificateValidity(certificate)) {
             retList.add(certificate);
-            //}
         }
+        return retList;
+    }
 
+    public List<X509Certificate> getAllActiveCACertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        return getNotRevokedCertificates(readAllCertificate("./src/main/resources/keystores/ca.jks", "12345"));
+    }
+
+    public List<X509Certificate> getAllActiveEndUserCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        return getNotRevokedCertificates(readAllCertificate("./src/main/resources/keystores/endEntity.jks", "12345"));
+    }
+
+    public List<X509Certificate> getAllActiveRootCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        return getNotRevokedCertificates(readAllCertificate("./src/main/resources/keystores/root.jks", "12345"));
+    }
+
+    private List<X509Certificate> getNotRevokedCertificates(List<X509Certificate> certificates) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        List<X509Certificate> retList = new ArrayList<>();
+        List<X509Certificate> toRevoke = new ArrayList<>();
+
+        for (X509Certificate certificate : certificates) {
+            if(!userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(certificate))).isRevoked()) {
+                if (!isCertificateDateValid(certificate)) {
+                    toRevoke.add(certificate);
+                }
+            }
+        }
+        for(CertificateDTO cert : certificateToDTO(toRevoke)){
+            revokeCertificate(cert);
+        }
+        for (X509Certificate certificate : certificates) {
+            if(!userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(certificate))).isRevoked()) {
+                if (isCertificateDateValid(certificate)) {
+                    retList.add(certificate);
+                }
+            }
+        }
         return retList;
     }
 
@@ -361,7 +388,7 @@ public class CertificateService {
         }
     }
 
-    public boolean revokeCertificate(CertificateDTO chainStart) throws CertificateEncodingException {
+    public boolean revokeCertificate(CertificateDTO chainStart) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         if(userCertificateRepository.findBySerialNum(Long.parseLong(chainStart.getSerialNumberSubject())).isRevoked()) return false;
 
         X509Certificate startingPoint = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + chainStart.getAuthoritySubject() + ".jks", "12345", chainStart.getSerialNumberSubject());
@@ -449,15 +476,15 @@ public class CertificateService {
         if(issuer == null) {
             issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "root.jks", "12345", getIssuerSerialNum(certificate));
         }
-
-        if(!certificate.getNotBefore().before(new Date()) || !certificate.getNotAfter().after(new Date())){
-            return true;
+        Date now = new Date();
+        if(certificate.getNotBefore().after(now) && certificate.getNotAfter().before(now)){
+            return false;
         }
 
         if(issuer.getNotBefore().after(certificate.getNotBefore())
                 || issuer.getNotAfter().before(certificate.getNotBefore()))
-            return true;
+            return false;
 
-        return false;
+        return true;
     }
 }

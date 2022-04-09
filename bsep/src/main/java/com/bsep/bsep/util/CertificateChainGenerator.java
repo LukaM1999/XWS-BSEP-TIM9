@@ -159,7 +159,7 @@ public class CertificateChainGenerator {
     public SubjectData generateSubjectDataRoot(PublicKey publicKey) {
         try {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
-            Date startDate = simpleDateFormat.parse("07-04-2022");
+            Date startDate = simpleDateFormat.parse("05-04-2022");
             Date endDate = simpleDateFormat.parse("07-04-2042");
             String serialNumber = "1";
 

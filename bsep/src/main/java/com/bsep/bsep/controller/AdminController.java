@@ -31,17 +31,17 @@ public class AdminController {
 
     @GetMapping("/getEndCertificates")
     public List<CertificateDTO> getAllEndUserCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
-        return certificateService.certificateToDTO(certificateService.getAllEndUserCertificates());
+        return certificateService.certificateToDTO(certificateService.getAllActiveEndUserCertificates());
     }
 
     @GetMapping("/getRootCertificates")
     public List<CertificateDTO> getAllRootCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
-        return certificateService.certificateToDTO(certificateService.getAllRootCertificates());
+        return certificateService.certificateToDTO(certificateService.getAllActiveRootCertificates());
     }
 
     @GetMapping("/getCACertificates")
     public List<CertificateDTO> getAllCaCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
-        return certificateService.certificateToDTO(certificateService.getAllCACertificates());
+        return certificateService.certificateToDTO(certificateService.getAllActiveCACertificates());
     }
 
     @PostMapping("/getCertificateChain")
@@ -53,7 +53,7 @@ public class AdminController {
 
     @PostMapping("/revokeCertificate")
     public boolean revokeCertificate(@RequestBody CertificateDTO certificateDTO)
-            throws CertificateException {
+            throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return certificateService.revokeCertificate(certificateDTO);
     }
 

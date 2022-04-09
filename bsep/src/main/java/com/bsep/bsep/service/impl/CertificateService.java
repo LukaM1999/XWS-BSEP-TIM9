@@ -53,7 +53,7 @@ public class CertificateService {
 
         char[] password = "12345".toCharArray();
 
-        UserCertificate userCertificate = userCertificateRepository.save(new UserCertificate(null, certificateDTO.getEmailSubject(), false));
+        UserCertificate userCertificate = userCertificateRepository.save(new UserCertificate(null, certificateDTO.getUsernameSubject(), false));
 
         SubjectData subjectData = generateSubjectData(certificateDTO, userCertificate.getCertificateSerialNumber().toString(), keyPair.getPublic());
         IssuerData issuerData = new KeyStoreReader().readIssuerFromStore(env.getProperty("keystore.path") + "keys.jks", certificateDTO.getSerialNumberIssuer(), password, password);
@@ -89,7 +89,7 @@ public class CertificateService {
         x500NameBuilder.addRDN(BCStyle.CN, certificateDTO.getCommonNameSubject());
         x500NameBuilder.addRDN(BCStyle.NAME, certificateDTO.getNameSubject());
         x500NameBuilder.addRDN(BCStyle.SURNAME, certificateDTO.getSurnameSubject());
-        x500NameBuilder.addRDN(BCStyle.EmailAddress, certificateDTO.getEmailSubject());
+        x500NameBuilder.addRDN(BCStyle.UID, certificateDTO.getUsernameSubject());
         x500NameBuilder.addRDN(BCStyle.C, certificateDTO.getCountrySubject());
         x500NameBuilder.addRDN(BCStyle.SERIALNUMBER, serialNumber);
 
@@ -102,7 +102,7 @@ public class CertificateService {
         x500NameBuilder.addRDN(BCStyle.CN, certificateDTO.getCommonNameIssuer());
         x500NameBuilder.addRDN(BCStyle.NAME, certificateDTO.getNameIssuer());
         x500NameBuilder.addRDN(BCStyle.SURNAME, certificateDTO.getSurnameIssuer());
-        x500NameBuilder.addRDN(BCStyle.EmailAddress, certificateDTO.getEmailIssuer());
+        x500NameBuilder.addRDN(BCStyle.UID, certificateDTO.getUsernameIssuer());
         x500NameBuilder.addRDN(BCStyle.C, certificateDTO.getCountryIssuer());
         x500NameBuilder.addRDN(BCStyle.SERIALNUMBER, certificateDTO.getSerialNumberIssuer());
 
@@ -220,10 +220,10 @@ public class CertificateService {
                 temp = IETFUtils.valueToString(cn.getFirst().getValue());
                 certDto.setSurnameSubject(temp);
             }
-            if(subject.getRDNs(BCStyle.EmailAddress).length > 0) {
-                cn = subject.getRDNs(BCStyle.EmailAddress)[0];
+            if(subject.getRDNs(BCStyle.UID).length > 0) {
+                cn = subject.getRDNs(BCStyle.UID)[0];
                 temp = IETFUtils.valueToString(cn.getFirst().getValue());
-                certDto.setEmailSubject(temp);
+                certDto.setUsernameSubject(temp);
             }
             if(subject.getRDNs(BCStyle.C).length > 0) {
                 cn = subject.getRDNs(BCStyle.C)[0];
@@ -253,10 +253,10 @@ public class CertificateService {
                 temp = IETFUtils.valueToString(cn.getFirst().getValue());
                 certDto.setSurnameIssuer(temp);
             }
-            if(issuer.getRDNs(BCStyle.EmailAddress).length > 0) {
-                cn = issuer.getRDNs(BCStyle.EmailAddress)[0];
+            if(issuer.getRDNs(BCStyle.UID).length > 0) {
+                cn = issuer.getRDNs(BCStyle.UID)[0];
                 temp = IETFUtils.valueToString(cn.getFirst().getValue());
-                certDto.setEmailIssuer(temp);
+                certDto.setUsernameIssuer(temp);
             }
             if(issuer.getRDNs(BCStyle.C).length > 0) {
                 cn = issuer.getRDNs(BCStyle.C)[0];
@@ -274,9 +274,9 @@ public class CertificateService {
             List<Integer> keyUsages = new ArrayList<>();
             if(certificate.getKeyUsage() != null){
                 for(int i = 0; i < certificate.getKeyUsage().length; i++ ){
-                    System.out.println(certificate.getKeyUsage()[i]);
                     if(certificate.getKeyUsage()[i])
-                        keyUsages.add(i);
+                        keyUsages.add(1);
+                    else keyUsages.add(0);
                 }
             }
             certDto.setKeyUsages(keyUsages);
@@ -315,7 +315,7 @@ public class CertificateService {
             Iterator it = certificates.iterator();
             while (it.hasNext()) {
                 X509Certificate x509 = (X509Certificate) it.next();
-                if (verify(top, x509.getPublicKey())) {
+                if (verifySignatures(top, x509.getPublicKey())) {
                     // We're signed by this guy!  Add him to the chain we're
                     // building up.
                     path.add(x509);
@@ -332,14 +332,16 @@ public class CertificateService {
         return certificateToDTO(List.of(results));
     }
 
+
+
     public static boolean isSelfSigned(X509Certificate cert)
             throws CertificateException, InvalidKeyException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        return verify(cert, cert.getPublicKey());
+        return verifySignatures(cert, cert.getPublicKey());
     }
 
-    public static boolean verify(X509Certificate cert, PublicKey key)
+    private static boolean verifySignatures(X509Certificate cert, PublicKey key)
             throws CertificateException, InvalidKeyException,
             NoSuchAlgorithmException, NoSuchProviderException {
 

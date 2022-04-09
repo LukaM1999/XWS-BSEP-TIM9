@@ -56,8 +56,8 @@ public class CertificateGenerator {
 			certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCA));
 
 			int allKeyUsages = 0;
-			for (Integer i : certificateDTO.getKeyUsages()) {
-				allKeyUsages = allKeyUsages | i;
+			for (int i = 0; i < certificateDTO.getKeyUsages().size(); i++) {
+				allKeyUsages = allKeyUsages + (int)Math.pow(2, i) * certificateDTO.getKeyUsages().get(i);
 			}
 			certGen.addExtension(Extension.keyUsage, true, new KeyUsage(allKeyUsages));
 

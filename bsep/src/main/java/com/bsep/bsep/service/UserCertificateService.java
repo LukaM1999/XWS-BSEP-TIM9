@@ -1,9 +1,15 @@
 package com.bsep.bsep.service;
 
-import java.security.cert.X509Certificate;
+import com.bsep.bsep.dto.CertificateDTO;
+
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
+import java.text.ParseException;
+import java.util.List;
 
 public interface UserCertificateService {
 
-    boolean isValid(String email, String certificateSerialNumber);
-    //X509Certificate createCertificate(CertificateDTO certificateDTO);
+    List<CertificateDTO> getUserCertificates(String username) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException;
 }

@@ -20,7 +20,7 @@ public class UserCertificate {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "crt_id_gen")
     private Long certificateSerialNumber;
     @Column
-    private String email;
+    private String username;
     @Column
     private boolean revoked;
 }

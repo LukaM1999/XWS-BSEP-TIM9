@@ -22,7 +22,7 @@ public class Account implements UserDetails {
 
     @Id
     @Column
-    private String email;
+    private String username;
 
     @Column
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -43,7 +43,7 @@ public class Account implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override
@@ -74,22 +74,14 @@ public class Account implements UserDetails {
         super();
     }
 
-    public Account(String email, String password, String role){
-        this.email = email;
+    public Account(String username, String password, String role){
+        this.username = username;
         this.password = password;
         this.role = new Role(role);
     }
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public void setPassword(String password) {

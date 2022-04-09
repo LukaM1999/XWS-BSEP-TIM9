@@ -19,7 +19,7 @@ public class CertificateDTO {
     private String commonNameSubject;
     private String nameSubject;
     private String surnameSubject;
-    private String emailSubject;
+    private String usernameSubject;
     private String countrySubject;
     private String serialNumberSubject;
     private Date startDate;
@@ -29,7 +29,7 @@ public class CertificateDTO {
     private String commonNameIssuer;
     private String nameIssuer;
     private String surnameIssuer;
-    private String emailIssuer;
+    private String usernameIssuer;
     private String countryIssuer;
     private String serialNumberIssuer;
     private String authorityIssuer;

@@ -47,7 +47,7 @@ public class CertificateChainGenerator {
         IssuerData issuerDataRoot = generateIssuerDataRoot(keyPairRoot.getPrivate());
 
         CertificateGenerator certificateGenerator = new CertificateGenerator();
-        CertificateDTO dtoRoot = new CertificateDTO("root","root", new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7)), "1");
+        CertificateDTO dtoRoot = new CertificateDTO("root","root", new ArrayList<>(Arrays.asList(1, 1, 1, 1, 1, 1, 1)), "1");
         X509Certificate x509Certificate = certificateGenerator.generateCertificate(subjectDataRoot, issuerDataRoot, dtoRoot);
 
         rootKs.write("1", keyPairRoot.getPrivate(), password, x509Certificate);
@@ -56,7 +56,7 @@ public class CertificateChainGenerator {
         SubjectData subjectDataCA = generateSubjectDataCA(keyPairCA.getPublic());
         IssuerData issuerDataCA = generateIssuerDataRoot(keyPairRoot.getPrivate());
         CertificateGenerator certificateGenerator1 = new CertificateGenerator();
-        CertificateDTO dtoCA = new CertificateDTO("root", "ca", new ArrayList<>(Arrays.asList(0, 1, 1, 1, 1, 0, 0, 0, 0)), "1");
+        CertificateDTO dtoCA = new CertificateDTO("root", "ca", new ArrayList<>(Arrays.asList(1, 1, 1)), "1");
         X509Certificate x509Certificate2 = certificateGenerator1.generateCertificate(subjectDataCA, issuerDataCA, dtoCA);
 
         caKs.write("2", keyPairRoot.getPrivate(), password, x509Certificate2);
@@ -64,7 +64,7 @@ public class CertificateChainGenerator {
 
         IssuerData issuerDataCANew = generateIssuerDataRoot(keyPairCA.getPrivate());
         CertificateGenerator certificateGeneratorCA = new CertificateGenerator();
-        dtoCA = new CertificateDTO("ca", "ca", new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5)), "2");
+        dtoCA = new CertificateDTO("ca", "ca", new ArrayList<>(Arrays.asList(1, 1, 1)), "2");
         X509Certificate x509CertificateCA = certificateGeneratorCA.generateCertificate(subjectDataCA, issuerDataCANew, dtoCA);
 
         // Sacuvaj CA privatni kljuc da bi mogao da se dobavi pri potpisivanju novog sertifikata
@@ -75,7 +75,7 @@ public class CertificateChainGenerator {
         SubjectData subjectDataEE = generateSubjectDataEndEntity(keyPairEE.getPublic());
         IssuerData issuerDataEE = generateIssuerDataCA(keyPairCA.getPrivate());
         CertificateGenerator certificateGenerator2 = new CertificateGenerator();
-        CertificateDTO dtoEE = new CertificateDTO("ca", "endEntity", new ArrayList<>(Arrays.asList(0, 1)), "2");
+        CertificateDTO dtoEE = new CertificateDTO("ca", "endEntity", new ArrayList<>(), "2");
         X509Certificate x509Certificate3 = certificateGenerator2.generateCertificate(subjectDataEE, issuerDataEE, dtoEE);
 
         endKs.write("3", keyPairCA.getPrivate(), password, x509Certificate3);
@@ -91,9 +91,9 @@ public class CertificateChainGenerator {
 
             X500NameBuilder x500NameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
             x500NameBuilder.addRDN(BCStyle.CN, "Luka Miletic");
-            x500NameBuilder.addRDN(BCStyle.SURNAME, "Luka");
-            x500NameBuilder.addRDN(BCStyle.GIVENNAME, "Miletic");
-            x500NameBuilder.addRDN(BCStyle.EmailAddress, "luka.miletic@gmail.com");
+            x500NameBuilder.addRDN(BCStyle.NAME, "Luka");
+            x500NameBuilder.addRDN(BCStyle.SURNAME, "Miletic");
+            x500NameBuilder.addRDN(BCStyle.UID, "luka.miletic@gmail.com");
             x500NameBuilder.addRDN(BCStyle.C, "RS");
             x500NameBuilder.addRDN(BCStyle.SERIALNUMBER, "2");
 
@@ -115,7 +115,7 @@ public class CertificateChainGenerator {
             x500NameBuilder.addRDN(BCStyle.CN, "Nemanja Radojcic");
             x500NameBuilder.addRDN(BCStyle.NAME, "Nemanja");
             x500NameBuilder.addRDN(BCStyle.SURNAME, "Radojcic");
-            x500NameBuilder.addRDN(BCStyle.EmailAddress, "nemanja.radojcic@gmail.com");
+            x500NameBuilder.addRDN(BCStyle.UID, "nemanja.radojcic@gmail.com");
             x500NameBuilder.addRDN(BCStyle.C, "RS");
             x500NameBuilder.addRDN(BCStyle.SERIALNUMBER, "3");
 
@@ -135,7 +135,7 @@ public class CertificateChainGenerator {
         x500NameBuilder.addRDN(BCStyle.CN, "Mihajlo Kisic");
         x500NameBuilder.addRDN(BCStyle.NAME, "Mihajlo");
         x500NameBuilder.addRDN(BCStyle.SURNAME, "Kisic");
-        x500NameBuilder.addRDN(BCStyle.EmailAddress, "mihajlo.kisic@gmail.com");
+        x500NameBuilder.addRDN(BCStyle.UID, "mihajlo.kisic@gmail.com");
         x500NameBuilder.addRDN(BCStyle.C, "RS");
         x500NameBuilder.addRDN(BCStyle.SERIALNUMBER, "1");
         return x500NameBuilder;
@@ -148,9 +148,9 @@ public class CertificateChainGenerator {
     private X500NameBuilder getX500NameCA() {
         X500NameBuilder x500NameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
         x500NameBuilder.addRDN(BCStyle.CN, "Luka Miletic");
-        x500NameBuilder.addRDN(BCStyle.SURNAME, "Luka");
-        x500NameBuilder.addRDN(BCStyle.GIVENNAME, "Miletic");
-        x500NameBuilder.addRDN(BCStyle.EmailAddress, "luka.miletic@gmail.com");
+        x500NameBuilder.addRDN(BCStyle.NAME, "Luka");
+        x500NameBuilder.addRDN(BCStyle.SURNAME, "Miletic");
+        x500NameBuilder.addRDN(BCStyle.UID, "luka.miletic@gmail.com");
         x500NameBuilder.addRDN(BCStyle.C, "RS");
         x500NameBuilder.addRDN(BCStyle.SERIALNUMBER, "2");
         return x500NameBuilder;

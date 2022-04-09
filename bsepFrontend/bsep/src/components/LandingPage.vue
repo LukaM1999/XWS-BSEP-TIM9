@@ -38,31 +38,10 @@ export default {
   },
   methods: {
     async login() {
-      const dto = {
-        commonNameSubject: "retard3",
-        nameSubject: "retard3",
-        surnameSubject: "retard3",
-        emailSubject: "retard3@gmail.com",
-        countrySubject: "RS",
-        startDate: "2022-07-04",
-        endDate: "2023-07-04",
-        commonNameIssuer: "retard2",
-        nameIssuer: "retard2",
-        surnameIssuer: "retard2",
-        emailIssuer: "retard2@gmail.com",
-        countryIssuer: "RS",
-        serialNumberIssuer: "6",
-        serialNumberSubject: "1",
-        authoritySubject: "root",
-        keyUsages: [
-          0,
-          1,
-          2
-        ]
-      }
-      const response = await axios.post(process.env.VUE_APP_BACKEND + "/admin/getIssuedCertificates", dto);
+      if(this.username === "") return;
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/user/login/${this.username}`);
       if(response.data){
-        alert(response.data);
+        console.table(response.data);
       }
     }
   }

@@ -27,9 +27,6 @@ import java.security.cert.X509Certificate;
 @Component
 public class CertificateGenerator {
 
-	@Autowired
-	private Environment env;
-
 	public CertificateGenerator() {}
 	
 	public X509Certificate generateCertificate(SubjectData subjectData, IssuerData issuerData, CertificateDTO certificateDTO) {
@@ -67,8 +64,8 @@ public class CertificateGenerator {
 			certGen.addExtension(Extension.subjectKeyIdentifier, false, ski);
 
 			if (!certificateDTO.getAuthoritySubject().equals("root")) {
-				java.security.cert.Certificate certIssuer = new KeyStoreReader().readCertificate("./src/main/resources/keystores/root.jks", "12345", certificateDTO.getSerialNumberIssuer());
-				if(certIssuer == null) certIssuer = new KeyStoreReader().readCertificate("./src/main/resources/keystores/ca.jks", "12345", certificateDTO.getSerialNumberIssuer());
+				java.security.cert.Certificate certIssuer = new KeyStoreReader().readCertificate("./keystores/root.jks", "12345", certificateDTO.getSerialNumberIssuer());
+				if(certIssuer == null) certIssuer = new KeyStoreReader().readCertificate("./keystores/ca.jks", "12345", certificateDTO.getSerialNumberIssuer());
 				AuthorityKeyIdentifier authorityKey = utils.createAuthorityKeyIdentifier(certIssuer.getPublicKey());
 				certGen.addExtension(Extension.authorityKeyIdentifier, false, authorityKey);
 			}

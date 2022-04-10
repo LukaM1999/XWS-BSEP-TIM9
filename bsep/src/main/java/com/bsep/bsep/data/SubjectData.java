@@ -1,5 +1,6 @@
 package com.bsep.bsep.data;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,9 @@ public class SubjectData {
 	private PublicKey publicKey;
 	private X500Name x500name;
 	private String serialNumber;
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private Date startDate;
+	@JsonFormat(pattern="yyyy-MM-dd")
 	private Date endDate;
 
 

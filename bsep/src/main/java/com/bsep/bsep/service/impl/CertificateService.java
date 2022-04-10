@@ -56,8 +56,14 @@ public class CertificateService {
 
         UserCertificate userCertificate = userCertificateRepository.save(new UserCertificate(null, certificateDTO.getUsernameSubject(), false));
 
+        IssuerData issuerData;
         SubjectData subjectData = generateSubjectData(certificateDTO, userCertificate.getCertificateSerialNumber().toString(), keyPair.getPublic());
-        IssuerData issuerData = new KeyStoreReader().readIssuerFromStore(env.getProperty("keystore.path") + "keys.jks", certificateDTO.getSerialNumberIssuer(), password, password);
+        if(certificateDTO.getAuthoritySubject().equals("root")) {
+            certificateDTO.setSerialNumberIssuer(userCertificate.getCertificateSerialNumber().toString());
+            issuerData = generateIssuerData(certificateDTO, keyPair.getPrivate());
+        }
+        else
+            issuerData = new KeyStoreReader().readIssuerFromStore(env.getProperty("keystore.path") + "keys.jks", certificateDTO.getSerialNumberIssuer(), password, password);
 
         if(issuerData == null) {
             issuerData = new KeyStoreReader().readIssuerFromStore(env.getProperty("keystore.path") + "root.jks", certificateDTO.getSerialNumberIssuer(), password, password);
@@ -69,7 +75,7 @@ public class CertificateService {
             IssuerData newIssuerData = generateIssuerData(certificateDTO, keyPair.getPrivate());
             privateKeys.loadKeyStore(env.getProperty("keystore.path") + "keys.jks", password);
             CertificateGenerator certificateGeneratorCA = new CertificateGenerator();
-            CertificateDTO dtoCA = new CertificateDTO("ca", "ca", new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5)), "2");
+            CertificateDTO dtoCA = new CertificateDTO("ca", "ca", certificateDTO.getKeyUsages(), certificateDTO.getSerialNumberIssuer());
             X509Certificate x509CertificateCA = certificateGeneratorCA.generateCertificate(subjectData, newIssuerData, dtoCA);
             privateKeys.write(userCertificate.getCertificateSerialNumber().toString(), newIssuerData.getPrivateKey(), password, x509CertificateCA);
             privateKeys.saveKeyStore(env.getProperty("keystore.path") + "keys.jks", password);
@@ -85,7 +91,15 @@ public class CertificateService {
         return x509Certificate;
     }
 
+    public List<CertificateDTO> getAllCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        List<X509Certificate> certificates = getAllActiveRootCertificates();
+        certificates.addAll(getAllActiveCACertificates());
+        certificates.addAll(getAllActiveEndUserCertificates());
+        return certificateToDTO(certificates);
+    }
+
     private SubjectData generateSubjectData(CertificateDTO certificateDTO, String serialNumber, PublicKey publicKey) {
+
         X500NameBuilder x500NameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
         x500NameBuilder.addRDN(BCStyle.CN, certificateDTO.getCommonNameSubject());
         x500NameBuilder.addRDN(BCStyle.NAME, certificateDTO.getNameSubject());
@@ -301,10 +315,14 @@ public class CertificateService {
             certDto.setAuthoritySubject(authority);
             List<Integer> keyUsages = new ArrayList<>();
             if(certificate.getKeyUsage() != null){
-                for(int i = 0; i < certificate.getKeyUsage().length; i++ ){
+                for(int i = 8; i >= 0; i-- ){
+                    if(i == 8 && certificate.getKeyUsage()[i]) {
+                        keyUsages.add(32768);
+                        continue;
+                    }
+                    //System.out.println(certificate.getKeyUsage()[i]);
                     if(certificate.getKeyUsage()[i])
-                        keyUsages.add(1);
-                    else keyUsages.add(0);
+                        keyUsages.add((int)Math.pow(2, 7 - i));
                 }
             }
             certDto.setKeyUsages(keyUsages);

@@ -1,5 +1,6 @@
 package com.bsep.bsep.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,9 @@ public class CertificateDTO {
     private String usernameSubject;
     private String countrySubject;
     private String serialNumberSubject;
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date startDate;
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date endDate;
     private String authoritySubject;
 

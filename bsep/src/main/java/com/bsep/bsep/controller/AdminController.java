@@ -23,6 +23,9 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -33,8 +36,14 @@ public class AdminController {
     private CertificateService certificateService;
 
     @PostMapping("/createCertificate")
-    public void createCertificate(@RequestBody CertificateDTO certificateDTO){
-        certificateService.createCertificate(certificateDTO);
+    public CertificateDTO createCertificate(@RequestBody CertificateDTO certificateDTO) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        X509Certificate created = certificateService.createCertificate(certificateDTO);
+        return certificateService.certificateToDTO(new ArrayList<>(Collections.singletonList(created))).get(0);
+    }
+
+    @GetMapping("/getAllCertificates")
+    public List<CertificateDTO> getAllCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        return certificateService.getAllCertificates();
     }
 
     @GetMapping("/getEndCertificates")
@@ -77,6 +86,7 @@ public class AdminController {
         certificateService.extractCertificate(certificateDTO);
         File file = new File(certificateDTO.getSerialNumberSubject() + ".crt");
         InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+        file.deleteOnExit();
 
         return ResponseEntity.ok()
                 .contentLength(file.length())

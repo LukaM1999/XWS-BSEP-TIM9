@@ -161,11 +161,6 @@
             <strong>Issuer common name:</strong> {{c.commonNameIssuer}}<br>
           </p>
         </template>
-        <template #interactions>
-          <vs-button class="btn-primary" primary>
-            Download
-          </vs-button>
-        </template>
       </vs-card>
     </div>
     </div>
@@ -287,6 +282,14 @@ export default {
           title: 'Success',
           text: 'Certificate issued successfully!',
           color: 'success',
+          position: 'top-right'
+        });
+      }
+      else {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error while issuing certificate!',
+          color: 'danger',
           position: 'top-right'
         });
       }

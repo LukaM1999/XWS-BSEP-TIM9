@@ -47,7 +47,8 @@ public class CertificateService {
     @Autowired
     private UserCertificateRepository userCertificateRepository;
 
-    public X509Certificate createCertificate(CertificateDTO certificateDTO) {
+    public X509Certificate createCertificate(CertificateDTO certificateDTO) throws CertificateEncodingException {
+        if(!isCertificateDTODateValid(certificateDTO)) return null;
         CertificateGenerator certificateGenerator = new CertificateGenerator();
         KeyPair keyPair = new CertificateChainGenerator().generateKeyPair();
         KeyStoreWriter keystore = new KeyStoreWriter();
@@ -127,7 +128,7 @@ public class CertificateService {
 
     public List<X509Certificate> getAllEndUserCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         List<X509Certificate> retList = new ArrayList<>();
-        List<X509Certificate> certificates = readAllCertificate("./src/main/resources/keystores/endEntity.jks", "12345");
+        List<X509Certificate> certificates = readAllCertificate("./keystores/endEntity.jks", "12345");
         for (X509Certificate certificate : certificates) {
             retList.add(certificate);
         }
@@ -136,7 +137,7 @@ public class CertificateService {
 
     public List<X509Certificate> getAllRootCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         List<X509Certificate> retList = new ArrayList<>();
-        List<X509Certificate> certificates = readAllCertificate("./src/main/resources/keystores/root.jks", "12345");
+        List<X509Certificate> certificates = readAllCertificate("./keystores/root.jks", "12345");
         for (X509Certificate certificate : certificates) {
             retList.add(certificate);
         }
@@ -145,7 +146,7 @@ public class CertificateService {
 
     public List<X509Certificate> getAllCACertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         List<X509Certificate> retList = new ArrayList<>();
-        List<X509Certificate> certificates = readAllCertificate("./src/main/resources/keystores/ca.jks", "12345");
+        List<X509Certificate> certificates = readAllCertificate("./keystores/ca.jks", "12345");
         for (X509Certificate certificate : certificates) {
             retList.add(certificate);
         }
@@ -153,15 +154,15 @@ public class CertificateService {
     }
 
     public List<X509Certificate> getAllActiveCACertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
-        return getNotRevokedCertificates(readAllCertificate("./src/main/resources/keystores/ca.jks", "12345"));
+        return getNotRevokedCertificates(readAllCertificate("./keystores/ca.jks", "12345"));
     }
 
     public List<X509Certificate> getAllActiveEndUserCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
-        return getNotRevokedCertificates(readAllCertificate("./src/main/resources/keystores/endEntity.jks", "12345"));
+        return getNotRevokedCertificates(readAllCertificate("./keystores/endEntity.jks", "12345"));
     }
 
     public List<X509Certificate> getAllActiveRootCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
-        return getNotRevokedCertificates(readAllCertificate("./src/main/resources/keystores/root.jks", "12345"));
+        return getNotRevokedCertificates(readAllCertificate("./keystores/root.jks", "12345"));
     }
 
     private List<X509Certificate> getNotRevokedCertificates(List<X509Certificate> certificates) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
@@ -488,22 +489,37 @@ public class CertificateService {
         return certificateToDTO(List.of(results));
     }
 
-    private Boolean isCertificateDateValid(X509Certificate certificate) throws CertificateEncodingException {
+    private boolean isCertificateDateValid(X509Certificate certificate) throws CertificateEncodingException {
         X509Certificate issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "ca.jks", "12345", getIssuerSerialNum(certificate));
 
         if(issuer == null) {
             issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "root.jks", "12345", getIssuerSerialNum(certificate));
         }
         Date now = new Date();
-        if(certificate.getNotBefore().after(now) && certificate.getNotAfter().before(now)){
+        if(certificate.getNotBefore().after(now) || certificate.getNotAfter().before(now)){
             return false;
         }
 
         if(issuer.getNotBefore().after(certificate.getNotBefore())
-                || issuer.getNotAfter().before(certificate.getNotBefore()))
+                || issuer.getNotAfter().before(certificate.getNotAfter()))
             return false;
 
         return true;
+    }
+
+    private boolean isCertificateDTODateValid(CertificateDTO dto) throws CertificateEncodingException {
+        X509Certificate issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "ca.jks", "12345", dto.getSerialNumberIssuer());
+
+        if(issuer == null) {
+            issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "root.jks", "12345", dto.getSerialNumberIssuer());
+        }
+        Date now = new Date();
+        if(dto.getStartDate().after(now) || dto.getEndDate().before(now)){
+            return false;
+        }
+
+        return !issuer.getNotBefore().after(dto.getStartDate())
+                && !issuer.getNotAfter().before(dto.getEndDate());
     }
 
     public boolean extractCertificate(CertificateDTO certificateDto) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {

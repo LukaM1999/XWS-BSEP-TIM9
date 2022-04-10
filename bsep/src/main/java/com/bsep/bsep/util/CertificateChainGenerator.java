@@ -47,29 +47,29 @@ public class CertificateChainGenerator {
         IssuerData issuerDataRoot = generateIssuerDataRoot(keyPairRoot.getPrivate());
 
         CertificateGenerator certificateGenerator = new CertificateGenerator();
-        CertificateDTO dtoRoot = new CertificateDTO("root","root", new ArrayList<>(Arrays.asList(1, 1, 1, 1, 1, 1, 1)), "1");
+        CertificateDTO dtoRoot = new CertificateDTO("root","root", new ArrayList<>(Arrays.asList(1, 2, 4, 8, 16, 32, 64)), "1");
         X509Certificate x509Certificate = certificateGenerator.generateCertificate(subjectDataRoot, issuerDataRoot, dtoRoot);
 
         rootKs.write("1", keyPairRoot.getPrivate(), password, x509Certificate);
-        rootKs.saveKeyStore("./src/main/resources/keystores/root.jks", password);
+        rootKs.saveKeyStore("./keystores/root.jks", password);
 
         SubjectData subjectDataCA = generateSubjectDataCA(keyPairCA.getPublic());
         IssuerData issuerDataCA = generateIssuerDataRoot(keyPairRoot.getPrivate());
         CertificateGenerator certificateGenerator1 = new CertificateGenerator();
-        CertificateDTO dtoCA = new CertificateDTO("root", "ca", new ArrayList<>(Arrays.asList(1, 1, 1)), "1");
+        CertificateDTO dtoCA = new CertificateDTO("root", "ca", new ArrayList<>(Arrays.asList(1, 2, 4)), "1");
         X509Certificate x509Certificate2 = certificateGenerator1.generateCertificate(subjectDataCA, issuerDataCA, dtoCA);
 
         caKs.write("2", keyPairRoot.getPrivate(), password, x509Certificate2);
-        caKs.saveKeyStore("./src/main/resources/keystores/ca.jks", password);
+        caKs.saveKeyStore("./keystores/ca.jks", password);
 
         IssuerData issuerDataCANew = generateIssuerDataRoot(keyPairCA.getPrivate());
         CertificateGenerator certificateGeneratorCA = new CertificateGenerator();
-        dtoCA = new CertificateDTO("ca", "ca", new ArrayList<>(Arrays.asList(1, 1, 1)), "2");
+        dtoCA = new CertificateDTO("ca", "ca", new ArrayList<>(Arrays.asList(1, 2, 4)), "2");
         X509Certificate x509CertificateCA = certificateGeneratorCA.generateCertificate(subjectDataCA, issuerDataCANew, dtoCA);
 
         // Sacuvaj CA privatni kljuc da bi mogao da se dobavi pri potpisivanju novog sertifikata
         keys.write("2", keyPairCA.getPrivate(), password, x509CertificateCA);
-        keys.saveKeyStore("./src/main/resources/keystores/keys.jks", password);
+        keys.saveKeyStore("./keystores/keys.jks", password);
 
 
         SubjectData subjectDataEE = generateSubjectDataEndEntity(keyPairEE.getPublic());
@@ -79,14 +79,14 @@ public class CertificateChainGenerator {
         X509Certificate x509Certificate3 = certificateGenerator2.generateCertificate(subjectDataEE, issuerDataEE, dtoEE);
 
         endKs.write("3", keyPairCA.getPrivate(), password, x509Certificate3);
-        endKs.saveKeyStore("./src/main/resources/keystores/endEntity.jks", password);
+        endKs.saveKeyStore("./keystores/endEntity.jks", password);
     }
 
     public SubjectData generateSubjectDataCA(PublicKey publicKey) {
         try {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
             Date startDate = simpleDateFormat.parse("06-04-2022");
-            Date endDate = simpleDateFormat.parse("06-04-2042");
+            Date endDate = simpleDateFormat.parse("06-04-2029");
             String serialNumber = "2";
 
             X500NameBuilder x500NameBuilder = new X500NameBuilder(BCStyle.INSTANCE);

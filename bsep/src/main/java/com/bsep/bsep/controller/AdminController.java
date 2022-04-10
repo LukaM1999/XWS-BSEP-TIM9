@@ -38,6 +38,7 @@ public class AdminController {
     @PostMapping("/createCertificate")
     public CertificateDTO createCertificate(@RequestBody CertificateDTO certificateDTO) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         X509Certificate created = certificateService.createCertificate(certificateDTO);
+        if(created == null) return null;
         return certificateService.certificateToDTO(new ArrayList<>(Collections.singletonList(created))).get(0);
     }
 

@@ -19,6 +19,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.Subject;
@@ -319,9 +320,9 @@ public class CertificateService {
             NoSuchProviderException, CertificateException, ParseException {
 
         X509Certificate startingPoint = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + chainStart.getAuthoritySubject() + ".jks", "12345", chainStart.getSerialNumberSubject());
-        List<X509Certificate> certificates = new ArrayList<>(getAllRootCertificates());
-        certificates.addAll(getAllCACertificates());
-        certificates.addAll(getAllEndUserCertificates());
+        List<X509Certificate> certificates = new ArrayList<>(getAllActiveRootCertificates());
+        certificates.addAll(getAllActiveCACertificates());
+        certificates.addAll(getAllActiveEndUserCertificates());
         LinkedList path = new LinkedList();
         path.add(startingPoint);
         boolean nodeAdded = true;
@@ -358,8 +359,6 @@ public class CertificateService {
         path.toArray(results);
         return certificateToDTO(List.of(results));
     }
-
-
 
     public static boolean isSelfSigned(X509Certificate cert)
             throws CertificateException, InvalidKeyException,
@@ -454,8 +453,8 @@ public class CertificateService {
 
         X509Certificate startingPoint = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + chainStart.getAuthoritySubject() + ".jks", "12345", chainStart.getSerialNumberSubject());
         if(startingPoint == null) return new ArrayList<>();
-        List<X509Certificate> certificates = new ArrayList<>(getAllCACertificates());
-        certificates.addAll(getAllEndUserCertificates());
+        List<X509Certificate> certificates = new ArrayList<>(getAllActiveCACertificates());
+        certificates.addAll(getAllActiveEndUserCertificates());
 
         LinkedList issued = new LinkedList();
 
@@ -485,6 +484,24 @@ public class CertificateService {
         if(issuer.getNotBefore().after(certificate.getNotBefore())
                 || issuer.getNotAfter().before(certificate.getNotBefore()))
             return false;
+
+        return true;
+    }
+
+    public boolean extractCertificate(CertificateDTO certificateDto) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        String authority = "";
+        if(certificateDto.getAuthoritySubject().equals("root"))
+            authority = certificateDto.getAuthoritySubject();
+        if(certificateDto.getAuthoritySubject().equals("ca"))
+            authority = certificateDto.getAuthoritySubject();
+        if(certificateDto.getAuthoritySubject().equals("endEntity"))
+            authority = certificateDto.getAuthoritySubject();
+        X509Certificate certificate = readCertificate(env.getProperty("keystore.path") + authority + ".jks", "12345", certificateDto.getSerialNumberSubject());
+        FileOutputStream os = new FileOutputStream(certificateDto.getSerialNumberSubject() + ".crt");
+        os.write("-----BEGIN CERTIFICATE-----\n".getBytes("US-ASCII"));
+        os.write(Base64.getEncoder().encode(certificate.getEncoded()));
+        os.write("-----END CERTIFICATE-----\n".getBytes("US-ASCII"));
+        os.close();
 
         return true;
     }

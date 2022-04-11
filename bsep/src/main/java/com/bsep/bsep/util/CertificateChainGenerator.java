@@ -31,13 +31,11 @@ public class CertificateChainGenerator {
         KeyStoreWriter endKs = new KeyStoreWriter();
         KeyStoreWriter keys = new KeyStoreWriter();
 
-
         char[] password = "12345".toCharArray();
         rootKs.loadKeyStore(null, password);
         caKs.loadKeyStore(null, password);
         endKs.loadKeyStore(null, password);
         keys.loadKeyStore(null, password);
-
 
         KeyPair keyPairRoot = generateKeyPair();
         KeyPair keyPairCA = generateKeyPair();

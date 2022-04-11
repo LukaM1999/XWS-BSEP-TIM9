@@ -41,14 +41,11 @@ public class CertificateService {
     @Autowired
     private Environment env;
 
-    final private CertificateChainGenerator certificateChainGenerator = new CertificateChainGenerator();
-
-
     @Autowired
     private UserCertificateRepository userCertificateRepository;
 
-    public X509Certificate createCertificate(CertificateDTO certificateDTO) throws CertificateEncodingException {
-        if(!isCertificateDTODateValid(certificateDTO)) return null;
+    public X509Certificate createCertificate(CertificateDTO certificateDTO) {
+        if(certificateDTO.getSerialNumberIssuer() != null && !isNewCertificateDTODateValid(certificateDTO)) return null;
         CertificateGenerator certificateGenerator = new CertificateGenerator();
         KeyPair keyPair = new CertificateChainGenerator().generateKeyPair();
         KeyStoreWriter keystore = new KeyStoreWriter();
@@ -81,13 +78,12 @@ public class CertificateService {
             privateKeys.write(userCertificate.getCertificateSerialNumber().toString(), newIssuerData.getPrivateKey(), password, x509CertificateCA);
             privateKeys.saveKeyStore(env.getProperty("keystore.path") + "keys.jks", password);
         }
-        //IssuerData issuerData = generateIssuerData(certificateDTO, issuerKeyPair.getPrivate());
+
         X509Certificate x509Certificate = certificateGenerator.generateCertificate(subjectData, issuerData, certificateDTO);
         keystore.loadKeyStore( env.getProperty("keystore.path") + certificateDTO.getAuthoritySubject() + ".jks", password);
         keystore.write(userCertificate.getCertificateSerialNumber().toString(), issuerData.getPrivateKey(), password, x509Certificate);
         keystore.saveKeyStore(env.getProperty("keystore.path") + certificateDTO.getAuthoritySubject() + ".jks", password);
 
-        //System.out.println(Arrays.toString(keyStoreReader.readCertificateChain(env.getProperty("keystore.path") + certificateDTO.getAuthority() + ".jks", "12345", userCertificate.getCertificateSerialNumber().toString())));
 
         return x509Certificate;
     }
@@ -126,7 +122,7 @@ public class CertificateService {
 
     }
 
-    public List<X509Certificate> getAllEndUserCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<X509Certificate> getAllEndUserCertificates() {
         List<X509Certificate> retList = new ArrayList<>();
         List<X509Certificate> certificates = readAllCertificate("./keystores/endEntity.jks", "12345");
         for (X509Certificate certificate : certificates) {
@@ -135,7 +131,7 @@ public class CertificateService {
         return retList;
     }
 
-    public List<X509Certificate> getAllRootCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<X509Certificate> getAllRootCertificates() {
         List<X509Certificate> retList = new ArrayList<>();
         List<X509Certificate> certificates = readAllCertificate("./keystores/root.jks", "12345");
         for (X509Certificate certificate : certificates) {
@@ -144,7 +140,7 @@ public class CertificateService {
         return retList;
     }
 
-    public List<X509Certificate> getAllCACertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<X509Certificate> getAllCACertificates() {
         List<X509Certificate> retList = new ArrayList<>();
         List<X509Certificate> certificates = readAllCertificate("./keystores/ca.jks", "12345");
         for (X509Certificate certificate : certificates) {
@@ -235,7 +231,7 @@ public class CertificateService {
         return null;
     }
 
-    public List<CertificateDTO> certificateToDTO(List<X509Certificate> certificateList) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<CertificateDTO> certificateToDTO(List<X509Certificate> certificateList) throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         List<CertificateDTO> dto = new ArrayList<>();
 
         for(X509Certificate certificate : certificateList){
@@ -321,7 +317,6 @@ public class CertificateService {
                         keyUsages.add(32768);
                         continue;
                     }
-                    //System.out.println(certificate.getKeyUsage()[i]);
                     if(certificate.getKeyUsage()[i])
                         keyUsages.add((int)Math.pow(2, 7 - i));
                 }
@@ -492,37 +487,37 @@ public class CertificateService {
     private boolean isCertificateDateValid(X509Certificate certificate) throws CertificateEncodingException {
         X509Certificate issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "ca.jks", "12345", getIssuerSerialNum(certificate));
 
+        boolean isRoot = false;
         if(issuer == null) {
             issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "root.jks", "12345", getIssuerSerialNum(certificate));
+            isRoot = true;
         }
         Date now = new Date();
-        if(certificate.getNotBefore().after(now) || certificate.getNotAfter().before(now)){
+        if(certificate.getNotAfter().before(now)){
             return false;
         }
 
-        if(issuer.getNotBefore().after(certificate.getNotBefore())
-                || issuer.getNotAfter().before(certificate.getNotAfter()))
-            return false;
+        if(isRoot) return true;
 
-        return true;
+        return issuer.getNotBefore().before(certificate.getNotBefore())
+                && issuer.getNotAfter().after(certificate.getNotAfter());
     }
 
-    private boolean isCertificateDTODateValid(CertificateDTO dto) throws CertificateEncodingException {
+    private boolean isNewCertificateDTODateValid(CertificateDTO dto) {
         X509Certificate issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "ca.jks", "12345", dto.getSerialNumberIssuer());
 
         if(issuer == null) {
             issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "root.jks", "12345", dto.getSerialNumberIssuer());
         }
         Date now = new Date();
-        if(dto.getStartDate().after(now) || dto.getEndDate().before(now)){
-            return false;
-        }
+        if(dto.getStartDate().before(now) || dto.getEndDate().before(now)) return false;
+        if(dto.getStartDate().after(dto.getEndDate())) return false;
 
-        return !issuer.getNotBefore().after(dto.getStartDate())
-                && !issuer.getNotAfter().before(dto.getEndDate());
+        return issuer.getNotBefore().before(dto.getStartDate())
+                && issuer.getNotAfter().after(dto.getEndDate());
     }
 
-    public boolean extractCertificate(CertificateDTO certificateDto) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    public boolean extractCertificate(CertificateDTO certificateDto) throws CertificateException, IOException {
         String authority = "";
         if(certificateDto.getAuthoritySubject().equals("root"))
             authority = certificateDto.getAuthoritySubject();

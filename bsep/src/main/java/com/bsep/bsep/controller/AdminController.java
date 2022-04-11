@@ -36,29 +36,34 @@ public class AdminController {
     private CertificateService certificateService;
 
     @PostMapping("/createCertificate")
-    public CertificateDTO createCertificate(@RequestBody CertificateDTO certificateDTO) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public CertificateDTO createCertificate(@RequestBody CertificateDTO certificateDTO) throws CertificateException,
+            NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         X509Certificate created = certificateService.createCertificate(certificateDTO);
         if(created == null) return null;
         return certificateService.certificateToDTO(new ArrayList<>(Collections.singletonList(created))).get(0);
     }
 
     @GetMapping("/getAllCertificates")
-    public List<CertificateDTO> getAllCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<CertificateDTO> getAllCertificates() throws CertificateException, ParseException,
+            NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return certificateService.getAllCertificates();
     }
 
     @GetMapping("/getEndCertificates")
-    public List<CertificateDTO> getAllEndUserCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<CertificateDTO> getAllEndUserCertificates() throws CertificateException, ParseException,
+            NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return certificateService.certificateToDTO(certificateService.getAllActiveEndUserCertificates());
     }
 
     @GetMapping("/getRootCertificates")
-    public List<CertificateDTO> getAllRootCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<CertificateDTO> getAllRootCertificates() throws CertificateException, ParseException,
+            NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return certificateService.certificateToDTO(certificateService.getAllActiveRootCertificates());
     }
 
     @GetMapping("/getCACertificates")
-    public List<CertificateDTO> getAllCaCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<CertificateDTO> getAllCaCertificates() throws CertificateException, ParseException,
+            NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return certificateService.certificateToDTO(certificateService.getAllActiveCACertificates());
     }
 
@@ -71,19 +76,21 @@ public class AdminController {
 
     @PostMapping("/revokeCertificate")
     public boolean revokeCertificate(@RequestBody CertificateDTO certificateDTO)
-            throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+            throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException,
+            NoSuchProviderException {
         return certificateService.revokeCertificate(certificateDTO);
     }
 
     @PostMapping("/getIssuedCertificates")
     public List<CertificateDTO> getIssuedCertificates(@RequestBody CertificateDTO certificateDTO)
-            throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+            throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException,
+            NoSuchProviderException {
         return certificateService.getIssuedCertificates(certificateDTO);
     }
 
     @PostMapping("/downloadCertificate")
     public ResponseEntity<Resource> downloadCertificate(@RequestBody CertificateDTO certificateDTO)
-            throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, KeyStoreException, IOException {
+            throws CertificateException, IOException {
         certificateService.extractCertificate(certificateDTO);
         File file = new File(certificateDTO.getSerialNumberSubject() + ".crt");
         InputStreamResource resource = new InputStreamResource(new FileInputStream(file));

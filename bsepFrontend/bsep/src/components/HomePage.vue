@@ -7,7 +7,7 @@
       </div>
       <div class="col d-flex justify-content-end" style="margin-right: 10%">
         <vs-tooltip>
-          <vs-button @click="dialog = !dialog" v-if="authority !== 'endEntity'" :disabled="selectedCert === null && authority !== 'admin'" primary size="xl" icon>
+          <vs-button @click="openDialog()" v-if="authority !== 'endEntity'" :disabled="selectedCert === null && authority !== 'admin'" primary size="xl" icon>
             Issue certificate
           </vs-button>
           <template #tooltip>
@@ -30,32 +30,31 @@
       <div class="con-form" style="display: inline-block">
         <div class="row">
           <div class="col">
-            <vs-input class="mt-2" primary v-model="commonNameSubject" label-placeholder="Subject common name"/>
-            <vs-input class="mt-4" primary v-model="nameSubject" label-placeholder="Subject first name"/>
-            <vs-input class="mt-4" primary v-model="surnameSubject" label-placeholder="Subject last name"/>
-            <vs-input class="mt-4" primary v-model="usernameSubject" label-placeholder="Subject username"/>
-            <vs-input class="mt-4" primary v-model="countrySubject" label-placeholder="Subject country"/>
+            <vs-input required class="mt-2" primary v-model="commonNameSubject" label-placeholder="Subject common name"/>
+            <vs-input required class="mt-4" primary v-model="nameSubject" label-placeholder="Subject first name"/>
+            <vs-input required class="mt-4" primary v-model="surnameSubject" label-placeholder="Subject last name"/>
+            <vs-input required class="mt-4" primary v-model="usernameSubject" label-placeholder="Subject username"/>
+            <vs-input required class="mt-4" primary v-model="countrySubject" label-placeholder="Subject country"/>
           </div>
           <div class="col">
-            <vs-select class="mt-2" v-if="selectedCert !== null"
+            <vs-select required class="mt-2" v-if="selectedCert !== null"
                 label-placeholder="Select basic constraint"
                 v-model="basicConstraints">
-              <vs-option checked label="CA" value="ca">
+              <vs-option selected label="CA" value="ca">
                 CA
               </vs-option>
               <vs-option label="End entity" value="endEntity">
                 End entity
               </vs-option>
             </vs-select>
-            <vs-input class="mt-4" :min="getMinDate()" type="date" primary v-model="validFrom" label="Valid from"/>
-            <vs-input class="mt-4" primary type="date" :min="getMinDateValidTo()" :max="getMaxDate()" v-model="validTo" label="Valid to"/>
-            <vs-select class="mt-4"
+            <vs-input required class="mt-4" :min="getMinDate()" type="date" primary v-model="validFrom" label="Valid from"/>
+            <vs-input required class="mt-4" :disabled="validFrom === ''" primary type="date" :min="getMinDateValidTo()" :max="getMaxDate()" v-model="validTo" label="Valid to"/>
+            <vs-select required class="mt-4"
                 filter
                 multiple
                 collapse-chips
                 label="Key usage"
-                v-model="keyUsages"
-            >
+                v-model="keyUsages">
               <vs-option label="Encipher Only" value="1">
                 Encipher Only
               </vs-option>
@@ -89,7 +88,7 @@
       </div>
       <template #footer>
         <div class="footer-dialog">
-          <vs-button @click="issueCertificate()" block>
+          <vs-button :disabled="isFormInvalid()" @click="issueCertificate()" block>
             Issue certificate
           </vs-button>
         </div>
@@ -186,7 +185,7 @@ export default {
       surnameSubject: "",
       countrySubject: "",
       usernameSubject: "",
-      basicConstraints: 'root',
+      basicConstraints: 'ca',
       validFrom: '',
       validTo: '',
       keyUsages: [],
@@ -236,12 +235,37 @@ export default {
       this.surnameSubject = "";
       this.countrySubject = "";
       this.usernameSubject = "";
-      this.basicConstraints = 'root';
+      if(this.authority === 'admin')
+        this.basicConstraints = 'root';
+      else this.basicConstraints = 'ca';
       this.validFrom = '';
       this.validTo = '';
       this.keyUsages = [];
     },
+
+    openDialog() {
+      this.dialog = true;
+      if(this.selectedCert === null)
+        this.basicConstraints = 'root';
+      else this.basicConstraints = 'ca';
+    },
+
+    isFormInvalid(){
+      return this.commonNameSubject === "" || this.nameSubject === "" || this.surnameSubject === "" || this.countrySubject === "" || this.usernameSubject === "" || this.basicConstraints === "" || this.validFrom === "" || this.validTo === "";
+    },
+
     async issueCertificate() {
+     if(this.isFormInvalid()) {
+        this.$vs.notify({
+          title: 'Error',
+          text: 'Please fill all the fields',
+          color: 'danger',
+          iconPack: 'feather',
+          icon: 'icon-alert-circle'
+        });
+        return;
+      }
+     if(this.selectedCert === null) this.basicConstraints = 'root';
       const certificate = {
         commonNameSubject: this.commonNameSubject,
         nameSubject: this.nameSubject,
@@ -322,10 +346,9 @@ export default {
     },
 
     getMinDate(){
-      if(this.selectedCert) {
-        return moment(this.selectedCert.startDate).add('1', 'days').format('YYYY-MM-DD');
-      }
-      else return moment().format('YYYY-MM-DD');
+      if(moment(this.selectedCert?.startDate).isAfter(moment()))
+        return moment(this.selectedCert?.startDate).add(1, 'days').format('YYYY-MM-DD');
+      return moment().format('YYYY-MM-DD');
     },
 
     getMaxDate(){
@@ -336,7 +359,7 @@ export default {
     },
 
     getMinDateValidTo(){
-      if(this.validFrom) {
+      if(this.validFrom !== '') {
         return moment(this.validFrom).add('1', 'days').format('YYYY-MM-DD');
       }
       else return moment().format('YYYY-MM-DD');

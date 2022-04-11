@@ -54,17 +54,7 @@ public class KeyStoreReader {
 
 			X500Name issuerName = new JcaX509CertificateHolder((X509Certificate) cert).getSubject();
 			return new IssuerData(privKey, issuerName);
-		} catch (KeyStoreException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			e.printStackTrace();
-		} catch (UnrecoverableKeyException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | IOException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -88,47 +78,6 @@ public class KeyStoreReader {
 			e.printStackTrace();
 		}
 		return null;
-	}
-
-	public static X509Certificate[] buildPath(
-			X509Certificate startingPoint, Collection certificates
-	) throws NoSuchAlgorithmException, InvalidKeyException,
-			NoSuchProviderException, CertificateException {
-
-		LinkedList path = new LinkedList();
-		path.add(startingPoint);
-		boolean nodeAdded = true;
-		// Keep looping until an iteration happens where we don't add any nodes
-		// to our path.
-		while (nodeAdded) {
-			// We'll start out by assuming nothing gets added.  If something
-			// gets added, then nodeAdded will be changed to "true".
-			nodeAdded = false;
-			X509Certificate top = (X509Certificate) path.getLast();
-			if (isSelfSigned(top)) {
-				// We're self-signed, so we're done!
-				break;
-			}
-
-			// Not self-signed.  Let's see if we're signed by anyone in the
-			// collection.
-			Iterator it = certificates.iterator();
-			while (it.hasNext()) {
-				X509Certificate x509 = (X509Certificate) it.next();
-				if (verify(top, x509.getPublicKey())) {
-					// We're signed by this guy!  Add him to the chain we're
-					// building up.
-					path.add(x509);
-					nodeAdded = true;
-					it.remove(); // Not interested in this guy anymore!
-					break;
-				}
-				// Not signed by this guy, let's try the next guy.
-			}
-		}
-		X509Certificate[] results = new X509Certificate[path.size()];
-		path.toArray(results);
-		return results;
 	}
 
 	public static boolean isSelfSigned(X509Certificate cert)
@@ -189,19 +138,7 @@ public class KeyStoreReader {
 				PrivateKey pk = (PrivateKey) ks.getKey(alias, pass.toCharArray());
 				return pk;
 			}
-		} catch (KeyStoreException e) {
-			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (UnrecoverableKeyException e) {
+		} catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException | UnrecoverableKeyException e) {
 			e.printStackTrace();
 		}
 		return null;

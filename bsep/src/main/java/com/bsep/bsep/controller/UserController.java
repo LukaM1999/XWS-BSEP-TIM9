@@ -25,7 +25,8 @@ public class UserController {
     private UserCertificateService certificateService;
 
     @GetMapping("/login/{username}")
-    public List<CertificateDTO> login(@PathVariable String username) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<CertificateDTO> login(@PathVariable String username) throws CertificateException, ParseException,
+            NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return certificateService.getUserCertificates(username);
     }
 }

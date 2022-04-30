@@ -5,7 +5,7 @@ FROM golang:latest as builder
 WORKDIR /app
 
 # Copy go mod and sum files
-COPY ./go.mod ./go.sum ./
+COPY ./api_gateway/go.mod ./api_gateway/go.sum ./
 
 # Copy the local dependency
 COPY /common ../common

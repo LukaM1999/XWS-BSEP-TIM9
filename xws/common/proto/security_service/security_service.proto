@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+option go_package = "dislinkt/common/security";
+
+package security;
+
+import "google/api/annotations.proto";
+
+service SecurityService{
+  rpc Get(GetRequest) returns(GetResponse) {
+    option (google.api.http) = {
+      get: "/security/user/{username}"
+    };
+  }
+  rpc GetAll(GetAllRequest) returns(GetAllResponse) {
+    option (google.api.http) = {
+      get: "/security/user"
+    };
+  }
+  rpc Register(RegisterRequest) returns(RegisterResponse) {
+    option (google.api.http) = {
+      post: "/security/user"
+      body: "user"
+    };
+  }
+}
+
+message GetRequest {
+  string username = 1;
+}
+
+message GetResponse {
+  User user = 1;
+}
+
+message GetAllRequest {
+}
+
+message GetAllResponse {
+  repeated User users = 1;
+}
+
+message RegisterRequest {
+  User user = 1;
+}
+
+message RegisterResponse {
+  User user = 1;
+}
+
+message User {
+  string id = 1;
+  string username = 2;
+  string password = 3;
+}

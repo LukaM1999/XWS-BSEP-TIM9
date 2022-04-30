@@ -510,7 +510,7 @@ public class CertificateService {
             issuer = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + "root.jks", "12345", dto.getSerialNumberIssuer());
         }
         Date now = new Date();
-        if(dto.getStartDate().before(now) || dto.getEndDate().before(now)) return false;
+        //if(dto.getStartDate().before(now) || dto.getEndDate().before(now)) return false;
         if(dto.getStartDate().after(dto.getEndDate())) return false;
 
         return issuer.getNotBefore().before(dto.getStartDate())

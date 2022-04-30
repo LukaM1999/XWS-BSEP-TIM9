@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  security_service:
+    image: security_service
+    container_name: security_service
+    build:
+      context: .
+      dockerfile: ./security_service/Dockerfile
+    restart: on-failure
+    environment:
+      SECURITY_DB_HOST: ${SECURITY_DB_HOST}
+      SECURITY_DB_PORT: ${SECURITY_DB_PORT}
+      SECURITY_SERVICE_PORT: ${SECURITY_SERVICE_PORT}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+    depends_on:
+      - security_db
+    networks:
+      - network
+
+  api_gateway:
+    image: api_gateway
+    container_name: api_gateway
+    build:
+      context: .
+      dockerfile: ./api_gateway/Dockerfile
+    restart: on-failure
+    ports:
+      - ${GATEWAY_PORT}:${GATEWAY_PORT}
+    environment:
+      GATEWAY_PORT: ${GATEWAY_PORT}
+      SECURITY_SERVICE_HOST: ${SECURITY_SERVICE_HOST}
+      SECURITY_SERVICE_PORT: ${SECURITY_SERVICE_PORT}
+    networks:
+      - network
+
+  security_db:
+    image: mongo
+    container_name: security_db
+    restart: on-failure
+    networks:
+      - network
+
+  nats:
+    image: nats
+    container_name: nats
+    restart: on-failure
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge

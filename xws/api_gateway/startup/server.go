@@ -3,6 +3,7 @@ package startup
 import (
 	"context"
 	cfg "dislinkt/api_gateway/startup/config"
+	profileGw "dislinkt/common/proto/profile_service"
 	securityGw "dislinkt/common/proto/security_service"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -30,6 +31,12 @@ func (server *Server) initHandlers() {
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	securityEndpoint := fmt.Sprintf("%s:%s", server.config.SecurityHost, server.config.SecurityPort)
 	err := securityGw.RegisterSecurityServiceHandlerFromEndpoint(context.TODO(), server.mux, securityEndpoint, opts)
+	if err != nil {
+		panic(err)
+	}
+
+	profileEndpoint := fmt.Sprintf("%s:%s", server.config.ProfileHost, server.config.ProfilePort)
+	err = profileGw.RegisterProfileServiceHandlerFromEndpoint(context.TODO(), server.mux, profileEndpoint, opts)
 	if err != nil {
 		panic(err)
 	}

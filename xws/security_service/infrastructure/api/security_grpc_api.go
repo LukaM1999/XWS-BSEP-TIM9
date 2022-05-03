@@ -44,3 +44,14 @@ func (handler *UserHandler) GetAll(ctx context.Context, request *pb.GetAllReques
 	}
 	return response, nil
 }
+
+func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	user := mapPbToUser(request.User)
+	err := handler.service.Register(user)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.RegisterResponse{
+		User: mapUserToPb(user),
+	}, nil
+}

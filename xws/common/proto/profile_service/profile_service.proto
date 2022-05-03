@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+option go_package = "dislinkt/common/profile";
+
+package profile;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+
+service ProfileService{
+  rpc Get(GetRequest) returns(GetResponse) {
+    option (google.api.http) = {
+      get: "/profile/{username}"
+    };
+  }
+  rpc GetAll(GetAllRequest) returns(GetAllResponse) {
+    option (google.api.http) = {
+      get: "/profile"
+    };
+  }
+  rpc Create(CreateRequest) returns(CreateResponse) {
+    option (google.api.http) = {
+      post: "/profile"
+      body: "profile"
+    };
+  }
+  rpc Update(UpdateRequest) returns(UpdateResponse) {
+    option (google.api.http) = {
+      put: "/profile/{username}"
+      body: "profile"
+    };
+  }
+}
+
+message GetRequest {
+  string username = 1;
+}
+
+message GetResponse {
+  Profile profile = 1;
+}
+
+message GetAllRequest {
+}
+
+message GetAllResponse {
+  repeated Profile profiles = 1;
+}
+
+message CreateRequest {
+  Profile profile = 1;
+}
+
+message CreateResponse {
+  Profile profile = 1;
+}
+
+message UpdateRequest {
+  string username = 1;
+  Profile profile = 2;
+}
+
+message UpdateResponse {
+  Profile profile = 1;
+}
+
+message Profile {
+  string id = 1;
+  string username = 2;
+  string firstName = 3;
+  string lastName = 4;
+  google.protobuf.Timestamp dateOfBirth = 5;
+  string phoneNumber = 6;
+  string email = 7;
+  string gender = 8;
+  string biography = 9;
+  repeated Education education = 10;
+  repeated WorkExperience workExperience = 11;
+  repeated string skills = 12;
+  repeated string interests = 13;
+}
+
+message Education{
+  string school = 1;
+  string degree = 2;
+  string fieldOfStudy = 3;
+  google.protobuf.Timestamp startDate = 4;
+  google.protobuf.Timestamp  endDate = 5;
+  string grade = 6;
+  string  description = 7;
+}
+
+message WorkExperience{
+  string title = 1;
+  string company = 2;
+  enum EmploymentType {
+    FULL_TIME = 0;
+    PART_TIME = 1;
+    SELF_EMPLOYED = 2;
+    FREELANCE = 3;
+    CONTRACT = 4;
+    INTERNSHIP = 5;
+    APPRENTICESHIP = 6;
+    SEASONAL = 7;
+  };
+  EmploymentType employmentType = 3;
+  string location = 4;
+  google.protobuf.Timestamp startDate = 5;
+  google.protobuf.Timestamp endDate = 6;
+}

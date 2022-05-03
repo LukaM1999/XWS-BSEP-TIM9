@@ -3,6 +3,7 @@ package startup
 import (
 	"context"
 	cfg "dislinkt/api_gateway/startup/config"
+	commentGw "dislinkt/common/proto/comment_service"
 	profileGw "dislinkt/common/proto/profile_service"
 	securityGw "dislinkt/common/proto/security_service"
 	"fmt"
@@ -37,6 +38,12 @@ func (server *Server) initHandlers() {
 
 	profileEndpoint := fmt.Sprintf("%s:%s", server.config.ProfileHost, server.config.ProfilePort)
 	err = profileGw.RegisterProfileServiceHandlerFromEndpoint(context.TODO(), server.mux, profileEndpoint, opts)
+	if err != nil {
+		panic(err)
+	}
+
+	commentEndpoint := fmt.Sprintf("%s:%s", server.config.CommentHost, server.config.CommentPort)
+	err = commentGw.RegisterCommentServiceHandlerFromEndpoint(context.TODO(), server.mux, commentEndpoint, opts)
 	if err != nil {
 		panic(err)
 	}

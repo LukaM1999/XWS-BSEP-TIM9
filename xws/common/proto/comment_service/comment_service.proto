@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+option go_package = "dislinkt/common/comment";
+
+package comment;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+
+service CommentService{
+  rpc Get(GetRequest) returns(GetResponse) {
+    option (google.api.http) = {
+      get: "/comment/post/{postId}"
+    };
+  }
+  rpc Create(CreateRequest) returns(CreateResponse) {
+    option (google.api.http) = {
+      post: "/comment"
+      body: "comment"
+    };
+  }
+  rpc Delete(DeleteRequest) returns(DeleteResponse) {
+    option (google.api.http) = {
+      delete: "/comment/{id}"
+    };
+  }
+}
+
+message GetRequest {
+  string postId = 1;
+}
+
+message GetResponse {
+  repeated Comment comments = 1;
+}
+
+message CreateRequest {
+  Comment comment = 1;
+}
+
+message CreateResponse {
+  Comment comment = 1;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+}
+
+message Comment {
+  string id = 1;
+  string content = 2;
+  CommentCreator commentCreator = 3;
+  string postId = 4;
+  google.protobuf.Timestamp dateCreated = 5;
+}
+
+message CommentCreator {
+  string id = 1;
+  string username = 2;
+  string firstName = 3;
+  string lastName = 4;
+}

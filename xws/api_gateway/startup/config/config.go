@@ -6,6 +6,8 @@ type Config struct {
 	SecurityPort string
 	ProfileHost  string
 	ProfilePort  string
+	CommentHost  string
+	CommentPort  string
 }
 
 func NewConfig() *Config {
@@ -15,5 +17,7 @@ func NewConfig() *Config {
 		SecurityPort: "8001",
 		ProfileHost:  "profile_service",
 		ProfilePort:  "8001",
+		CommentHost:  "comment_service",
+		CommentPort:  "8001",
 	}
 }

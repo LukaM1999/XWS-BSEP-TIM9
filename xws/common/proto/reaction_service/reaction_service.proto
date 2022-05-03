@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+option go_package = "dislinkt/common/reaction";
+
+package reaction;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service ReactionService{
+  rpc Get(GetRequest) returns(GetResponse) {
+    option (google.api.http) = {
+      get: "/reaction/post/{postId}"
+    };
+  }
+  rpc Reaction(ReactionRequest) returns(ReactionResponse) {
+    option (google.api.http) = {
+      post: "/reaction"
+      body: "reaction"
+    };
+  }
+  rpc Delete(DeleteRequest) returns(DeleteResponse) {
+    option (google.api.http) = {
+      delete: "/reaction/{id}"
+    };
+  }
+}
+
+message GetRequest {
+  string postId = 1;
+}
+
+message GetResponse {
+  repeated Reaction reactions = 1;
+}
+
+message ReactionRequest {
+  Reaction reaction = 1;
+}
+
+message ReactionResponse {
+  Reaction reaction = 1;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+}
+
+message Reaction {
+  string id = 1;
+  string userId = 2;
+  string postId = 3;
+  enum ReactionType {
+    LIKE = 0;
+    CELEBRATE = 1;
+    SUPPORT = 2;
+    LOVE = 3;
+    INSIGHTFUL = 4;
+    CURIOUS = 5;
+    DISLIKE = 6;
+  }
+  ReactionType type = 4;
+  google.protobuf.Timestamp createdAt = 5;
+}

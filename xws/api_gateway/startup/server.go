@@ -5,6 +5,7 @@ import (
 	cfg "dislinkt/api_gateway/startup/config"
 	commentGw "dislinkt/common/proto/comment_service"
 	profileGw "dislinkt/common/proto/profile_service"
+	reactionGw "dislinkt/common/proto/reaction_service"
 	securityGw "dislinkt/common/proto/security_service"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -44,6 +45,12 @@ func (server *Server) initHandlers() {
 
 	commentEndpoint := fmt.Sprintf("%s:%s", server.config.CommentHost, server.config.CommentPort)
 	err = commentGw.RegisterCommentServiceHandlerFromEndpoint(context.TODO(), server.mux, commentEndpoint, opts)
+	if err != nil {
+		panic(err)
+	}
+
+	reactionEndpoint := fmt.Sprintf("%s:%s", server.config.ReactionHost, server.config.ReactionPort)
+	err = reactionGw.RegisterReactionServiceHandlerFromEndpoint(context.TODO(), server.mux, reactionEndpoint, opts)
 	if err != nil {
 		panic(err)
 	}

@@ -9,6 +9,7 @@ services:
       dockerfile: ./security_service/Dockerfile
     restart: on-failure
     environment:
+      OS_ENV: docker
       SECURITY_DB_HOST: ${SECURITY_DB_HOST}
       SECURITY_DB_PORT: ${SECURITY_DB_PORT}
       SECURITY_SERVICE_PORT: ${SECURITY_SERVICE_PORT}
@@ -29,6 +30,7 @@ services:
       dockerfile: ./profile_service/Dockerfile
     restart: on-failure
     environment:
+      OS_ENV: docker
       PROFILE_DB_HOST: ${PROFILE_DB_HOST}
       PROFILE_DB_PORT: ${PROFILE_DB_PORT}
       PROFILE_SERVICE_PORT: ${PROFILE_SERVICE_PORT}
@@ -49,6 +51,7 @@ services:
       dockerfile: ./comment_service/Dockerfile
     restart: on-failure
     environment:
+      OS_ENV: docker
       COMMENT_DB_HOST: ${COMMENT_DB_HOST}
       COMMENT_DB_PORT: ${COMMENT_DB_PORT}
       COMMENT_SERVICE_PORT: ${COMMENT_SERVICE_PORT}
@@ -69,6 +72,7 @@ services:
       dockerfile: ./reaction_service/Dockerfile
     restart: on-failure
     environment:
+      OS_ENV: docker
       REACTION_DB_HOST: ${REACTION_DB_HOST}
       REACTION_DB_PORT: ${REACTION_DB_PORT}
       REACTION_SERVICE_PORT: ${REACTION_SERVICE_PORT}
@@ -91,6 +95,7 @@ services:
     ports:
       - ${GATEWAY_PORT}:${GATEWAY_PORT}
     environment:
+      OS_ENV: docker
       GATEWAY_PORT: ${GATEWAY_PORT}
       SECURITY_SERVICE_HOST: ${SECURITY_SERVICE_HOST}
       SECURITY_SERVICE_PORT: ${SECURITY_SERVICE_PORT}

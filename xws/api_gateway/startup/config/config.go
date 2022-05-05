@@ -1,5 +1,11 @@
 package config
 
+import (
+	"github.com/joho/godotenv"
+	"log"
+	"os"
+)
+
 type Config struct {
 	Port         string
 	SecurityHost string
@@ -13,15 +19,28 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	return &Config{
-		Port:         "8000",
-		SecurityHost: "security_service",
-		SecurityPort: "8001",
-		ProfileHost:  "profile_service",
-		ProfilePort:  "8001",
-		CommentHost:  "comment_service",
-		CommentPort:  "8001",
-		ReactionHost: "reaction_service",
-		ReactionPort: "8001",
+	err := SetEnvironment()
+	if err != nil {
+		return nil
 	}
+	return &Config{
+		Port:         os.Getenv("GATEWAY_PORT"),
+		SecurityHost: os.Getenv("SECURITY_SERVICE_HOST"),
+		SecurityPort: os.Getenv("SECURITY_SERVICE_PORT"),
+		ProfileHost:  os.Getenv("PROFILE_SERVICE_HOST"),
+		ProfilePort:  os.Getenv("PROFILE_SERVICE_PORT"),
+		CommentHost:  os.Getenv("COMMENT_SERVICE_HOST"),
+		CommentPort:  os.Getenv("COMMENT_SERVICE_PORT"),
+		ReactionHost: os.Getenv("REACTION_SERVICE_HOST"),
+		ReactionPort: os.Getenv("REACTION_SERVICE_PORT"),
+	}
+}
+
+func SetEnvironment() error {
+	if os.Getenv("OS_ENV") != "docker" {
+		if err := godotenv.Load("../.env.dev"); err != nil {
+			log.Fatal("Error loading .env file")
+		}
+	}
+	return nil
 }

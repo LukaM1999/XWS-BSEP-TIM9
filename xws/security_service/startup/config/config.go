@@ -1,6 +1,10 @@
 package config
 
-import "os"
+import (
+	"github.com/joho/godotenv"
+	"log"
+	"os"
+)
 
 type Config struct {
 	Port                      string
@@ -15,10 +19,14 @@ type Config struct {
 }
 
 func NewConfig() *Config {
+	err := SetEnvironment()
+	if err != nil {
+		return nil
+	}
 	return &Config{
-		Port:                      "8001",
-		SecurityDBHost:            "security_db",
-		SecurityDBPort:            "27017",
+		Port:                      os.Getenv("SECURITY_SERVICE_PORT"),
+		SecurityDBHost:            os.Getenv("SECURITY_DB_HOST"),
+		SecurityDBPort:            os.Getenv("SECURITY_DB_PORT"),
 		NatsHost:                  os.Getenv("NATS_HOST"),
 		NatsPort:                  os.Getenv("NATS_PORT"),
 		NatsUser:                  os.Getenv("NATS_USER"),
@@ -26,4 +34,13 @@ func NewConfig() *Config {
 		CreateOrderCommandSubject: os.Getenv("CREATE_ORDER_COMMAND_SUBJECT"),
 		CreateOrderReplySubject:   os.Getenv("CREATE_ORDER_REPLY_SUBJECT"),
 	}
+}
+
+func SetEnvironment() error {
+	if os.Getenv("OS_ENV") != "docker" {
+		if err := godotenv.Load("../.env.dev"); err != nil {
+			log.Fatal("Error loading .env file")
+		}
+	}
+	return nil
 }

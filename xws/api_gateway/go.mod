@@ -7,6 +7,7 @@ replace dislinkt/common => ../common
 require (
 	dislinkt/common v1.0.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
+	github.com/joho/godotenv v1.4.0
 	go.mongodb.org/mongo-driver v1.9.0
 	google.golang.org/grpc v1.46.0
 )

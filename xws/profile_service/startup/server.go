@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
 )
@@ -32,9 +33,9 @@ func (server *Server) Start() {
 	mongoClient := server.initMongoClient()
 	profileStore := server.initProfileStore(mongoClient)
 
-	profileService := server.initSecurityService(profileStore)
+	profileService := server.initProfileService(profileStore)
 
-	profileHandler := server.initUserHandler(profileService)
+	profileHandler := server.initProfileHandler(profileService)
 
 	server.startGrpcServer(profileHandler)
 }
@@ -62,11 +63,11 @@ func (server *Server) initProfileStore(client *mongo.Client) domain.ProfileStore
 	return store
 }
 
-func (server *Server) initSecurityService(store domain.ProfileStore) *application.ProfileService {
+func (server *Server) initProfileService(store domain.ProfileStore) *application.ProfileService {
 	return application.NewProfileService(store)
 }
 
-func (server *Server) initUserHandler(service *application.ProfileService) *api.ProfileHandler {
+func (server *Server) initProfileHandler(service *application.ProfileService) *api.ProfileHandler {
 	return api.NewProfileHandler(service)
 }
 
@@ -76,6 +77,7 @@ func (server *Server) startGrpcServer(userHandler *api.ProfileHandler) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
+	reflection.Register(grpcServer)
 	profile.RegisterProfileServiceServer(grpcServer, userHandler)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)

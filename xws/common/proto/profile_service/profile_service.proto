@@ -42,6 +42,7 @@ message GetResponse {
 }
 
 message GetAllRequest {
+  string search = 1;
 }
 
 message GetAllResponse {
@@ -108,4 +109,8 @@ message WorkExperience{
   string location = 4;
   google.protobuf.Timestamp startDate = 5;
   google.protobuf.Timestamp endDate = 6;
+}
+
+message Search {
+  string search = 1;
 }

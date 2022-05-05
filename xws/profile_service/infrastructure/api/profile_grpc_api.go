@@ -4,6 +4,7 @@ import (
 	"context"
 	pb "dislinkt/common/proto/profile_service"
 	"dislinkt/profile_service/application"
+	"strings"
 )
 
 type ProfileHandler struct {
@@ -31,7 +32,7 @@ func (handler *ProfileHandler) Get(ctx context.Context, request *pb.GetRequest) 
 }
 
 func (handler *ProfileHandler) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	Profiles, err := handler.service.GetAll()
+	Profiles, err := handler.service.GetAll(strings.ReplaceAll(request.Search, " ", ""))
 	if err != nil {
 		return nil, err
 	}

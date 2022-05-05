@@ -12,6 +12,7 @@ var profiles = []*domain.Profile{
 		Username:       "admin",
 		FirstName:      "Luka",
 		LastName:       "Miletic",
+		FullName:       "LukaMiletic",
 		DateOfBirth:    time.Time{},
 		PhoneNumber:    "065166161616",
 		Email:          "lukam@gmail.com",

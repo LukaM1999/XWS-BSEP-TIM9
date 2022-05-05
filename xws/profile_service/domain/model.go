@@ -10,6 +10,7 @@ type Profile struct {
 	Username       string             `bson:"username"`
 	FirstName      string             `bson:"firstName"`
 	LastName       string             `bson:"lastName"`
+	FullName       string             `bson:"fullName"`
 	DateOfBirth    time.Time          `bson:"dateOfBirth"`
 	PhoneNumber    string             `bson:"phoneNumber"`
 	Email          string             `bson:"email"`

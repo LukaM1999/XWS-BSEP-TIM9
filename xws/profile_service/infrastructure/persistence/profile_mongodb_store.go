@@ -7,6 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 const (
@@ -20,6 +22,17 @@ type ProfileMongoDBStore struct {
 
 func NewProfileMongoDBStore(client *mongo.Client) domain.ProfileStore {
 	profiles := client.Database(DATABASE).Collection(COLLECTION)
+	index := mongo.IndexModel{
+		Keys:    bson.D{{"fullName", "text"}},
+		Options: options.Index().SetUnique(true),
+	}
+	opts := options.CreateIndexes().SetMaxTime(20 * time.Second)
+	_, err := profiles.Indexes().CreateOne(context.TODO(), index, opts)
+
+	if err != nil {
+		panic(err)
+	}
+
 	return &ProfileMongoDBStore{
 		profiles: profiles,
 	}
@@ -30,9 +43,9 @@ func (store *ProfileMongoDBStore) Get(username string) (*domain.Profile, error) 
 	return store.filterOne(filter)
 }
 
-func (store *ProfileMongoDBStore) GetAll() ([]*domain.Profile, error) {
-	filter := bson.D{{}}
-	return store.filter(filter)
+func (store *ProfileMongoDBStore) GetAll(search string) ([]*domain.Profile, error) {
+	filter := bson.D{{"fullName", bson.M{"$regex": "^.*" + search + ".*$"}}}
+	return store.filter(filter, search)
 }
 
 func (store *ProfileMongoDBStore) Create(profile *domain.Profile) error {
@@ -77,7 +90,7 @@ func (store *ProfileMongoDBStore) DeleteAll() error {
 	return nil
 }
 
-func (store *ProfileMongoDBStore) filter(filter interface{}) ([]*domain.Profile, error) {
+func (store *ProfileMongoDBStore) filter(filter interface{}, search string) ([]*domain.Profile, error) {
 	cursor, err := store.profiles.Find(context.TODO(), filter)
 	defer func(cursor *mongo.Cursor, ctx context.Context) {
 		err := cursor.Close(ctx)
@@ -87,7 +100,7 @@ func (store *ProfileMongoDBStore) filter(filter interface{}) ([]*domain.Profile,
 	}(cursor, context.TODO())
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New(search)
 	}
 	return decode(cursor)
 }

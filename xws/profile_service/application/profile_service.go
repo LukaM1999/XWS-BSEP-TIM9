@@ -18,8 +18,8 @@ func (service *ProfileService) Get(username string) (*domain.Profile, error) {
 	return service.store.Get(username)
 }
 
-func (service *ProfileService) GetAll() ([]*domain.Profile, error) {
-	return service.store.GetAll()
+func (service *ProfileService) GetAll(search string) ([]*domain.Profile, error) {
+	return service.store.GetAll(search)
 }
 
 func (service *ProfileService) Create(profile *domain.Profile) error {

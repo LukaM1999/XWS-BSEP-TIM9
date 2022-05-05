@@ -68,6 +68,7 @@ func mapPbToProfile(pbProfile *pb.Profile) *domain.Profile {
 		Username:       pbProfile.Username,
 		FirstName:      pbProfile.FirstName,
 		LastName:       pbProfile.LastName,
+		FullName:       pbProfile.FirstName + pbProfile.LastName,
 		DateOfBirth:    pbProfile.DateOfBirth.AsTime(),
 		PhoneNumber:    pbProfile.PhoneNumber,
 		Email:          pbProfile.Email,

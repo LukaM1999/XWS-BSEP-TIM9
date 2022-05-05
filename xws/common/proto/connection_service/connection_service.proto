@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+option go_package = "dislinkt/common/connection";
+
+package connection;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+
+service ConnectionService{
+  rpc Get(GetRequest) returns(GetResponse) {
+    option (google.api.http) = {
+      get: "/connection/{userId}"
+    };
+  }
+  rpc Create(CreateRequest) returns(CreateResponse) {
+    option (google.api.http) = {
+      post: "/connection"
+      body: "connection"
+    };
+  }
+  rpc Delete(DeleteRequest) returns(DeleteResponse) {
+    option (google.api.http) = {
+      delete: "/connection/{id}"
+    };
+  }
+  rpc Update(UpdateRequest) returns(UpdateResponse) {
+    option (google.api.http) = {
+      patch: "/connection/{id}"
+    };
+  }
+}
+
+message GetRequest {
+  string userId = 1;
+}
+
+message GetResponse {
+  repeated Connection connections = 1;
+}
+
+message CreateRequest {
+  Connection connection = 1;
+}
+
+message CreateResponse {
+  Connection connection = 1;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+}
+
+message UpdateRequest {
+  string id = 1;
+}
+
+message UpdateResponse {
+  Connection connection = 1;
+}
+
+message Connection {
+  string id = 1;
+  string issuerId = 2;
+  string subjectId = 3;
+  google.protobuf.Timestamp date = 4;
+  bool isApproved = 5;
+}

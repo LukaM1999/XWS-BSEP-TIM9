@@ -4,6 +4,7 @@ import (
 	"context"
 	cfg "dislinkt/api_gateway/startup/config"
 	commentGw "dislinkt/common/proto/comment_service"
+	connectionGw "dislinkt/common/proto/connection_service"
 	profileGw "dislinkt/common/proto/profile_service"
 	reactionGw "dislinkt/common/proto/reaction_service"
 	securityGw "dislinkt/common/proto/security_service"
@@ -51,6 +52,12 @@ func (server *Server) initHandlers() {
 
 	reactionEndpoint := fmt.Sprintf("%s:%s", server.config.ReactionHost, server.config.ReactionPort)
 	err = reactionGw.RegisterReactionServiceHandlerFromEndpoint(context.TODO(), server.mux, reactionEndpoint, opts)
+	if err != nil {
+		panic(err)
+	}
+
+	connectionEndpoint := fmt.Sprintf("%s:%s", server.config.ConnectionHost, server.config.ConnectionPort)
+	err = connectionGw.RegisterConnectionServiceHandlerFromEndpoint(context.TODO(), server.mux, connectionEndpoint, opts)
 	if err != nil {
 		panic(err)
 	}

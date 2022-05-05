@@ -85,6 +85,27 @@ services:
     networks:
       - network
 
+  connection_service:
+    image: connection_service
+    container_name: connection_service
+    build:
+      context: .
+      dockerfile: ./connection_service/Dockerfile
+    restart: on-failure
+    environment:
+      OS_ENV: docker
+      CONNECTION_DB_HOST: ${CONNECTION_DB_HOST}
+      CONNECTION_DB_PORT: ${CONNECTION_DB_PORT}
+      CONNECTION_SERVICE_PORT: ${CONNECTION_SERVICE_PORT}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+    depends_on:
+      - connection_db
+    networks:
+      - network
+
   api_gateway:
     image: api_gateway
     container_name: api_gateway
@@ -132,6 +153,13 @@ services:
   reaction_db:
     image: mongo
     container_name: reaction_db
+    restart: on-failure
+    networks:
+      - network
+
+  connection_db:
+    image: mongo
+    container_name: connection_db
     restart: on-failure
     networks:
       - network

@@ -32,7 +32,7 @@ func (handler *ReactionHandler) Get(ctx context.Context, request *pb.GetRequest)
 	return response, nil
 }
 
-func (handler ReactionHandler) Reaction(ctx context.Context, request *pb.ReactionRequest) (*pb.ReactionResponse, error) {
+func (handler *ReactionHandler) Reaction(ctx context.Context, request *pb.ReactionRequest) (*pb.ReactionResponse, error) {
 	reaction := mapPbToReaction(request.Reaction)
 	reaction, err := handler.service.Reaction(reaction)
 	if err != nil {
@@ -43,7 +43,7 @@ func (handler ReactionHandler) Reaction(ctx context.Context, request *pb.Reactio
 	}, nil
 }
 
-func (handler ReactionHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+func (handler *ReactionHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
 	err := handler.service.Delete(request.Id)
 	if err != nil {
 		return nil, err

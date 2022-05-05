@@ -32,7 +32,7 @@ func (handler *CommentHandler) Get(ctx context.Context, request *pb.GetRequest) 
 	return response, nil
 }
 
-func (handler CommentHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
+func (handler *CommentHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
 	comment := mapPbToComment(request.Comment)
 	_, err := handler.service.Create(comment)
 	if err != nil {
@@ -43,7 +43,7 @@ func (handler CommentHandler) Create(ctx context.Context, request *pb.CreateRequ
 	}, nil
 }
 
-func (handler CommentHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+func (handler *CommentHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
 	err := handler.service.Delete(request.Id)
 	if err != nil {
 		return nil, err

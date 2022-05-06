@@ -8,6 +8,8 @@ services:
       context: .
       dockerfile: ./security_service/Dockerfile
     restart: on-failure
+    ports:
+      - 8001:${SECURITY_SERVICE_PORT}
     environment:
       OS_ENV: docker
       SECURITY_DB_HOST: ${SECURITY_DB_HOST}
@@ -29,6 +31,8 @@ services:
       context: .
       dockerfile: ./profile_service/Dockerfile
     restart: on-failure
+    ports:
+      - 8002:${PROFILE_SERVICE_PORT}
     environment:
       OS_ENV: docker
       PROFILE_DB_HOST: ${PROFILE_DB_HOST}
@@ -50,6 +54,8 @@ services:
       context: .
       dockerfile: ./comment_service/Dockerfile
     restart: on-failure
+    ports:
+      - 8003:${COMMENT_SERVICE_PORT}
     environment:
       OS_ENV: docker
       COMMENT_DB_HOST: ${COMMENT_DB_HOST}
@@ -71,6 +77,8 @@ services:
       context: .
       dockerfile: ./reaction_service/Dockerfile
     restart: on-failure
+    ports:
+      - 8004:${REACTION_SERVICE_PORT}
     environment:
       OS_ENV: docker
       REACTION_DB_HOST: ${REACTION_DB_HOST}
@@ -133,6 +141,8 @@ services:
     image: mongo
     container_name: security_db
     restart: on-failure
+    ports:
+      - 27017:${SECURITY_DB_PORT}
     networks:
       - network
 
@@ -140,6 +150,8 @@ services:
     image: mongo
     container_name: profile_db
     restart: on-failure
+    ports:
+      - 27018:${PROFILE_DB_PORT}
     networks:
       - network
 
@@ -147,6 +159,8 @@ services:
     image: mongo
     container_name: comment_db
     restart: on-failure
+    ports:
+      - 27019:${COMMENT_DB_PORT}
     networks:
       - network
 
@@ -154,6 +168,8 @@ services:
     image: mongo
     container_name: reaction_db
     restart: on-failure
+    ports:
+      - 27020:${REACTION_DB_PORT}
     networks:
       - network
 

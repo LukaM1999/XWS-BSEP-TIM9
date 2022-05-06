@@ -1,6 +1,7 @@
 package application
 
 import (
+	auth "dislinkt/common/domain"
 	"dislinkt/security_service/domain"
 )
 
@@ -14,14 +15,14 @@ func NewSecurityService(store domain.UserStore) *SecurityService {
 	}
 }
 
-func (service *SecurityService) Get(username string) (*domain.User, error) {
+func (service *SecurityService) Get(username string) (*auth.User, error) {
 	return service.store.Get(username)
 }
 
-func (service *SecurityService) GetAll() ([]*domain.User, error) {
+func (service *SecurityService) GetAll() ([]*auth.User, error) {
 	return service.store.GetAll()
 }
 
-func (service *SecurityService) Register(user *domain.User) error {
+func (service *SecurityService) Register(user *auth.User) error {
 	return service.store.Register(user)
 }

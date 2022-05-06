@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	auth "dislinkt/common/domain"
 	"dislinkt/security_service/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,17 +25,17 @@ func NewUserMongoDBStore(client *mongo.Client) domain.UserStore {
 	}
 }
 
-func (store *UserMongoDBStore) Get(username string) (*domain.User, error) {
+func (store *UserMongoDBStore) Get(username string) (*auth.User, error) {
 	filter := bson.M{"username": username}
 	return store.filterOne(filter)
 }
 
-func (store *UserMongoDBStore) GetAll() ([]*domain.User, error) {
+func (store *UserMongoDBStore) GetAll() ([]*auth.User, error) {
 	filter := bson.D{{}}
 	return store.filter(filter)
 }
 
-func (store *UserMongoDBStore) Register(User *domain.User) error {
+func (store *UserMongoDBStore) Register(User *auth.User) error {
 	result, err := store.users.InsertOne(context.TODO(), User)
 	if err != nil {
 		return err
@@ -51,7 +52,7 @@ func (store *UserMongoDBStore) DeleteAll() error {
 	return nil
 }
 
-func (store *UserMongoDBStore) filter(filter interface{}) ([]*domain.User, error) {
+func (store *UserMongoDBStore) filter(filter interface{}) ([]*auth.User, error) {
 	cursor, err := store.users.Find(context.TODO(), filter)
 	defer func(cursor *mongo.Cursor, ctx context.Context) {
 		err := cursor.Close(ctx)
@@ -66,15 +67,15 @@ func (store *UserMongoDBStore) filter(filter interface{}) ([]*domain.User, error
 	return decode(cursor)
 }
 
-func (store *UserMongoDBStore) filterOne(filter interface{}) (User *domain.User, err error) {
+func (store *UserMongoDBStore) filterOne(filter interface{}) (User *auth.User, err error) {
 	result := store.users.FindOne(context.TODO(), filter)
 	err = result.Decode(&User)
 	return
 }
 
-func decode(cursor *mongo.Cursor) (users []*domain.User, err error) {
+func decode(cursor *mongo.Cursor) (users []*auth.User, err error) {
 	for cursor.Next(context.TODO()) {
-		var User domain.User
+		var User auth.User
 		err = cursor.Decode(&User)
 		if err != nil {
 			return

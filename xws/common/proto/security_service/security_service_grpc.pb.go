@@ -20,6 +20,7 @@ type SecurityServiceClient interface {
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*GetAllResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 }
 
 type securityServiceClient struct {
@@ -57,6 +58,15 @@ func (c *securityServiceClient) Register(ctx context.Context, in *RegisterReques
 	return out, nil
 }
 
+func (c *securityServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SecurityServiceServer is the server API for SecurityService service.
 // All implementations must embed UnimplementedSecurityServiceServer
 // for forward compatibility
@@ -64,6 +74,7 @@ type SecurityServiceServer interface {
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	GetAll(context.Context, *GetAllRequest) (*GetAllResponse, error)
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	mustEmbedUnimplementedSecurityServiceServer()
 }
 
@@ -79,6 +90,9 @@ func (*UnimplementedSecurityServiceServer) GetAll(context.Context, *GetAllReques
 }
 func (*UnimplementedSecurityServiceServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (*UnimplementedSecurityServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
 func (*UnimplementedSecurityServiceServer) mustEmbedUnimplementedSecurityServiceServer() {}
 
@@ -140,6 +154,24 @@ func _SecurityService_Register_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SecurityService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _SecurityService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "security.SecurityService",
 	HandlerType: (*SecurityServiceServer)(nil),
@@ -155,6 +187,10 @@ var _SecurityService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Register",
 			Handler:    _SecurityService_Register_Handler,
+		},
+		{
+			MethodName: "Login",
+			Handler:    _SecurityService_Login_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

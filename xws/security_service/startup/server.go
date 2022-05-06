@@ -1,6 +1,9 @@
 package startup
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"dislinkt/common/auth"
 	security "dislinkt/common/proto/security_service"
 	"dislinkt/security_service/application"
 	"dislinkt/security_service/domain"
@@ -10,8 +13,12 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
+	"io/ioutil"
 	"log"
 	"net"
+	"time"
 )
 
 type Server struct {
@@ -28,15 +35,70 @@ const (
 	QueueGroup = "security_service"
 )
 
+func accessibleRoles() map[string][]string {
+	const securityServicePath = "/security.SecurityService/"
+	//const profileServicePath = "/profile.ProfileService/"
+	//const postServicePath = "/post.PostService/"
+	//const commentServicePath = "/comment.CommentService/"
+	//const reactionServicePath = "/reaction.ReactionService/"
+	//const connectionServicePath = "/connection.ConnectionService/"
+
+	return map[string][]string{
+		securityServicePath + "GetAll": {"admin"},
+		//profileServicePath + "Update":    {"user"},
+		//commentServicePath + "Create":    {"user"},
+		//commentServicePath + "Delete":    {"user"},
+		//reactionServicePath + "Reaction": {"user"},
+		//reactionServicePath + "Delete":   {"user"},
+	}
+}
+
+const (
+	serverCertFile   = "../../cert/server-cert.pem"
+	serverKeyFile    = "../../cert/server-key.pem"
+	clientCACertFile = "../../cert/ca-cert.pem"
+)
+
+func loadTLSCredentials() (credentials.TransportCredentials, error) {
+	// Load certificate of the CA who signed client's certificate
+	pemClientCA, err := ioutil.ReadFile(clientCACertFile)
+	if err != nil {
+		return nil, err
+	}
+
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(pemClientCA) {
+		return nil, fmt.Errorf("failed to add client CA's certificate")
+	}
+
+	// Load server's certificate and private key
+	serverCert, err := tls.LoadX509KeyPair(serverCertFile, serverKeyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the credentials and return it
+	config := &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		ClientCAs:    certPool,
+		//InsecureSkipVerify: true,
+	}
+
+	return credentials.NewTLS(config), nil
+}
+
 func (server *Server) Start() {
 	mongoClient := server.initMongoClient()
 	userStore := server.initUserStore(mongoClient)
 
+	jwtManager := auth.NewJWTManager("secretKey", 30*time.Minute)
+
 	securityService := server.initSecurityService(userStore)
 
-	userHandler := server.initUserHandler(securityService)
+	userHandler := server.initUserHandler(securityService, jwtManager)
 
-	server.startGrpcServer(userHandler)
+	server.startGrpcServer(userHandler, jwtManager)
 }
 
 func (server *Server) initMongoClient() *mongo.Client {
@@ -66,16 +128,27 @@ func (server *Server) initSecurityService(store domain.UserStore) *application.S
 	return application.NewSecurityService(store)
 }
 
-func (server *Server) initUserHandler(service *application.SecurityService) *api.UserHandler {
-	return api.NewUserHandler(service)
+func (server *Server) initUserHandler(service *application.SecurityService, jwtManager *auth.JWTManager) *api.UserHandler {
+	return api.NewUserHandler(service, jwtManager)
 }
 
-func (server *Server) startGrpcServer(userHandler *api.UserHandler) {
+func (server *Server) startGrpcServer(userHandler *api.UserHandler, jwtManager *auth.JWTManager) {
+	interceptor := auth.NewAuthInterceptor(jwtManager, accessibleRoles())
+	tlsCredentials, err := loadTLSCredentials()
+	if err != nil {
+		panic("cannot load TLS credentials: %w")
+	}
+	serverOptions := []grpc.ServerOption{
+		grpc.Creds(tlsCredentials),
+		grpc.UnaryInterceptor(interceptor.Unary()),
+		grpc.StreamInterceptor(interceptor.Stream()),
+	}
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server.config.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(serverOptions...)
+	reflection.Register(grpcServer)
 	security.RegisterSecurityServiceServer(grpcServer, userHandler)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)

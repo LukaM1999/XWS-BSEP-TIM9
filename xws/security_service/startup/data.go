@@ -1,20 +1,22 @@
 package startup
 
 import (
-	"dislinkt/security_service/domain"
+	auth "dislinkt/common/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var users = []*domain.User{
+var users = []*auth.User{
 	{
 		Id:       primitive.NewObjectID(),
 		Username: "admin",
 		Password: "admin",
+		Role:     "admin",
 	},
 	{
 		Id:       primitive.NewObjectID(),
 		Username: "user",
 		Password: "user",
+		Role:     "user",
 	},
 }
 

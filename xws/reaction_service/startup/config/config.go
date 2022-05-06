@@ -22,7 +22,7 @@ func NewConfig() *Config {
 		return nil
 	}
 	return &Config{
-		Port:           os.Getenv("SECURITY_SERVICE_PORT"),
+		Port:           os.Getenv("REACTION_SERVICE_PORT"),
 		ReactionDBHost: os.Getenv("REACTION_DB_HOST"),
 		ReactionDBPort: os.Getenv("REACTION_DB_PORT"),
 		NatsHost:       os.Getenv("NATS_HOST"),

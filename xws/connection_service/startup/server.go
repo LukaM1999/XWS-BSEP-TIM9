@@ -1,7 +1,10 @@
 package startup
 
 import (
+	"dislinkt/common/auth"
+	"dislinkt/common/client"
 	connection "dislinkt/common/proto/connection_service"
+	pbPost "dislinkt/common/proto/post_service"
 	"dislinkt/connection_service/application"
 	"dislinkt/connection_service/domain"
 	"dislinkt/connection_service/infrastructure/api"
@@ -13,6 +16,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
+	"time"
 )
 
 type Server struct {
@@ -29,15 +33,32 @@ const (
 	QueueGroup = "connection_service"
 )
 
+func accessibleRoles() map[string][]string {
+	const connectionServicePath = "/connection.ConnectionService/"
+
+	return map[string][]string{
+		//connectionServicePath + "Get":    {"user"},
+		//connectionServicePath + "Create": {"user"},
+		//connectionServicePath + "Update": {"user"},
+		//connectionServicePath + "Delete": {"user"},
+	}
+}
+
 func (server *Server) Start() {
 	mongoClient := server.initMongoClient()
 	connectionStore := server.initConnectionStore(mongoClient)
 
+	jwtManager := auth.NewJWTManager("secretKey", 30*time.Minute)
+
 	connectionService := server.initConnectionService(connectionStore)
 
-	connectionHandler := server.initConnectionHandler(connectionService)
+	postClient, err := client.NewPostClient(fmt.Sprintf("%s:%s", server.config.PostHost, server.config.PostPort))
+	if err != nil {
+		log.Fatal(err)
+	}
+	connectionHandler := server.initConnectionHandler(connectionService, postClient)
 
-	server.startGrpcServer(connectionHandler)
+	server.startGrpcServer(connectionHandler, jwtManager)
 }
 
 func (server *Server) initMongoClient() *mongo.Client {
@@ -73,16 +94,26 @@ func (server *Server) initConnectionService(store domain.ConnectionStore) *appli
 	return application.NewConnectionService(store)
 }
 
-func (server *Server) initConnectionHandler(service *application.ConnectionService) *api.ConnectionHandler {
-	return api.NewConnectionHandler(service)
+func (server *Server) initConnectionHandler(service *application.ConnectionService, postClient pbPost.PostServiceClient) *api.ConnectionHandler {
+	return api.NewConnectionHandler(service, postClient)
 }
 
-func (server *Server) startGrpcServer(connectionHandler *api.ConnectionHandler) {
+func (server *Server) startGrpcServer(connectionHandler *api.ConnectionHandler, jwtManager *auth.JWTManager) {
+	interceptor := auth.NewAuthInterceptor(jwtManager, accessibleRoles())
+	tlsCredentials, err := auth.LoadTLSServerCredentials()
+	if err != nil {
+		panic("cannot load TLS credentials: %w")
+	}
+	serverOptions := []grpc.ServerOption{
+		grpc.Creds(tlsCredentials),
+		grpc.UnaryInterceptor(interceptor.Unary()),
+		grpc.StreamInterceptor(interceptor.Stream()),
+	}
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server.config.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(serverOptions...)
 	reflection.Register(grpcServer)
 	connection.RegisterConnectionServiceServer(grpcServer, connectionHandler)
 	if err := grpcServer.Serve(listener); err != nil {

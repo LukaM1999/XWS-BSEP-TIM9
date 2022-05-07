@@ -1,6 +1,10 @@
 package startup
 
 import (
+	"dislinkt/common/auth"
+	"dislinkt/common/client"
+	pbComment "dislinkt/common/proto/comment_service"
+	pbPost "dislinkt/common/proto/post_service"
 	profile "dislinkt/common/proto/profile_service"
 	"dislinkt/profile_service/application"
 	"dislinkt/profile_service/domain"
@@ -13,6 +17,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
+	"time"
 )
 
 type Server struct {
@@ -29,15 +34,38 @@ const (
 	QueueGroup = "profile_service"
 )
 
+func accessibleRoles() map[string][]string {
+	const profileServicePath = "/profile.ProfileService/"
+
+	return map[string][]string{
+		//profileServicePath + "Get":    {"user"},
+		//profileServicePath + "GetAll":    {"user"},
+		//profileServicePath + "Create": {"user"},
+		//profileServicePath + "Update": {"user"},
+	}
+}
+
 func (server *Server) Start() {
 	mongoClient := server.initMongoClient()
 	profileStore := server.initProfileStore(mongoClient)
 
+	jwtManager := auth.NewJWTManager("secretKey", 30*time.Minute)
+
 	profileService := server.initProfileService(profileStore)
 
-	profileHandler := server.initProfileHandler(profileService)
+	postClient, err := client.NewPostClient(fmt.Sprintf("%s:%s", server.config.PostHost, server.config.PostPort))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	server.startGrpcServer(profileHandler)
+	commentClient, err := client.NewCommentClient(fmt.Sprintf("%s:%s", server.config.CommentHost, server.config.CommentPort))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	profileHandler := server.initProfileHandler(profileService, postClient, commentClient)
+
+	server.startGrpcServer(profileHandler, jwtManager)
 }
 
 func (server *Server) initMongoClient() *mongo.Client {
@@ -67,16 +95,27 @@ func (server *Server) initProfileService(store domain.ProfileStore) *application
 	return application.NewProfileService(store)
 }
 
-func (server *Server) initProfileHandler(service *application.ProfileService) *api.ProfileHandler {
-	return api.NewProfileHandler(service)
+func (server *Server) initProfileHandler(service *application.ProfileService, postClient pbPost.PostServiceClient,
+	commentClient pbComment.CommentServiceClient) *api.ProfileHandler {
+	return api.NewProfileHandler(service, postClient, commentClient)
 }
 
-func (server *Server) startGrpcServer(userHandler *api.ProfileHandler) {
+func (server *Server) startGrpcServer(userHandler *api.ProfileHandler, jwtManager *auth.JWTManager) {
+	interceptor := auth.NewAuthInterceptor(jwtManager, accessibleRoles())
+	tlsCredentials, err := auth.LoadTLSServerCredentials()
+	if err != nil {
+		panic("cannot load TLS credentials: %w")
+	}
+	serverOptions := []grpc.ServerOption{
+		grpc.Creds(tlsCredentials),
+		grpc.UnaryInterceptor(interceptor.Unary()),
+		grpc.StreamInterceptor(interceptor.Stream()),
+	}
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server.config.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(serverOptions...)
 	reflection.Register(grpcServer)
 	profile.RegisterProfileServiceServer(grpcServer, userHandler)
 	if err := grpcServer.Serve(listener); err != nil {

@@ -2,6 +2,7 @@ package application
 
 import (
 	"dislinkt/post_service/domain"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type PostService struct {
@@ -34,6 +35,14 @@ func (service *PostService) Update(id string, post *domain.Post) error {
 	return service.store.Update(id, post)
 }
 
+func (service *PostService) UpdateProfile(id primitive.ObjectID, profile *domain.Profile) error {
+	return service.store.UpdateProfile(id, profile)
+}
+
 func (service *PostService) Delete(id string) error {
 	return service.store.Delete(id)
+}
+
+func (service *PostService) CreateConnection(connection *domain.Connection) error {
+	return service.store.CreateConnection(connection)
 }

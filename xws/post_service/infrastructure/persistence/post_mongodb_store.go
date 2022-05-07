@@ -65,7 +65,7 @@ func (store *PostMongoDBStore) GetConnectionPosts(profileId string) ([]*domain.P
 	if err != nil {
 		return nil, err
 	}
-	filter := bson.D{{"$or", bson.A{bson.M{"_issuerId": id}, bson.M{"_subjectId": id}}}}
+	filter := bson.D{{"$or", bson.A{bson.M{"_issuerId": id}, bson.M{"_subjectId": id}}}, {"isApproved", true}}
 	connections, err := store.filterConnections(filter)
 	if err != nil {
 		return nil, err
@@ -132,6 +132,20 @@ func (store *PostMongoDBStore) Update(id string, post *domain.Post) error {
 	}
 	if result.MatchedCount == 0 {
 		return errors.New(post.Id.String())
+	}
+	return nil
+}
+
+func (store *PostMongoDBStore) UpdateProfile(id primitive.ObjectID, profile *domain.Profile) error {
+	posts, err := store.filter(bson.M{"profile._id": id})
+	if err != nil {
+		return err
+	}
+	for _, post := range posts {
+		_, err := store.posts.UpdateOne(context.TODO(), bson.M{"_id": post.Id}, bson.M{"$set": bson.M{"profile": profile}})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

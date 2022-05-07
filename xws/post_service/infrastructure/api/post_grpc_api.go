@@ -2,18 +2,27 @@ package api
 
 import (
 	"context"
+	pbComment "dislinkt/common/proto/comment_service"
 	pb "dislinkt/common/proto/post_service"
+	pbReaction "dislinkt/common/proto/reaction_service"
 	"dislinkt/post_service/application"
+	"dislinkt/post_service/domain"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type PostHandler struct {
 	pb.UnimplementedPostServiceServer
-	service *application.PostService
+	service        *application.PostService
+	commentClient  pbComment.CommentServiceClient
+	reactionClient pbReaction.ReactionServiceClient
 }
 
-func NewPostHandler(service *application.PostService) *PostHandler {
+func NewPostHandler(service *application.PostService, commentClient pbComment.CommentServiceClient,
+	reactionClient pbReaction.ReactionServiceClient) *PostHandler {
 	return &PostHandler{
-		service: service,
+		service:        service,
+		commentClient:  commentClient,
+		reactionClient: reactionClient,
 	}
 }
 
@@ -59,7 +68,7 @@ func (handler *PostHandler) GetConnectionPosts(ctx context.Context, request *pb.
 	return response, nil
 }
 
-func (handler PostHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
+func (handler *PostHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
 	post := mapPbToPost(request.Post)
 	err := handler.service.Create(post)
 	if err != nil {
@@ -70,7 +79,7 @@ func (handler PostHandler) Create(ctx context.Context, request *pb.CreateRequest
 	}, nil
 }
 
-func (handler PostHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
+func (handler *PostHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	id := request.Id
 	post := mapPbToPost(request.Post)
 	err := handler.service.Update(id, post)
@@ -87,5 +96,37 @@ func (handler *PostHandler) Delete(ctx context.Context, request *pb.DeleteReques
 	if err != nil {
 		return nil, err
 	}
+	handler.commentClient.DeletePostComments(context.TODO(), &pbComment.DeletePostCommentsRequest{PostId: request.Id})
+	handler.reactionClient.DeletePostReactions(context.TODO(), &pbReaction.DeletePostReactionsRequest{PostId: request.Id})
 	return &pb.DeleteResponse{}, nil
+}
+
+func (handler *PostHandler) CreateConnection(ctx context.Context, request *pb.CreateConnectionRequest) (*pb.CreateConnectionResponse, error) {
+	connection := mapPbToConnection(request.Connection)
+	err := handler.service.CreateConnection(connection)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CreateConnectionResponse{
+		Connection: mapConnectionToPb(connection),
+	}, nil
+}
+
+func (handler *PostHandler) UpdateProfile(ctx context.Context, request *pb.UpdateProfileRequest) (*pb.UpdateProfileResponse, error) {
+	id, err := primitive.ObjectIDFromHex(request.Profile.Id)
+	if err != nil {
+		return nil, err
+	}
+	profile := &domain.Profile{
+		Id:        id,
+		FirstName: request.Profile.FirstName,
+		LastName:  request.Profile.LastName,
+	}
+	err = handler.service.UpdateProfile(profile.Id, profile)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateProfileResponse{
+		Profile: request.Profile,
+	}, nil
 }

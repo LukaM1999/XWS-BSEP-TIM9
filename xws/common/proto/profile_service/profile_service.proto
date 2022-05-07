@@ -11,7 +11,7 @@ import "google/protobuf/timestamp.proto";
 service ProfileService{
   rpc Get(GetRequest) returns(GetResponse) {
     option (google.api.http) = {
-      get: "/profile/{username}"
+      get: "/profile/{id}"
     };
   }
   rpc GetAll(GetAllRequest) returns(GetAllResponse) {
@@ -27,14 +27,14 @@ service ProfileService{
   }
   rpc Update(UpdateRequest) returns(UpdateResponse) {
     option (google.api.http) = {
-      put: "/profile/{username}"
+      put: "/profile/{id}"
       body: "profile"
     };
   }
 }
 
 message GetRequest {
-  string username = 1;
+  string id = 1;
 }
 
 message GetResponse {
@@ -58,7 +58,7 @@ message CreateResponse {
 }
 
 message UpdateRequest {
-  string username = 1;
+  string id = 1;
   Profile profile = 2;
 }
 

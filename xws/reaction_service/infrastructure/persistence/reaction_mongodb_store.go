@@ -90,6 +90,14 @@ func (store *ReactionMongoDBStore) Delete(id string) error {
 	return nil
 }
 
+func (store *ReactionMongoDBStore) DeletePostReactions(postId primitive.ObjectID) error {
+	_, err := store.reactions.DeleteMany(context.TODO(), bson.M{"postId": postId})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (store *ReactionMongoDBStore) filter(filter interface{}) ([]*domain.Reaction, error) {
 	cursor, err := store.reactions.Find(context.TODO(), filter)
 	defer func(cursor *mongo.Cursor, ctx context.Context) {

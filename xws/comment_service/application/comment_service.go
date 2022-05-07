@@ -2,6 +2,7 @@ package application
 
 import (
 	"dislinkt/comment_service/domain"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type CommentService struct {
@@ -24,4 +25,12 @@ func (service *CommentService) Create(comment *domain.Comment) (*domain.Comment,
 
 func (service *CommentService) Delete(id string) error {
 	return service.store.Delete(id)
+}
+
+func (service *CommentService) UpdateCommentCreator(creatorId primitive.ObjectID, creator *domain.CommentCreator) error {
+	return service.store.UpdateCommentCreator(creatorId, creator)
+}
+
+func (service *CommentService) DeletePostComments(postId primitive.ObjectID) error {
+	return service.store.DeletePostComments(postId)
 }

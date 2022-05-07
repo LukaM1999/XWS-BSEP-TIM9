@@ -20,6 +20,7 @@ type ReactionServiceClient interface {
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Reaction(ctx context.Context, in *ReactionRequest, opts ...grpc.CallOption) (*ReactionResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
+	DeletePostReactions(ctx context.Context, in *DeletePostReactionsRequest, opts ...grpc.CallOption) (*DeletePostReactionsResponse, error)
 }
 
 type reactionServiceClient struct {
@@ -57,6 +58,15 @@ func (c *reactionServiceClient) Delete(ctx context.Context, in *DeleteRequest, o
 	return out, nil
 }
 
+func (c *reactionServiceClient) DeletePostReactions(ctx context.Context, in *DeletePostReactionsRequest, opts ...grpc.CallOption) (*DeletePostReactionsResponse, error) {
+	out := new(DeletePostReactionsResponse)
+	err := c.cc.Invoke(ctx, "/reaction.ReactionService/DeletePostReactions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ReactionServiceServer is the server API for ReactionService service.
 // All implementations must embed UnimplementedReactionServiceServer
 // for forward compatibility
@@ -64,6 +74,7 @@ type ReactionServiceServer interface {
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Reaction(context.Context, *ReactionRequest) (*ReactionResponse, error)
 	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
+	DeletePostReactions(context.Context, *DeletePostReactionsRequest) (*DeletePostReactionsResponse, error)
 	mustEmbedUnimplementedReactionServiceServer()
 }
 
@@ -79,6 +90,9 @@ func (*UnimplementedReactionServiceServer) Reaction(context.Context, *ReactionRe
 }
 func (*UnimplementedReactionServiceServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (*UnimplementedReactionServiceServer) DeletePostReactions(context.Context, *DeletePostReactionsRequest) (*DeletePostReactionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeletePostReactions not implemented")
 }
 func (*UnimplementedReactionServiceServer) mustEmbedUnimplementedReactionServiceServer() {}
 
@@ -140,6 +154,24 @@ func _ReactionService_Delete_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ReactionService_DeletePostReactions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePostReactionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReactionServiceServer).DeletePostReactions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/reaction.ReactionService/DeletePostReactions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReactionServiceServer).DeletePostReactions(ctx, req.(*DeletePostReactionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _ReactionService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "reaction.ReactionService",
 	HandlerType: (*ReactionServiceServer)(nil),
@@ -155,6 +187,10 @@ var _ReactionService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Delete",
 			Handler:    _ReactionService_Delete_Handler,
+		},
+		{
+			MethodName: "DeletePostReactions",
+			Handler:    _ReactionService_DeletePostReactions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

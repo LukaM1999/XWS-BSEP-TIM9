@@ -25,6 +25,17 @@ service CommentService{
       delete: "/comment/{id}"
     };
   }
+  rpc UpdateCommentCreator(UpdateCommentCreatorRequest) returns(UpdateCommentCreatorResponse) {
+    option (google.api.http) = {
+      put: "/comment/creator/{id}"
+      body: "commentCreator"
+    };
+  }
+  rpc DeletePostComments(DeletePostCommentsRequest) returns(DeletePostCommentsResponse) {
+    option (google.api.http) = {
+      delete: "/comment/post/{postId}"
+    };
+  }
 }
 
 message GetRequest {
@@ -60,7 +71,22 @@ message Comment {
 
 message CommentCreator {
   string id = 1;
-  string username = 2;
-  string firstName = 3;
-  string lastName = 4;
+  string firstName = 2;
+  string lastName = 3;
+}
+
+message UpdateCommentCreatorRequest {
+  string id = 1;
+  CommentCreator commentCreator = 2;
+}
+
+message UpdateCommentCreatorResponse {
+  CommentCreator commentCreator = 1;
+}
+
+message DeletePostCommentsRequest {
+  string postId = 1;
+}
+
+message DeletePostCommentsResponse {
 }

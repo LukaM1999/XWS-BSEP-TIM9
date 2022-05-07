@@ -62,6 +62,28 @@ func (store *CommentMongoDBStore) Delete(id string) error {
 	return nil
 }
 
+func (store *CommentMongoDBStore) UpdateCommentCreator(creatorId primitive.ObjectID, creator *domain.CommentCreator) error {
+	comments, err := store.filter(bson.M{"commentCreator._id": creatorId})
+	if err != nil {
+		return err
+	}
+	for _, comment := range comments {
+		_, err := store.comments.UpdateOne(context.TODO(), bson.M{"_id": comment.Id}, bson.M{"$set": bson.M{"commentCreator": creator}})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (store *CommentMongoDBStore) DeletePostComments(postId primitive.ObjectID) error {
+	_, err := store.comments.DeleteMany(context.TODO(), bson.M{"postId": postId})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (store *CommentMongoDBStore) filter(filter interface{}) ([]*domain.Comment, error) {
 	cursor, err := store.comments.Find(context.TODO(), filter)
 	defer func(cursor *mongo.Cursor, ctx context.Context) {

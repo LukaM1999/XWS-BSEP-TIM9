@@ -38,8 +38,12 @@ func NewProfileMongoDBStore(client *mongo.Client) domain.ProfileStore {
 	}
 }
 
-func (store *ProfileMongoDBStore) Get(username string) (*domain.Profile, error) {
-	filter := bson.M{"username": username}
+func (store *ProfileMongoDBStore) Get(profileId string) (*domain.Profile, error) {
+	id, err := primitive.ObjectIDFromHex(profileId)
+	if err != nil {
+		return nil, err
+	}
+	filter := bson.M{"_id": id}
 	return store.filterOne(filter)
 }
 
@@ -67,10 +71,14 @@ func toDoc(v interface{}) (doc *bson.D, err error) {
 	return
 }
 
-func (store *ProfileMongoDBStore) Update(username string, profile *domain.Profile) error {
+func (store *ProfileMongoDBStore) Update(profileId string, profile *domain.Profile) error {
+	id, err := primitive.ObjectIDFromHex(profileId)
+	if err != nil {
+		return err
+	}
 	result, err := store.profiles.ReplaceOne(
 		context.TODO(),
-		bson.M{"username": username},
+		bson.M{"_id": id},
 		profile,
 	)
 	if err != nil {

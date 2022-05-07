@@ -58,6 +58,24 @@ func mapPbToPost(pbPost *pb.Post) *domain.Post {
 	return post
 }
 
+func mapConnectionToPb(connection *domain.Connection) *pb.Connection {
+	return &pb.Connection{
+		Id:         connection.Id.Hex(),
+		IssuerId:   connection.IssuerId.Hex(),
+		SubjectId:  connection.SubjectId.Hex(),
+		IsApproved: connection.IsApproved,
+	}
+}
+
+func mapPbToConnection(pbConnection *pb.Connection) *domain.Connection {
+	return &domain.Connection{
+		Id:         getObjectId(pbConnection.Id),
+		IssuerId:   getObjectId(pbConnection.IssuerId),
+		SubjectId:  getObjectId(pbConnection.SubjectId),
+		IsApproved: pbConnection.IsApproved,
+	}
+}
+
 func getObjectId(id string) primitive.ObjectID {
 	if objectId, err := primitive.ObjectIDFromHex(id); err == nil {
 		return objectId

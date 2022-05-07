@@ -46,6 +46,20 @@ service PostService{
       body: "post"
     };
   }
+
+  rpc CreateConnection(CreateConnectionRequest) returns(CreateConnectionResponse) {
+    option (google.api.http) = {
+      post: "/post/connection"
+      body: "connection"
+    };
+  }
+  //Update profile
+  rpc UpdateProfile(UpdateProfileRequest) returns(UpdateProfileResponse) {
+    option (google.api.http) = {
+      patch: "/post/profile",
+      body: "profile"
+    };
+  }
 }
 
 message GetRequest {
@@ -88,6 +102,22 @@ message UpdateResponse {
   Post post = 1;
 }
 
+message CreateConnectionRequest {
+  Connection connection = 1;
+}
+
+message CreateConnectionResponse {
+  Connection connection = 1;
+}
+
+message UpdateProfileRequest {
+  Profile profile = 1;
+}
+
+message UpdateProfileResponse {
+  Profile profile = 1;
+}
+
 message Post {
   string id = 1;
   google.protobuf.Timestamp createdAt = 2;
@@ -106,3 +136,11 @@ message Content {
   string image = 2;
   repeated string links = 3;
 }
+
+message Connection {
+  string id = 1;
+  string issuerId = 2;
+  string subjectId = 3;
+  bool isApproved = 4;
+}
+

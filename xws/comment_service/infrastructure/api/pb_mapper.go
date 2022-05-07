@@ -13,7 +13,6 @@ func mapCommentToPb(comment *domain.Comment) *pb.Comment {
 		Content: comment.Content,
 		CommentCreator: &pb.CommentCreator{
 			Id:        comment.CommentCreator.Id.Hex(),
-			Username:  comment.CommentCreator.Username,
 			FirstName: comment.CommentCreator.FirstName,
 			LastName:  comment.CommentCreator.LastName,
 		},
@@ -30,7 +29,6 @@ func mapPbToComment(pbComment *pb.Comment) *domain.Comment {
 		Content: pbComment.Content,
 		CommentCreator: domain.CommentCreator{
 			Id:        getObjectId(pbComment.CommentCreator.Id),
-			Username:  pbComment.CommentCreator.Username,
 			FirstName: pbComment.CommentCreator.FirstName,
 			LastName:  pbComment.CommentCreator.LastName,
 		},

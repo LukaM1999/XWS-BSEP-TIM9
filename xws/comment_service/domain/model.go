@@ -15,7 +15,6 @@ type Comment struct {
 
 type CommentCreator struct {
 	Id        primitive.ObjectID `bson:"_id"`
-	Username  string             `bson:"username"`
 	FirstName string             `bson:"firstName"`
 	LastName  string             `bson:"lastName"`
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	pb "dislinkt/common/proto/reaction_service"
 	"dislinkt/reaction_service/application"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ReactionHandler struct {
@@ -49,4 +50,17 @@ func (handler *ReactionHandler) Delete(ctx context.Context, request *pb.DeleteRe
 		return nil, err
 	}
 	return &pb.DeleteResponse{}, nil
+}
+
+func (handler *ReactionHandler) DeletePostReactions(ctx context.Context,
+	request *pb.DeletePostReactionsRequest) (*pb.DeletePostReactionsResponse, error) {
+	postId, err := primitive.ObjectIDFromHex(request.PostId)
+	if err != nil {
+		return nil, err
+	}
+	err = handler.service.DeletePostReactions(postId)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeletePostReactionsResponse{}, nil
 }

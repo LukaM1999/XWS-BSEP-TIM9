@@ -28,7 +28,6 @@ func NewConnectionMongoDBStore(client *mongo.Client) domain.ConnectionStore {
 	}
 }
 
-//function to get all connections of a user where userId is equal to subjectId or IssuerId
 func (store *ConnectionMongoDBStore) Get(userId string) ([]*domain.Connection, error) {
 	id, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
@@ -54,7 +53,6 @@ func (store *ConnectionMongoDBStore) Create(connection *domain.Connection) (*dom
 	return connection, nil
 }
 
-//function to create new profilePrivacy
 func (store *ConnectionMongoDBStore) CreatePrivacy(privacy *domain.ProfilePrivacy) (*domain.ProfilePrivacy, error) {
 	result, err := store.profilesPrivacy.InsertOne(context.TODO(), privacy)
 	if err != nil {
@@ -76,7 +74,6 @@ func (store *ConnectionMongoDBStore) DeleteAll() error {
 	return nil
 }
 
-//function to delete a connection by id
 func (store *ConnectionMongoDBStore) Delete(id string) error {
 	Id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -90,7 +87,6 @@ func (store *ConnectionMongoDBStore) Delete(id string) error {
 	return nil
 }
 
-//function to find a connection by id and update it
 func (store *ConnectionMongoDBStore) Update(id string) (*domain.Connection, error) {
 	Id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

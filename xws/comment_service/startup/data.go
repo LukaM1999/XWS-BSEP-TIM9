@@ -12,7 +12,6 @@ var comments = []*domain.Comment{
 		Content: "Mnogo dobar post bate",
 		CommentCreator: domain.CommentCreator{
 			Id:        getObjectId("62706d1b624b3da748f63fe3"),
-			Username:  "admin",
 			FirstName: "Luka",
 			LastName:  "Miletic",
 		},

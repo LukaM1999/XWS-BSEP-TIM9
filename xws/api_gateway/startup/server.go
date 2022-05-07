@@ -2,9 +2,8 @@ package startup
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	cfg "dislinkt/api_gateway/startup/config"
+	"dislinkt/common/auth"
 	commentGw "dislinkt/common/proto/comment_service"
 	connectionGw "dislinkt/common/proto/connection_service"
 	postGw "dislinkt/common/proto/post_service"
@@ -14,8 +13,6 @@ import (
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -34,36 +31,8 @@ func NewServer(config *cfg.Config) *Server {
 	return server
 }
 
-func loadTLSCredentials() (credentials.TransportCredentials, error) {
-	// Load certificate of the CA who signed server's certificate
-	pemServerCA, err := ioutil.ReadFile("../../cert/ca-cert.pem")
-	if err != nil {
-		return nil, err
-	}
-
-	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(pemServerCA) {
-		return nil, fmt.Errorf("failed to add server CA's certificate")
-	}
-
-	// Load client's certificate and private key
-	clientCert, err := tls.LoadX509KeyPair("../../cert/client-cert.pem", "../../cert/client-key.pem")
-	if err != nil {
-		return nil, err
-	}
-
-	// Create the credentials and return it
-	config := &tls.Config{
-		Certificates: []tls.Certificate{clientCert},
-		RootCAs:      certPool,
-		//InsecureSkipVerify: true,
-	}
-
-	return credentials.NewTLS(config), nil
-}
-
 func (server *Server) initHandlers() {
-	tlsCredentials, err := loadTLSCredentials()
+	tlsCredentials, err := auth.LoadTLSClientCredentials()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(tlsCredentials)}
 	securityEndpoint := fmt.Sprintf("%s:%s", server.config.SecurityHost, server.config.SecurityPort)
 	err = securityGw.RegisterSecurityServiceHandlerFromEndpoint(context.TODO(), server.mux, securityEndpoint, opts)

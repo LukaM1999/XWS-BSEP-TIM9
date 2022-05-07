@@ -6,12 +6,14 @@ import (
 	"dislinkt/comment_service/infrastructure/api"
 	"dislinkt/comment_service/infrastructure/persistence"
 	"dislinkt/comment_service/startup/config"
+	"dislinkt/common/auth"
 	comment "dislinkt/common/proto/comment_service"
 	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"time"
 )
 
 type Server struct {
@@ -28,15 +30,27 @@ const (
 	QueueGroup = "comment_service"
 )
 
+func accessibleRoles() map[string][]string {
+	const commentServicePath = "/comment.CommentService/"
+
+	return map[string][]string{
+		//commentServicePath + "Get":    {"user"},
+		//commentServicePath + "Create": {"user"},
+		//commentServicePath + "Delete":    {"user"},
+	}
+}
+
 func (server *Server) Start() {
 	mongoClient := server.initMongoClient()
 	commentStore := server.initCommentStore(mongoClient)
 
 	commentService := server.initCommentService(commentStore)
 
+	jwtManager := auth.NewJWTManager("secretKey", 30*time.Minute)
+
 	commentHandler := server.initCommentHandler(commentService)
 
-	server.startGrpcServer(commentHandler)
+	server.startGrpcServer(commentHandler, jwtManager)
 }
 
 func (server *Server) initMongoClient() *mongo.Client {
@@ -70,12 +84,22 @@ func (server *Server) initCommentHandler(service *application.CommentService) *a
 	return api.NewCommentHandler(service)
 }
 
-func (server *Server) startGrpcServer(commentHandler *api.CommentHandler) {
+func (server *Server) startGrpcServer(commentHandler *api.CommentHandler, jwtManager *auth.JWTManager) {
+	interceptor := auth.NewAuthInterceptor(jwtManager, accessibleRoles())
+	tlsCredentials, err := auth.LoadTLSServerCredentials()
+	if err != nil {
+		panic("cannot load TLS credentials: %w")
+	}
+	serverOptions := []grpc.ServerOption{
+		grpc.Creds(tlsCredentials),
+		grpc.UnaryInterceptor(interceptor.Unary()),
+		grpc.StreamInterceptor(interceptor.Stream()),
+	}
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server.config.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(serverOptions...)
 	comment.RegisterCommentServiceServer(grpcServer, commentHandler)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)

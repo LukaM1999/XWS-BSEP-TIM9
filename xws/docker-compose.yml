@@ -38,6 +38,10 @@ services:
       PROFILE_DB_HOST: ${PROFILE_DB_HOST}
       PROFILE_DB_PORT: ${PROFILE_DB_PORT}
       PROFILE_SERVICE_PORT: ${PROFILE_SERVICE_PORT}
+      POST_SERVICE_HOST: ${POST_SERVICE_HOST}
+      POST_SERVICE_PORT: ${POST_SERVICE_PORT}
+      COMMENT_SERVICE_HOST: ${COMMENT_SERVICE_HOST}
+      COMMENT_SERVICE_PORT: ${COMMENT_SERVICE_PORT}
       NATS_HOST: ${NATS_HOST}
       NATS_PORT: ${NATS_PORT}
       NATS_USER: ${NATS_USER}
@@ -100,11 +104,15 @@ services:
       context: .
       dockerfile: ./connection_service/Dockerfile
     restart: on-failure
+    ports:
+      - 8005:${CONNECTION_SERVICE_PORT}
     environment:
       OS_ENV: docker
       CONNECTION_DB_HOST: ${CONNECTION_DB_HOST}
       CONNECTION_DB_PORT: ${CONNECTION_DB_PORT}
       CONNECTION_SERVICE_PORT: ${CONNECTION_SERVICE_PORT}
+      POST_SERVICE_HOST: ${POST_SERVICE_HOST}
+      POST_SERVICE_PORT: ${POST_SERVICE_PORT}
       NATS_HOST: ${NATS_HOST}
       NATS_PORT: ${NATS_PORT}
       NATS_USER: ${NATS_USER}
@@ -122,12 +130,16 @@ services:
       dockerfile: ./post_service/Dockerfile
     restart: on-failure
     ports:
-      - 8001:${POST_SERVICE_PORT}
+      - 8006:${POST_SERVICE_PORT}
     environment:
       OS_ENV: docker
       POST_DB_HOST: ${POST_DB_HOST}
       POST_DB_PORT: ${POST_DB_PORT}
       POST_SERVICE_PORT: ${POST_SERVICE_PORT}
+      COMMENT_SERVICE_HOST: ${COMMENT_SERVICE_HOST}
+      COMMENT_SERVICE_PORT: ${COMMENT_SERVICE_PORT}
+      REACTION_SERVICE_HOST: ${REACTION_SERVICE_HOST}
+      REACTION_SERVICE_PORT: ${REACTION_SERVICE_PORT}
       NATS_HOST: ${NATS_HOST}
       NATS_PORT: ${NATS_PORT}
       NATS_USER: ${NATS_USER}
@@ -175,8 +187,8 @@ services:
     image: mongo
     container_name: profile_db
     restart: on-failure
-    ports:
-      - 27018:${PROFILE_DB_PORT}
+#    ports:
+#      - 27017:${PROFILE_DB_PORT}
     networks:
       - network
 
@@ -184,8 +196,8 @@ services:
     image: mongo
     container_name: comment_db
     restart: on-failure
-    ports:
-      - 27019:${COMMENT_DB_PORT}
+#    ports:
+#      - 27017:${COMMENT_DB_PORT}
     networks:
       - network
 
@@ -193,8 +205,8 @@ services:
     image: mongo
     container_name: reaction_db
     restart: on-failure
-    ports:
-      - 27020:${REACTION_DB_PORT}
+#    ports:
+#      - 27017:${REACTION_DB_PORT}
     networks:
       - network
 
@@ -202,6 +214,8 @@ services:
     image: mongo
     container_name: connection_db
     restart: on-failure
+#    ports:
+#      - 27017:${CONNECTION_DB_PORT}
     networks:
       - network
 
@@ -209,6 +223,8 @@ services:
     image: mongo
     container_name: post_db
     restart: on-failure
+#    ports:
+#      - 27017:${POST_DB_PORT}
     networks:
       - network
 

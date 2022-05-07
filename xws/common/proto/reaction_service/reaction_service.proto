@@ -24,6 +24,12 @@ service ReactionService{
       delete: "/reaction/{id}"
     };
   }
+
+  rpc DeletePostReactions(DeletePostReactionsRequest) returns(DeletePostReactionsResponse) {
+    option (google.api.http) = {
+      delete: "/reaction/post/{postId}"
+    };
+  }
 }
 
 message GetRequest {
@@ -64,4 +70,11 @@ message Reaction {
   }
   ReactionType type = 4;
   google.protobuf.Timestamp createdAt = 5;
+}
+
+message DeletePostReactionsRequest {
+  string postId = 1;
+}
+
+message DeletePostReactionsResponse {
 }

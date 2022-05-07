@@ -25,7 +25,8 @@ type Profile struct {
 }
 
 type Connection struct {
-	Id        primitive.ObjectID `bson:"_id"`
-	IssuerId  primitive.ObjectID `bson:"_issuerId"`
-	SubjectId primitive.ObjectID `bson:"_subjectId"`
+	Id         primitive.ObjectID `bson:"_id"`
+	IssuerId   primitive.ObjectID `bson:"_issuerId"`
+	SubjectId  primitive.ObjectID `bson:"_subjectId"`
+	IsApproved bool               `bson:"isApproved"`
 }

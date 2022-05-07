@@ -8,9 +8,10 @@ import (
 
 var connections = []*domain.Connection{
 	{
-		Id:        getObjectId("62706d1b624b3da748f63fe1"),
-		IssuerId:  getObjectId("62706d1b624b3da748f63fe3"),
-		SubjectId: getObjectId("62706d1b624b3da748f63fe5"),
+		Id:         getObjectId("62706d1b624b3da748f63fe1"),
+		IssuerId:   getObjectId("62706d1b624b3da748f63fe3"),
+		SubjectId:  getObjectId("62706d1b624b3da748f63fe5"),
+		IsApproved: true,
 	},
 }
 

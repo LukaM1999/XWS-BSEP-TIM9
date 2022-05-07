@@ -14,8 +14,8 @@ func NewProfileService(store domain.ProfileStore) *ProfileService {
 	}
 }
 
-func (service *ProfileService) Get(username string) (*domain.Profile, error) {
-	return service.store.Get(username)
+func (service *ProfileService) Get(profileId string) (*domain.Profile, error) {
+	return service.store.Get(profileId)
 }
 
 func (service *ProfileService) GetAll(search string) ([]*domain.Profile, error) {
@@ -26,6 +26,6 @@ func (service *ProfileService) Create(profile *domain.Profile) error {
 	return service.store.Create(profile)
 }
 
-func (service *ProfileService) Update(username string, profile *domain.Profile) error {
-	return service.store.Update(username, profile)
+func (service *ProfileService) Update(profileId string, profile *domain.Profile) error {
+	return service.store.Update(profileId, profile)
 }

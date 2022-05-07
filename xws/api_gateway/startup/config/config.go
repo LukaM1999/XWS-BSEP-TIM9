@@ -18,6 +18,8 @@ type Config struct {
 	ReactionPort   string
 	ConnectionHost string
 	ConnectionPort string
+	PostHost       string
+	PostPort       string
 }
 
 func NewConfig() *Config {
@@ -37,6 +39,8 @@ func NewConfig() *Config {
 		ReactionPort:   os.Getenv("REACTION_SERVICE_PORT"),
 		ConnectionHost: os.Getenv("CONNECTION_SERVICE_HOST"),
 		ConnectionPort: os.Getenv("CONNECTION_SERVICE_PORT"),
+		PostHost:       os.Getenv("POST_SERVICE_HOST"),
+		PostPort:       os.Getenv("POST_SERVICE_PORT"),
 	}
 }
 

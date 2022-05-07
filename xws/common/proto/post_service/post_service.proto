@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+option go_package = "dislinkt/common/post";
+
+package post;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+
+service PostService{
+  rpc Get(GetRequest) returns(GetResponse) {
+    option (google.api.http) = {
+      get: "/post/{id}"
+    };
+  }
+
+  rpc GetProfilePosts(GetPostRequest) returns(GetPostsResponse) {
+    option (google.api.http) = {
+      get: "/post/profile/{profileId}"
+    };
+  }
+
+  rpc GetConnectionPosts(GetPostRequest) returns(GetPostsResponse) {
+    option (google.api.http) = {
+      get: "/post/connection/{profileId}"
+    };
+  }
+
+  rpc Create(CreateRequest) returns(CreateResponse) {
+    option (google.api.http) = {
+      post: "/post"
+      body: "post"
+    };
+  }
+
+  rpc Delete(DeleteRequest) returns(DeleteResponse) {
+    option (google.api.http) = {
+      delete: "/post/{id}"
+    };
+  }
+
+  rpc Update(UpdateRequest) returns(UpdateResponse) {
+    option (google.api.http) = {
+      put: "/post/{id}",
+      body: "post"
+    };
+  }
+}
+
+message GetRequest {
+  string id = 1;
+}
+
+message GetPostRequest {
+  string profileId = 1;
+}
+
+message GetPostsResponse {
+  repeated Post posts = 1;
+}
+
+message GetResponse {
+   Post post = 1;
+}
+
+message CreateRequest {
+  Post post = 1;
+}
+
+message CreateResponse {
+  Post post = 1;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+}
+
+message UpdateRequest {
+  string id = 1;
+  Post post = 2;
+}
+
+message UpdateResponse {
+  Post post = 1;
+}
+
+message Post {
+  string id = 1;
+  google.protobuf.Timestamp createdAt = 2;
+  Profile profile = 3;
+  Content content = 4;
+}
+
+message Profile {
+  string id = 1;
+  string firstName = 2;
+  string lastName = 3;
+}
+
+message Content {
+  string text = 1;
+  string image = 2;
+  repeated string links = 3;
+}

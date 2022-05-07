@@ -114,6 +114,29 @@ services:
     networks:
       - network
 
+  post_service:
+    image: post_service
+    container_name: post_service
+    build:
+      context: .
+      dockerfile: ./post_service/Dockerfile
+    restart: on-failure
+    ports:
+      - 8001:${POST_SERVICE_PORT}
+    environment:
+      OS_ENV: docker
+      POST_DB_HOST: ${POST_DB_HOST}
+      POST_DB_PORT: ${POST_DB_PORT}
+      POST_SERVICE_PORT: ${POST_SERVICE_PORT}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+    depends_on:
+      - post_db
+    networks:
+      - network
+
   api_gateway:
     image: api_gateway
     container_name: api_gateway
@@ -134,6 +157,8 @@ services:
       COMMENT_SERVICE_PORT: ${COMMENT_SERVICE_PORT}
       REACTION_SERVICE_HOST: ${REACTION_SERVICE_HOST}
       REACTION_SERVICE_PORT: ${REACTION_SERVICE_PORT}
+      POST_SERVICE_HOST: ${POST_SERVICE_HOST}
+      POST_SERVICE_PORT: ${POST_SERVICE_PORT}
     networks:
       - network
 
@@ -176,6 +201,13 @@ services:
   connection_db:
     image: mongo
     container_name: connection_db
+    restart: on-failure
+    networks:
+      - network
+
+  post_db:
+    image: mongo
+    container_name: post_db
     restart: on-failure
     networks:
       - network

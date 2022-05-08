@@ -18,14 +18,14 @@ var connections = []*domain.Connection{
 
 var profilesPrivacy = []*domain.ProfilePrivacy{
 	{
-		Id:       primitive.NewObjectID(),
-		UserId:   getObjectId("62706d1b624b3da748f63fe3"),
-		IsPublic: true,
+		Id:        primitive.NewObjectID(),
+		UserId:    getObjectId("62706d1b624b3da748f63fe3"),
+		IsPrivate: false,
 	},
 	{
-		Id:       primitive.NewObjectID(),
-		UserId:   getObjectId("62706d1b624b3da748f63fe5"),
-		IsPublic: true,
+		Id:        primitive.NewObjectID(),
+		UserId:    getObjectId("62706d1b624b3da748f63fe5"),
+		IsPrivate: false,
 	},
 }
 

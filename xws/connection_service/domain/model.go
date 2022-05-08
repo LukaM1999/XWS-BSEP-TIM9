@@ -14,7 +14,7 @@ type Connection struct {
 }
 
 type ProfilePrivacy struct {
-	Id       primitive.ObjectID `bson:"_id"`
-	UserId   primitive.ObjectID `bson:"userId"`
-	IsPublic bool               `bson:"isPublic"`
+	Id        primitive.ObjectID `bson:"_id"`
+	UserId    primitive.ObjectID `bson:"userId"`
+	IsPrivate bool               `bson:"isPrivate"`
 }

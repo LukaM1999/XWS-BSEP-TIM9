@@ -75,11 +75,12 @@ message Profile {
   string phoneNumber = 6;
   string email = 7;
   string gender = 8;
-  string biography = 9;
-  repeated Education education = 10;
-  repeated WorkExperience workExperience = 11;
-  repeated string skills = 12;
-  repeated string interests = 13;
+  bool isPrivate = 9;
+  string biography = 10;
+  repeated Education education = 11;
+  repeated WorkExperience workExperience = 12;
+  repeated string skills = 13;
+  repeated string interests = 14;
 }
 
 message Education{

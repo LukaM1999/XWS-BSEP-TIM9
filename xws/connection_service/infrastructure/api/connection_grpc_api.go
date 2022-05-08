@@ -39,7 +39,6 @@ func (handler *ConnectionHandler) Create(ctx context.Context, request *pb.Create
 	connection := mapPbToConnection(request.Connection)
 	newConnection, err := handler.service.Create(connection)
 	if err != nil {
-		handler.service.Delete(newConnection.Id.Hex())
 		return nil, err
 	}
 	if newConnection.IsApproved {

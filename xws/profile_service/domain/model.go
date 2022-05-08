@@ -15,6 +15,7 @@ type Profile struct {
 	PhoneNumber    string             `bson:"phoneNumber"`
 	Email          string             `bson:"email"`
 	Gender         string             `bson:"gender"`
+	IsPrivate      bool               `bson:"isPrivate"`
 	Biography      string             `bson:"biography"`
 	Education      []Education        `bson:"education"`
 	WorkExperience []WorkExperience   `bson:"workExperience"`

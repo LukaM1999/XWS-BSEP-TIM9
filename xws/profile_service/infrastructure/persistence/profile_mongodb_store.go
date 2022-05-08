@@ -48,7 +48,7 @@ func (store *ProfileMongoDBStore) Get(profileId string) (*domain.Profile, error)
 }
 
 func (store *ProfileMongoDBStore) GetAll(search string) ([]*domain.Profile, error) {
-	filter := bson.D{{"fullName", bson.M{"$regex": "^.*" + search + ".*$"}}}
+	filter := bson.D{{"fullName", bson.M{"$regex": "^.*" + search + ".*$"}}, {"isPrivate", false}}
 	return store.filter(filter, search)
 }
 
@@ -59,16 +59,6 @@ func (store *ProfileMongoDBStore) Create(profile *domain.Profile) error {
 	}
 	profile.Id = result.InsertedID.(primitive.ObjectID)
 	return nil
-}
-
-func toDoc(v interface{}) (doc *bson.D, err error) {
-	data, err := bson.Marshal(v)
-	if err != nil {
-		return
-	}
-
-	err = bson.Unmarshal(data, &doc)
-	return
 }
 
 func (store *ProfileMongoDBStore) Update(profileId string, profile *domain.Profile) error {

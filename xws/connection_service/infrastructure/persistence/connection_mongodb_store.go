@@ -39,12 +39,12 @@ func (store *ConnectionMongoDBStore) Get(userId string) ([]*domain.Connection, e
 }
 
 func (store *ConnectionMongoDBStore) Create(connection *domain.Connection) (*domain.Connection, error) {
-	filter := bson.M{"userId": connection.SubjectId}
-	privacy, err := store.filterOnePrivacy(filter)
-	if err != nil {
-		return nil, err
-	}
-	connection.IsApproved = privacy.IsPublic
+	//filter := bson.M{"userId": connection.SubjectId}
+	//privacy, err := store.filterOnePrivacy(filter)
+	//if err != nil {
+	//	return nil, err
+	//}
+	connection.IsApproved = true
 	result, err := store.connections.InsertOne(context.TODO(), connection)
 	if err != nil {
 		return nil, err

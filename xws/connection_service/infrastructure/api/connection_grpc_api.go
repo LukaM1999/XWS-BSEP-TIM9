@@ -42,12 +42,14 @@ func (handler *ConnectionHandler) Create(ctx context.Context, request *pb.Create
 		handler.service.Delete(newConnection.Id.Hex())
 		return nil, err
 	}
-	_, err = handler.postClient.CreateConnection(context.TODO(), &pbPost.CreateConnectionRequest{
-		Connection: mapConnectionToPostConnectionPb(newConnection),
-	})
-	if err != nil {
-		handler.service.Delete(newConnection.Id.Hex())
-		return nil, err
+	if newConnection.IsApproved {
+		_, err = handler.postClient.CreateConnection(context.TODO(), &pbPost.CreateConnectionRequest{
+			Connection: mapConnectionToPostConnectionPb(newConnection),
+		})
+		if err != nil {
+			handler.service.Delete(newConnection.Id.Hex())
+			return nil, err
+		}
 	}
 	return &pb.CreateResponse{
 		Connection: mapConnectionToPb(newConnection),
@@ -59,6 +61,7 @@ func (handler *ConnectionHandler) Delete(ctx context.Context, request *pb.Delete
 	if err != nil {
 		return nil, err
 	}
+	handler.postClient.DeleteConnection(context.TODO(), &pbPost.DeleteRequest{Id: request.Id})
 	return &pb.DeleteResponse{}, nil
 }
 
@@ -66,6 +69,14 @@ func (handler *ConnectionHandler) Update(ctx context.Context, request *pb.Update
 	connection, err := handler.service.Update(request.Id)
 	if err != nil {
 		return nil, err
+	}
+	if connection.IsApproved {
+		_, err = handler.postClient.CreateConnection(context.TODO(), &pbPost.CreateConnectionRequest{
+			Connection: mapConnectionToPostConnectionPb(connection),
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &pb.UpdateResponse{
 		Connection: mapConnectionToPb(connection),

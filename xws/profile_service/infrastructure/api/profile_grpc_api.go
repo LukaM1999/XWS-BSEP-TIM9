@@ -5,23 +5,26 @@ import (
 	pbComment "dislinkt/common/proto/comment_service"
 	pbPost "dislinkt/common/proto/post_service"
 	pb "dislinkt/common/proto/profile_service"
+	pbSecurity "dislinkt/common/proto/security_service"
 	"dislinkt/profile_service/application"
 	"strings"
 )
 
 type ProfileHandler struct {
 	pb.UnimplementedProfileServiceServer
-	service       *application.ProfileService
-	postClient    pbPost.PostServiceClient
-	commentClient pbComment.CommentServiceClient
+	service        *application.ProfileService
+	postClient     pbPost.PostServiceClient
+	commentClient  pbComment.CommentServiceClient
+	securityClient pbSecurity.SecurityServiceClient
 }
 
 func NewProfileHandler(service *application.ProfileService, postClient pbPost.PostServiceClient,
-	commentClient pbComment.CommentServiceClient) *ProfileHandler {
+	commentClient pbComment.CommentServiceClient, securityClient pbSecurity.SecurityServiceClient) *ProfileHandler {
 	return &ProfileHandler{
-		service:       service,
-		postClient:    postClient,
-		commentClient: commentClient,
+		service:        service,
+		postClient:     postClient,
+		commentClient:  commentClient,
+		securityClient: securityClient,
 	}
 }
 
@@ -99,6 +102,12 @@ func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequ
 			handler.service.Update(profileId, oldProfile)
 			return nil, err
 		}
+	}
+	if oldProfile.Username != profile.Username {
+		handler.securityClient.Update(context.Background(), &pbSecurity.UpdateRequest{
+			Id:       profileId,
+			Username: profile.Username,
+		})
 	}
 	return &pb.UpdateResponse{
 		Profile: mapProfileToPb(profile),

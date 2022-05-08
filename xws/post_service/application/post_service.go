@@ -46,3 +46,7 @@ func (service *PostService) Delete(id string) error {
 func (service *PostService) CreateConnection(connection *domain.Connection) error {
 	return service.store.CreateConnection(connection)
 }
+
+func (service *PostService) DeleteConnection(id primitive.ObjectID) error {
+	return service.store.DeleteConnection(id)
+}

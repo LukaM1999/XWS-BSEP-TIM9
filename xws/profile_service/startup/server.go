@@ -6,6 +6,7 @@ import (
 	pbComment "dislinkt/common/proto/comment_service"
 	pbPost "dislinkt/common/proto/post_service"
 	profile "dislinkt/common/proto/profile_service"
+	pbSecurity "dislinkt/common/proto/security_service"
 	"dislinkt/profile_service/application"
 	"dislinkt/profile_service/domain"
 	"dislinkt/profile_service/infrastructure/api"
@@ -63,7 +64,12 @@ func (server *Server) Start() {
 		log.Fatal(err)
 	}
 
-	profileHandler := server.initProfileHandler(profileService, postClient, commentClient)
+	securityClient, err := client.NewSecurityClient(fmt.Sprintf("%s:%s", server.config.SecurityHost, server.config.SecurityPort))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	profileHandler := server.initProfileHandler(profileService, postClient, commentClient, securityClient)
 
 	server.startGrpcServer(profileHandler, jwtManager)
 }
@@ -96,8 +102,8 @@ func (server *Server) initProfileService(store domain.ProfileStore) *application
 }
 
 func (server *Server) initProfileHandler(service *application.ProfileService, postClient pbPost.PostServiceClient,
-	commentClient pbComment.CommentServiceClient) *api.ProfileHandler {
-	return api.NewProfileHandler(service, postClient, commentClient)
+	commentClient pbComment.CommentServiceClient, securityClient pbSecurity.SecurityServiceClient) *api.ProfileHandler {
+	return api.NewProfileHandler(service, postClient, commentClient, securityClient)
 }
 
 func (server *Server) startGrpcServer(userHandler *api.ProfileHandler, jwtManager *auth.JWTManager) {

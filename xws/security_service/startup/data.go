@@ -7,7 +7,7 @@ import (
 
 var users = []*auth.User{
 	{
-		Id:       primitive.NewObjectID(),
+		Id:       getObjectId("62706d1b624b3da748f63fe3"),
 		Username: "admin",
 		Password: "admin",
 		Role:     "admin",

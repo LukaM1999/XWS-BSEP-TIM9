@@ -10,6 +10,8 @@ type Config struct {
 	Port                      string
 	SecurityDBHost            string
 	SecurityDBPort            string
+	ProfileHost               string
+	ProfilePort               string
 	NatsHost                  string
 	NatsPort                  string
 	NatsUser                  string
@@ -27,6 +29,8 @@ func NewConfig() *Config {
 		Port:                      os.Getenv("SECURITY_SERVICE_PORT"),
 		SecurityDBHost:            os.Getenv("SECURITY_DB_HOST"),
 		SecurityDBPort:            os.Getenv("SECURITY_DB_PORT"),
+		ProfileHost:               os.Getenv("PROFILE_SERVICE_HOST"),
+		ProfilePort:               os.Getenv("PROFILE_SERVICE_PORT"),
 		NatsHost:                  os.Getenv("NATS_HOST"),
 		NatsPort:                  os.Getenv("NATS_PORT"),
 		NatsUser:                  os.Getenv("NATS_USER"),

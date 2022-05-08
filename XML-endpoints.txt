@@ -1,0 +1,72 @@
+Security service:
+POST Register /security/user -> POST Create /profile
+POST Login /security/login
+GET GetAll /security/user
+GET Get  /security/user/{username}
+PATCH Update /security/user/{id}
+
+
+Profile service:
+POST Create /profile
+GET GetAll /profile?search=fullName
+GET Get /profile/{id}
+PUT Update /profile/{id} -> Update /security/user/{id} and UpdateProfile /post/profile
+
+
+Posts service:
+POST Create /post
+GET GetProfilePosts /post/profile/{profileId}
+GET GetConnectionPosts /post/connection/{profileId}
+GET Get /post/{id}
+DELETE Delete /post/{id} -> DeletePostComments /comment/post/{postId} and DeletePostReactions /reaction/post/{postId}
+PUT Update /post/{id}
+POST CreateConnection /post/connection
+DELETE DeleteConnection /post/connection/{id}
+PUT UpdateProfile /post/profile
+
+
+Reaction service:
+POST Reaction /reaction
+DELETE Delete /reaction/{id}
+DELETE DeletePostReactions /reaction/post/{postId}
+GET Get /reaction/post/{postId}
+
+
+Connection service:
+POST Create /connection -> POST CreateConnection /post/connection
+DELETE Delete /connection/{id} -> DELETE DeleteConnection /post/connection/{id}
+GET Get /connection/{userId}
+PUT Update /connection/{id} -> POST CreateConnection /post/connection
+
+
+Comment service:
+GET Get /comment/post/{postId}
+POST Create /comment
+DELETE Delete /comment/{id}
+DELETE DeletePostComments /comment/post/{postId}
+
+
+Messaging service:
+/
+
+Notification service:
+/
+
+Agent service:
+/
+
+Recommendation service:
+/
+
+Job service:
+/
+
+
+
+
+
+
+
+
+
+

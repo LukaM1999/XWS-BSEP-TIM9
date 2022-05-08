@@ -7,7 +7,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-//Function to return a pb.User from a domain.User
 func mapPostToPb(post *domain.Post) *pb.Post {
 	pbProfile := &pb.Profile{
 		Id:        post.Profile.Id.Hex(),
@@ -33,7 +32,6 @@ func mapPostToPb(post *domain.Post) *pb.Post {
 	return pbPost
 }
 
-//Function to return a domain.User from a pb.User
 func mapPbToPost(pbPost *pb.Post) *domain.Post {
 	profile := &domain.Profile{
 		Id:        getObjectId(pbPost.Profile.Id),
@@ -60,19 +58,17 @@ func mapPbToPost(pbPost *pb.Post) *domain.Post {
 
 func mapConnectionToPb(connection *domain.Connection) *pb.Connection {
 	return &pb.Connection{
-		Id:         connection.Id.Hex(),
-		IssuerId:   connection.IssuerId.Hex(),
-		SubjectId:  connection.SubjectId.Hex(),
-		IsApproved: connection.IsApproved,
+		Id:        connection.Id.Hex(),
+		IssuerId:  connection.IssuerId.Hex(),
+		SubjectId: connection.SubjectId.Hex(),
 	}
 }
 
 func mapPbToConnection(pbConnection *pb.Connection) *domain.Connection {
 	return &domain.Connection{
-		Id:         getObjectId(pbConnection.Id),
-		IssuerId:   getObjectId(pbConnection.IssuerId),
-		SubjectId:  getObjectId(pbConnection.SubjectId),
-		IsApproved: pbConnection.IsApproved,
+		Id:        getObjectId(pbConnection.Id),
+		IssuerId:  getObjectId(pbConnection.IssuerId),
+		SubjectId: getObjectId(pbConnection.SubjectId),
 	}
 }
 

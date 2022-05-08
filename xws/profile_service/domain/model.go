@@ -40,9 +40,3 @@ type WorkExperience struct {
 	StartDate      time.Time `bson:"startDate"`
 	EndDate        time.Time `bson:"endDate"`
 }
-
-type User struct {
-	Id       primitive.ObjectID `bson:"_id"`
-	Username string             `bson:"username"`
-	Password string             `bson:"password"`
-}

@@ -20,7 +20,13 @@ service SecurityService{
   rpc Register(RegisterRequest) returns(RegisterResponse) {
     option (google.api.http) = {
       post: "/security/user"
-      body: "user"
+      body: "*"
+    };
+  }
+  rpc Update(UpdateRequest) returns(UpdateResponse) {
+    option (google.api.http) = {
+      patch: "/security/user/{id}"
+      body: "*"
     };
   }
   rpc Login(LoginRequest) returns (LoginResponse) {
@@ -28,7 +34,7 @@ service SecurityService{
       post : "/security/login"
       body : "*"
     };
-  };
+  }
 }
 
 message GetRequest {
@@ -47,7 +53,12 @@ message GetAllResponse {
 }
 
 message RegisterRequest {
-  User user = 1;
+  string username = 1;
+  string password = 2;
+  string role = 3;
+  string firstName = 4;
+  string lastName = 5;
+  string email = 6;
 }
 
 message RegisterResponse {
@@ -67,3 +78,12 @@ message LoginRequest {
 }
 
 message LoginResponse { string access_token = 1; }
+
+message UpdateRequest {
+  string id = 1;
+  string username = 2;
+}
+
+message UpdateResponse {
+  string username = 1;
+}

@@ -8,6 +8,7 @@ type PostStore interface {
 	GetConnectionPosts(profileId string) ([]*Post, error)
 	Create(post *Post) error
 	CreateConnection(connection *Connection) error
+	DeleteConnection(id primitive.ObjectID) error
 	Update(id string, post *Post) error
 	UpdateProfile(id primitive.ObjectID, profile *Profile) error
 	Delete(id string) error

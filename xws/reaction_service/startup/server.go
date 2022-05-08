@@ -35,7 +35,7 @@ func accessibleRoles() map[string][]string {
 	const reactionServicePath = "/reaction.ReactionService/"
 
 	return map[string][]string{
-		reactionServicePath + "Reaction": {"user"},
+		//reactionServicePath + "Reaction": {"user"},
 	}
 }
 

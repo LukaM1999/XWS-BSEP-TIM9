@@ -2,6 +2,8 @@ package startup
 
 import (
 	"dislinkt/common/auth"
+	"dislinkt/common/client"
+	profile "dislinkt/common/proto/profile_service"
 	security "dislinkt/common/proto/security_service"
 	"dislinkt/security_service/application"
 	"dislinkt/security_service/domain"
@@ -33,19 +35,9 @@ const (
 
 func accessibleRoles() map[string][]string {
 	const securityServicePath = "/security.SecurityService/"
-	//const profileServicePath = "/profile.ProfileService/"
-	//const postServicePath = "/post.PostService/"
-	//const commentServicePath = "/comment.CommentService/"
-	//const reactionServicePath = "/reaction.ReactionService/"
-	//const connectionServicePath = "/connection.ConnectionService/"
 
 	return map[string][]string{
 		securityServicePath + "GetAll": {"admin"},
-		//profileServicePath + "Update":    {"user"},
-		//commentServicePath + "Create":    {"user"},
-		//commentServicePath + "Delete":    {"user"},
-		//reactionServicePath + "Reaction": {"user"},
-		//reactionServicePath + "Delete":   {"user"},
 	}
 }
 
@@ -57,7 +49,12 @@ func (server *Server) Start() {
 
 	securityService := server.initSecurityService(userStore)
 
-	userHandler := server.initUserHandler(securityService, jwtManager)
+	profileClient, err := client.NewProfileClient(fmt.Sprintf("%s:%s", server.config.ProfileHost, server.config.ProfilePort))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	userHandler := server.initUserHandler(securityService, jwtManager, profileClient)
 
 	server.startGrpcServer(userHandler, jwtManager)
 }
@@ -77,7 +74,7 @@ func (server *Server) initUserStore(client *mongo.Client) domain.UserStore {
 		return nil
 	}
 	for _, User := range users {
-		err := store.Register(User)
+		_, err := store.Register(User)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -89,8 +86,9 @@ func (server *Server) initSecurityService(store domain.UserStore) *application.S
 	return application.NewSecurityService(store)
 }
 
-func (server *Server) initUserHandler(service *application.SecurityService, jwtManager *auth.JWTManager) *api.UserHandler {
-	return api.NewUserHandler(service, jwtManager)
+func (server *Server) initUserHandler(service *application.SecurityService,
+	jwtManager *auth.JWTManager, profileClient profile.ProfileServiceClient) *api.UserHandler {
+	return api.NewUserHandler(service, jwtManager, profileClient)
 }
 
 func (server *Server) startGrpcServer(userHandler *api.UserHandler, jwtManager *auth.JWTManager) {

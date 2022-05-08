@@ -65,7 +65,7 @@ func (store *PostMongoDBStore) GetConnectionPosts(profileId string) ([]*domain.P
 	if err != nil {
 		return nil, err
 	}
-	filter := bson.D{{"$or", bson.A{bson.M{"_issuerId": id}, bson.M{"_subjectId": id}}}, {"isApproved", true}}
+	filter := bson.D{{"$or", bson.A{bson.M{"_issuerId": id}, bson.M{"_subjectId": id}}}}
 	connections, err := store.filterConnections(filter)
 	if err != nil {
 		return nil, err
@@ -107,14 +107,12 @@ func (store *PostMongoDBStore) CreateConnection(connection *domain.Connection) e
 	return nil
 }
 
-func toDoc(v interface{}) (doc *bson.D, err error) {
-	data, err := bson.Marshal(v)
+func (store *PostMongoDBStore) DeleteConnection(id primitive.ObjectID) error {
+	_, err := store.connections.DeleteOne(context.TODO(), bson.M{"_id": id})
 	if err != nil {
-		return
+		return err
 	}
-
-	err = bson.Unmarshal(data, &doc)
-	return
+	return nil
 }
 
 func (store *PostMongoDBStore) Update(id string, post *domain.Post) error {

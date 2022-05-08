@@ -14,6 +14,8 @@ type Config struct {
 	PostPort      string
 	CommentHost   string
 	CommentPort   string
+	SecurityHost  string
+	SecurityPort  string
 	NatsHost      string
 	NatsPort      string
 	NatsUser      string
@@ -33,6 +35,8 @@ func NewConfig() *Config {
 		PostPort:      os.Getenv("POST_SERVICE_PORT"),
 		CommentHost:   os.Getenv("COMMENT_SERVICE_HOST"),
 		CommentPort:   os.Getenv("COMMENT_SERVICE_PORT"),
+		SecurityHost:  os.Getenv("SECURITY_SERVICE_HOST"),
+		SecurityPort:  os.Getenv("SECURITY_SERVICE_PORT"),
 		NatsHost:      os.Getenv("NATS_HOST"),
 		NatsPort:      os.Getenv("NATS_PORT"),
 		NatsUser:      os.Getenv("NATS_USER"),

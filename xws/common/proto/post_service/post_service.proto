@@ -14,7 +14,6 @@ service PostService{
       get: "/post/{id}"
     };
   }
-
   rpc GetProfilePosts(GetPostRequest) returns(GetPostsResponse) {
     option (google.api.http) = {
       get: "/post/profile/{profileId}"
@@ -53,7 +52,12 @@ service PostService{
       body: "connection"
     };
   }
-  //Update profile
+
+  rpc DeleteConnection(DeleteRequest) returns(DeleteResponse) {
+    option (google.api.http) = {
+      delete: "/post/connection/{id}"
+    };
+  }
   rpc UpdateProfile(UpdateProfileRequest) returns(UpdateProfileResponse) {
     option (google.api.http) = {
       patch: "/post/profile",
@@ -141,6 +145,5 @@ message Connection {
   string id = 1;
   string issuerId = 2;
   string subjectId = 3;
-  bool isApproved = 4;
 }
 

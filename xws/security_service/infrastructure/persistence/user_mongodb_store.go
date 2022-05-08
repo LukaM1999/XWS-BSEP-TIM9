@@ -35,12 +35,31 @@ func (store *UserMongoDBStore) GetAll() ([]*auth.User, error) {
 	return store.filter(filter)
 }
 
-func (store *UserMongoDBStore) Register(User *auth.User) error {
-	result, err := store.users.InsertOne(context.TODO(), User)
+func (store *UserMongoDBStore) Register(user *auth.User) (*auth.User, error) {
+	result, err := store.users.InsertOne(context.TODO(), user)
+	if err != nil {
+		return nil, err
+	}
+	user.Id = result.InsertedID.(primitive.ObjectID)
+	return user, nil
+}
+
+func (store *UserMongoDBStore) Update(id primitive.ObjectID, username string) (string, error) {
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": bson.M{"username": username}}
+	_, err := store.users.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return "", err
+	}
+	return username, nil
+}
+
+func (store *UserMongoDBStore) Delete(id primitive.ObjectID) error {
+	filter := bson.M{"_id": id}
+	_, err := store.users.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		return err
 	}
-	User.Id = result.InsertedID.(primitive.ObjectID)
 	return nil
 }
 

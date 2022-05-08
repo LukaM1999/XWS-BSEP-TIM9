@@ -8,7 +8,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-//function to return a pb.Connection from domain Connection
 func mapConnectionToPb(connection *domain.Connection) *pb.Connection {
 	return &pb.Connection{
 		Id:         connection.Id.Hex(),
@@ -21,14 +20,12 @@ func mapConnectionToPb(connection *domain.Connection) *pb.Connection {
 
 func mapConnectionToPostConnectionPb(connection *domain.Connection) *pbPost.Connection {
 	return &pbPost.Connection{
-		Id:         connection.Id.Hex(),
-		IssuerId:   connection.IssuerId.Hex(),
-		SubjectId:  connection.SubjectId.Hex(),
-		IsApproved: connection.IsApproved,
+		Id:        connection.Id.Hex(),
+		IssuerId:  connection.IssuerId.Hex(),
+		SubjectId: connection.SubjectId.Hex(),
 	}
 }
 
-//function to return a domain.Connection from a pb.Connection
 func mapPbToConnection(pbConnection *pb.Connection) *domain.Connection {
 	return &domain.Connection{
 		Id:         getObjectId(pbConnection.Id),

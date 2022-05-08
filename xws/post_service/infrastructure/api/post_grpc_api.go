@@ -112,6 +112,18 @@ func (handler *PostHandler) CreateConnection(ctx context.Context, request *pb.Cr
 	}, nil
 }
 
+func (handler *PostHandler) DeleteConnection(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+	id, err := primitive.ObjectIDFromHex(request.Id)
+	if err != nil {
+		return nil, err
+	}
+	err = handler.service.DeleteConnection(id)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeleteResponse{}, nil
+}
+
 func (handler *PostHandler) UpdateProfile(ctx context.Context, request *pb.UpdateProfileRequest) (*pb.UpdateProfileResponse, error) {
 	id, err := primitive.ObjectIDFromHex(request.Profile.Id)
 	if err != nil {

@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"dislinkt/common/auth"
-	"dislinkt/common/domain"
 	pbProfile "dislinkt/common/proto/profile_service"
 	pb "dislinkt/common/proto/security_service"
 	"dislinkt/security_service/application"
@@ -59,12 +58,7 @@ func (handler *UserHandler) GetAll(ctx context.Context, request *pb.GetAllReques
 }
 
 func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	registeredUser, err := handler.service.Register(&domain.User{
-		Id:       primitive.NewObjectID(),
-		Username: request.Username,
-		Password: request.Password,
-		Role:     request.Role,
-	})
+	registeredUser, err := handler.service.Register(mapPbToUser(request.User))
 	if err != nil {
 		return nil, err
 	}

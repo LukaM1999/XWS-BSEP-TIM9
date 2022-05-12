@@ -53,12 +53,10 @@ message GetAllResponse {
 }
 
 message RegisterRequest {
-  string username = 1;
-  string password = 2;
-  string role = 3;
-  string firstName = 4;
-  string lastName = 5;
-  string email = 6;
+  User user = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string email = 4;
 }
 
 message RegisterResponse {

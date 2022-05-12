@@ -10,7 +10,7 @@ Profile service:
 POST Create /profile
 GET GetAll /profile?search=fullName
 GET Get /profile/{id}
-PUT Update /profile/{id} -> Update /security/user/{id} and UpdateProfile /post/profile
+PUT Update /profile/{id} -> Update /security/user/{id} and UpdateProfile /post/profile and UpdateCommentCreator /comment/creator/{id}
 
 
 Posts service:
@@ -44,6 +44,7 @@ GET Get /comment/post/{postId}
 POST Create /comment
 DELETE Delete /comment/{id}
 DELETE DeletePostComments /comment/post/{postId}
+PUT UpdateCommentCreator /comment/creator/{id}
 
 
 Messaging service:

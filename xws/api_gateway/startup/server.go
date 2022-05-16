@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net/http"
+	"os"
 )
 
 type Server struct {
@@ -72,5 +73,15 @@ func (server *Server) initHandlers() {
 }
 
 func (server *Server) Start() {
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", server.config.Port), server.mux))
+	serverCertFile := getCertPath() + "cert/server-cert.pem"
+	serverKeyFile := getCertPath() + "cert/server-key.pem"
+	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%s", server.config.Port),
+		serverCertFile, serverKeyFile, server.mux))
+}
+
+func getCertPath() string {
+	if os.Getenv("OS_ENV") != "docker" {
+		return "../../"
+	}
+	return ""
 }

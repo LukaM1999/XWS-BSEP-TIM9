@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.Subject;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -527,11 +528,18 @@ public class CertificateService {
             authority = certificateDto.getAuthoritySubject();
         X509Certificate certificate = readCertificate(env.getProperty("keystore.path") + authority + ".jks", "12345", certificateDto.getSerialNumberSubject());
         FileOutputStream os = new FileOutputStream(certificateDto.getSerialNumberSubject() + ".crt");
-        os.write("-----BEGIN CERTIFICATE-----\n".getBytes("US-ASCII"));
+        os.write("-----BEGIN CERTIFICATE-----\n".getBytes(StandardCharsets.US_ASCII));
         os.write(Base64.getEncoder().encode(certificate.getEncoded()));
-        os.write("-----END CERTIFICATE-----\n".getBytes("US-ASCII"));
+        os.write("\n-----END CERTIFICATE-----\n".getBytes(StandardCharsets.US_ASCII));
         os.close();
-
+        if(!certificateDto.getAuthoritySubject().equals("ca"))
+            return true;
+        PrivateKey key = new KeyStoreReader().readPrivateKey(env.getProperty("keystore.path") + "keys.jks", "12345", certificateDto.getSerialNumberSubject(), "12345");
+        os = new FileOutputStream(certificateDto.getSerialNumberSubject() + "-key" + ".pem");
+        os.write("-----BEGIN PRIVATE KEY-----\n".getBytes(StandardCharsets.US_ASCII));
+        os.write(Base64.getEncoder().encode(key.getEncoded()));
+        os.write("\n-----END PRIVATE KEY-----\n".getBytes(StandardCharsets.US_ASCII));
+        os.close();
         return true;
     }
 }

@@ -56,12 +56,17 @@ public class CertificateGenerator {
 			for (int i = 0; i < certificateDTO.getKeyUsages().size(); i++) {
 				allKeyUsages = allKeyUsages + certificateDTO.getKeyUsages().get(i);
 			}
-			certGen.addExtension(Extension.keyUsage, true, new KeyUsage(allKeyUsages));
+			if(certificateDTO.getKeyUsages().size() > 0)
+				certGen.addExtension(Extension.keyUsage, true, new KeyUsage(allKeyUsages));
 
 			JcaX509ExtensionUtils utils = new JcaX509ExtensionUtils();
 
 			SubjectKeyIdentifier ski = utils.createSubjectKeyIdentifier(subjectData.getPublicKey());
 			certGen.addExtension(Extension.subjectKeyIdentifier, false, ski);
+
+			certGen.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(new GeneralName[]
+					{new GeneralName(GeneralName.dNSName, certificateDTO.getCommonNameSubject()),
+					new GeneralName(GeneralName.iPAddress, "127.0.0.1")}));
 
 			if (!certificateDTO.getAuthoritySubject().equals("root")) {
 				java.security.cert.Certificate certIssuer = new KeyStoreReader().readCertificate("./keystores/root.jks", "12345", certificateDTO.getSerialNumberIssuer());

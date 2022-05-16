@@ -45,4 +45,12 @@ public class CertificateDTO {
      this.keyUsages = keyUsages;
      this.serialNumberIssuer = serialNumberIssuer;
     }
+
+    public CertificateDTO(String authorityIssuer, String authoritySubject, List<Integer> keyUsages, String serialNumberIssuer, String commonNameSubject){
+        this.authorityIssuer = authorityIssuer;
+        this.authoritySubject = authoritySubject;
+        this.keyUsages = keyUsages;
+        this.serialNumberIssuer = serialNumberIssuer;
+        this.commonNameSubject = commonNameSubject;
+    }
 }

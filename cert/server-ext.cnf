@@ -1,1 +1,1 @@
-subjectAltName=DNS:localhost,DNS:localhost,IP:0.0.0.0
+subjectAltName=DNS.1:localhost,IP.1:127.0.0.1

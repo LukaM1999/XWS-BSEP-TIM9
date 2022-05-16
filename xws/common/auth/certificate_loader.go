@@ -38,10 +38,10 @@ func LoadTLSServerCredentials() (credentials.TransportCredentials, error) {
 
 	// Create the credentials and return it
 	config := &tls.Config{
-		Certificates:       []tls.Certificate{serverCert},
-		ClientAuth:         tls.RequireAndVerifyClientCert,
-		ClientCAs:          certPool,
-		InsecureSkipVerify: true,
+		Certificates: []tls.Certificate{serverCert},
+		//ClientAuth:   tls.RequireAndVerifyClientCert,
+		//ClientCAs:    certPool,
+		//InsecureSkipVerify: true,
 	}
 
 	return credentials.NewTLS(config), nil
@@ -61,16 +61,16 @@ func LoadTLSClientCredentials() (credentials.TransportCredentials, error) {
 	}
 
 	// Load client's certificate and private key
-	clientCert, err := tls.LoadX509KeyPair(certPath+clientCertFile, certPath+clientKeyFile)
-	if err != nil {
-		return nil, err
-	}
+	//clientCert, err := tls.LoadX509KeyPair(certPath+clientCertFile, certPath+clientKeyFile)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	// Create the credentials and return it
 	config := &tls.Config{
-		Certificates:       []tls.Certificate{clientCert},
-		RootCAs:            certPool,
-		InsecureSkipVerify: true,
+		//Certificates: []tls.Certificate{clientCert},
+		RootCAs: certPool,
+		//InsecureSkipVerify: true,
 	}
 
 	return credentials.NewTLS(config), nil

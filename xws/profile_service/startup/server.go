@@ -35,10 +35,10 @@ const (
 	QueueGroup = "profile_service"
 )
 
-func accessibleRoles() map[string][]string {
+func accessibleRoles() map[string]string {
 	const profileServicePath = "/profile.ProfileService/"
 
-	return map[string][]string{
+	return map[string]string{
 		//profileServicePath + "Get":    {"user"},
 		//profileServicePath + "GetAll":    {"user"},
 		//profileServicePath + "Create": {"user"},

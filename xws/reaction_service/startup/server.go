@@ -31,10 +31,10 @@ const (
 	QueueGroup = "reaction_service"
 )
 
-func accessibleRoles() map[string][]string {
+func accessibleRoles() map[string]string {
 	const reactionServicePath = "/reaction.ReactionService/"
 
-	return map[string][]string{
+	return map[string]string{
 		//reactionServicePath + "Reaction": {"user"},
 	}
 }

@@ -12,4 +12,5 @@ type UserStore interface {
 	Update(id primitive.ObjectID, username string) (string, error)
 	Delete(id primitive.ObjectID) error
 	DeleteAll() error
+	CreateRolePermission(rolePermission *auth.RolePermission) (*auth.RolePermission, error)
 }

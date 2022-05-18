@@ -30,10 +30,10 @@ const (
 	QueueGroup = "comment_service"
 )
 
-func accessibleRoles() map[string][]string {
+func accessibleRoles() map[string]string {
 	const commentServicePath = "/comment.CommentService/"
 
-	return map[string][]string{
+	return map[string]string{
 		//commentServicePath + "Get":    {"user"},
 		//commentServicePath + "Create": {"user"},
 		//commentServicePath + "Delete":    {"user"},

@@ -10,18 +10,23 @@ import (
 )
 
 const (
-	DATABASE   = "security_service"
-	COLLECTION = "user"
+	DATABASE    = "security_service"
+	COLLECTION1 = "user"
+	COLLECTION2 = "rolePermission"
 )
 
 type UserMongoDBStore struct {
-	users *mongo.Collection
+	users           *mongo.Collection
+	rolePermissions *mongo.Collection
 }
 
 func NewUserMongoDBStore(client *mongo.Client) domain.UserStore {
-	users := client.Database(DATABASE).Collection(COLLECTION)
+	users := client.Database(DATABASE).Collection(COLLECTION1)
+	rolePermissions := client.Database(DATABASE).Collection(COLLECTION2)
+
 	return &UserMongoDBStore{
-		users: users,
+		users:           users,
+		rolePermissions: rolePermissions,
 	}
 }
 
@@ -68,7 +73,19 @@ func (store *UserMongoDBStore) DeleteAll() error {
 	if err != nil {
 		return err
 	}
+	_, err = store.rolePermissions.DeleteMany(context.TODO(), bson.D{{}})
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func (store *UserMongoDBStore) CreateRolePermission(rolePermission *auth.RolePermission) (*auth.RolePermission, error) {
+	_, err := store.rolePermissions.InsertOne(context.TODO(), rolePermission)
+	if err != nil {
+		return nil, err
+	}
+	return rolePermission, nil
 }
 
 func (store *UserMongoDBStore) filter(filter interface{}) ([]*auth.User, error) {

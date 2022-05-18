@@ -33,11 +33,11 @@ const (
 	QueueGroup = "security_service"
 )
 
-func accessibleRoles() map[string][]string {
+func accessibleRoles() map[string]string {
 	const securityServicePath = "/security.SecurityService/"
 
-	return map[string][]string{
-		securityServicePath + "GetAll": {"admin"},
+	return map[string]string{
+		securityServicePath + "GetAll": "read:all-users",
 	}
 }
 
@@ -75,6 +75,12 @@ func (server *Server) initUserStore(client *mongo.Client) domain.UserStore {
 	}
 	for _, User := range users {
 		_, err := store.Register(User)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	for _, rolePermission := range rolePermissions {
+		_, err := store.CreateRolePermission(rolePermission)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -2,6 +2,11 @@ package auth
 
 import (
 	"context"
+	auth "dislinkt/common/domain"
+	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 
 	"google.golang.org/grpc"
@@ -13,11 +18,11 @@ import (
 // AuthInterceptor is a server interceptor for authentication and authorization
 type AuthInterceptor struct {
 	jwtManager      *JWTManager
-	accessibleRoles map[string][]string
+	accessibleRoles map[string]string
 }
 
 // NewAuthInterceptor returns a new auth interceptor
-func NewAuthInterceptor(jwtManager *JWTManager, accessibleRoles map[string][]string) *AuthInterceptor {
+func NewAuthInterceptor(jwtManager *JWTManager, accessibleRoles map[string]string) *AuthInterceptor {
 	return &AuthInterceptor{jwtManager, accessibleRoles}
 }
 
@@ -59,11 +64,22 @@ func (interceptor *AuthInterceptor) Stream() grpc.StreamServerInterceptor {
 	}
 }
 
+func getSecurityDatabaseClient(host, port string) (*mongo.Client, error) {
+	uri := fmt.Sprintf("mongodb://%s:%s/", host, port)
+	options := options.Client().ApplyURI(uri)
+	return mongo.Connect(context.TODO(), options)
+}
+
 func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string) error {
-	accessibleRoles, ok := interceptor.accessibleRoles[method]
+	permission, ok := interceptor.accessibleRoles[method]
 	if !ok {
 		// everyone can access
 		return nil
+	}
+
+	securityClient, err := getSecurityDatabaseClient("localhost", "27017")
+	if err != nil {
+		return status.Errorf(codes.Internal, "could not connect to security database: %v", err)
 	}
 
 	md, ok := metadata.FromIncomingContext(ctx)
@@ -82,8 +98,14 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
 	}
 
-	for _, role := range accessibleRoles {
-		if role == claims.Role {
+	filter := bson.D{{"role", claims.Role}}
+	rolePermission := &auth.RolePermission{}
+	err = securityClient.Database("security_service").Collection("rolePermission").FindOne(context.TODO(), filter).Decode(rolePermission)
+	if err != nil {
+		return status.Errorf(codes.Internal, "could not find role permissions: %v", err)
+	}
+	for _, p := range rolePermission.Permissions {
+		if p == permission || p == "*" {
 			return nil
 		}
 	}

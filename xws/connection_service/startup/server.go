@@ -33,10 +33,10 @@ const (
 	QueueGroup = "connection_service"
 )
 
-func accessibleRoles() map[string][]string {
+func accessibleRoles() map[string]string {
 	const connectionServicePath = "/connection.ConnectionService/"
 
-	return map[string][]string{
+	return map[string]string{
 		//connectionServicePath + "Get":    {"user"},
 		//connectionServicePath + "Create": {"user"},
 		//connectionServicePath + "Update": {"user"},

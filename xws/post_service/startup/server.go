@@ -34,10 +34,10 @@ const (
 	QueueGroup = "post_service"
 )
 
-func accessibleRoles() map[string][]string {
+func accessibleRoles() map[string]string {
 	const postServicePath = "/post.PostService/"
 
-	return map[string][]string{
+	return map[string]string{
 		//postServicePath + "GetAll": {"admin"},
 	}
 }

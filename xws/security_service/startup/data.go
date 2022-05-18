@@ -20,6 +20,21 @@ var users = []*auth.User{
 	},
 }
 
+var rolePermissions = []*auth.RolePermission{
+	{
+		Role: "admin",
+		Permissions: []string{
+			"read:all-users",
+		},
+	},
+	{
+		Role: "user",
+		Permissions: []string{
+			"*",
+		},
+	},
+}
+
 func getObjectId(id string) primitive.ObjectID {
 	if objectId, err := primitive.ObjectIDFromHex(id); err == nil {
 		return objectId

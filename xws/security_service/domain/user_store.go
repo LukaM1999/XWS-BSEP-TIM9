@@ -13,4 +13,6 @@ type UserStore interface {
 	Delete(id primitive.ObjectID) error
 	DeleteAll() error
 	CreateRolePermission(rolePermission *auth.RolePermission) (*auth.RolePermission, error)
+	SaveOTPSecret(username string, secret string) error
+	GetOTPSecret(username string) (string, error)
 }

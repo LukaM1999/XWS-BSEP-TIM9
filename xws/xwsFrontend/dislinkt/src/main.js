@@ -38,6 +38,14 @@ const store = new Vuex.Store({
     setUser(state, {password, ...user}) {
       state.user = user
     }
+  },
+  getters: {
+    token(state) {
+      return state.token
+    },
+    user(state) {
+      return state.user
+    }
   }
 })
 

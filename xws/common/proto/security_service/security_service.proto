@@ -35,6 +35,17 @@ service SecurityService{
       body : "*"
     };
   }
+  rpc SetupOTP(SetupOTPRequest) returns (SetupOTPResponse) {
+    option (google.api.http) = {
+      get : "/security/setupOtp/{username}"
+    };
+  }
+  rpc PasswordlessLogin(PasswordlessLoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post : "/security/passwordlessLogin"
+      body : "*"
+    };
+  }
 }
 
 message GetRequest {
@@ -84,4 +95,18 @@ message UpdateRequest {
 
 message UpdateResponse {
   string username = 1;
+}
+
+message SetupOTPRequest {
+  string username = 1;
+}
+
+message SetupOTPResponse {
+  string secret = 1;
+  bytes qrCode = 2;
+}
+
+message PasswordlessLoginRequest {
+  string username = 1;
+  string otp = 2;
 }

@@ -6,6 +6,7 @@ import (
 	pbProfile "dislinkt/common/proto/profile_service"
 	pb "dislinkt/common/proto/security_service"
 	"dislinkt/security_service/application"
+	"github.com/pquerna/otp/totp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -106,6 +107,44 @@ func (handler *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*p
 		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
 	}
 
+	token, err := handler.jwtManager.Generate(user)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "cannot generate access token")
+	}
+
+	return &pb.LoginResponse{AccessToken: token}, nil
+}
+
+func (handler *UserHandler) SetupOTP(ctx context.Context, req *pb.SetupOTPRequest) (*pb.SetupOTPResponse, error) {
+	_, err := handler.service.Get(req.GetUsername())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
+	}
+
+	secret, qrCode, err := handler.service.SetupOTP(req.GetUsername())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "cannot setup OTP: %v", err)
+	}
+
+	return &pb.SetupOTPResponse{
+		Secret: secret,
+		QrCode: qrCode,
+	}, nil
+}
+
+func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.PasswordlessLoginRequest) (*pb.LoginResponse, error) {
+	secret, err := handler.service.GetOTPSecret(req.GetUsername())
+	if err != nil || secret == "" {
+		return nil, status.Errorf(codes.Internal, "No passwordless login setup: %v", err)
+	}
+
+	if !totp.Validate(req.GetOtp(), secret) {
+		return nil, status.Errorf(codes.Internal, "OTP is invalid")
+	}
+	user, err := handler.service.Get(req.GetUsername())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
+	}
 	token, err := handler.jwtManager.Generate(user)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot generate access token")

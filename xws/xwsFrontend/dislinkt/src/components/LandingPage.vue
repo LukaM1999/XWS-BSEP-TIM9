@@ -27,6 +27,7 @@
                 </vs-input>
                 <password v-model="password" :strength-meter-only="true" :secureLength="8" :userInputs="[username, email, firstName, lastName]"/>
                 <vs-input required class="mt-4" type="password" primary v-model="confirmPassword" label-placeholder="Confirm password"/>
+                <vs-checkbox class="mt-4" primary v-model="setupOtp">Setup OTP authentication?</vs-checkbox>
               </div>
             </div>
           </div>
@@ -90,6 +91,21 @@
             </div>
           </template>
         </vs-dialog>
+        <vs-dialog :prevent-close="true" @close="resetOtp()" auto-width v-model="dialogOtp">
+          <template #header>
+            <h4 class="not-margin me-3 ms-3">
+              OTP Setup
+            </h4>
+          </template>
+          <div class="con-form" style="display: inline-block">
+            <div class="row">
+              <div class="col">
+                <p>Secret: {{this.secret}}</p>
+                <img :src="`data:image/png;base64,${this.qrCode}`"/>
+              </div>
+            </div>
+          </div>
+        </vs-dialog>
       </div>
     </div>
   </div>
@@ -118,6 +134,10 @@ export default {
       password: "",
       confirmPassword: "",
       totp: "",
+      setupOtp: false,
+      dialogOtp: false,
+      secret: "",
+      qrCode: ""
     }
   },
   methods: {
@@ -131,6 +151,8 @@ export default {
       this.lastName = "";
       this.password = "";
       this.confirmPassword = "";
+      this.totp = "";
+      this.setupOtp = false;
     },
     isRegisterValid() {
       return this.password.length >= 8 && this.password === this.confirmPassword &&
@@ -153,22 +175,38 @@ export default {
         firstName: this.firstName,
         lastName: this.lastName,
       };
-      const response = await axios.post(`${process.env.VUE_APP_BACKEND}/security/user`, registeredUser);
-      if (response.status === 200) {
-        this.$vs.notification({
-          title: "Success",
-          text: "Registered successfully! Verify your email to login",
-          color: "success",
-          position: "top-right"
-        });
-        this.dialogRegister = false;
-      } else {
-        this.$vs.notification({
-          title: "Error",
-          text: "Registration failed",
-          color: "danger",
-          position: "top-right"
-        });
+      const response = await axios.post(`${process.env.VUE_APP_BACKEND}/security/user`, registeredUser)
+        .catch(error => {
+          this.$vs.notification({
+            title: "Error",
+            text: "Registration failed",
+            color: "danger",
+            position: "top-right"
+          });
+          throw error;
+      });
+      this.$vs.notification({
+        title: "Success",
+        text: "Registered successfully! Verify your email to login",
+        color: "success",
+        position: "top-right"
+      });
+      this.dialogRegister = false;
+
+      if(this.setupOtp){
+        const response = await axios.get(`${process.env.VUE_APP_BACKEND}/security/setupOtp/${this.username}`)
+          .catch(error => {
+            this.$vs.notification({
+              title: "Error",
+              text: "OTP setup failed",
+              color: "danger",
+              position: "top-right"
+            });
+            throw error;
+          });
+        this.secret = response.data.secret;
+        this.qrCode = response.data.qrCode;
+        this.dialogOtp = true;
       }
       this.resetRegister();
     },
@@ -217,6 +255,9 @@ export default {
         });
       this.$store.commit("setUser", user.data?.user);
     },
+    resetOtp() {
+
+    },
     isPasswordlessLoginValid() {
       return this.username.length > 0 && this.totp.length > 0;
     },
@@ -226,7 +267,7 @@ export default {
       }
       const response = await axios.post(`${process.env.VUE_APP_BACKEND}/security/passwordlessLogin`, {
         username: this.username,
-        totp: this.totp
+        otp: this.totp
       }).catch(error => {
         this.$vs.notification({
           title: "Error",

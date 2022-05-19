@@ -13,20 +13,23 @@ const (
 	DATABASE    = "security_service"
 	COLLECTION1 = "user"
 	COLLECTION2 = "rolePermission"
+	COLLECTION3 = "otpSecret"
 )
 
 type UserMongoDBStore struct {
 	users           *mongo.Collection
 	rolePermissions *mongo.Collection
+	otpSecrets      *mongo.Collection
 }
 
 func NewUserMongoDBStore(client *mongo.Client) domain.UserStore {
 	users := client.Database(DATABASE).Collection(COLLECTION1)
 	rolePermissions := client.Database(DATABASE).Collection(COLLECTION2)
-
+	otpSecrets := client.Database(DATABASE).Collection(COLLECTION3)
 	return &UserMongoDBStore{
 		users:           users,
 		rolePermissions: rolePermissions,
+		otpSecrets:      otpSecrets,
 	}
 }
 
@@ -86,6 +89,29 @@ func (store *UserMongoDBStore) CreateRolePermission(rolePermission *auth.RolePer
 		return nil, err
 	}
 	return rolePermission, nil
+}
+
+func (store *UserMongoDBStore) SaveOTPSecret(username string, secret string) error {
+	otpSecret := auth.OTPSecret{
+		Username: username,
+		Secret:   secret,
+	}
+	_, err := store.otpSecrets.InsertOne(context.TODO(), otpSecret)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (store *UserMongoDBStore) GetOTPSecret(username string) (string, error) {
+	filter := bson.M{"username": username}
+	result := store.otpSecrets.FindOne(context.TODO(), filter)
+	var otpSecret auth.OTPSecret
+	err := result.Decode(&otpSecret)
+	if err != nil {
+		return "", err
+	}
+	return otpSecret.Secret, nil
 }
 
 func (store *UserMongoDBStore) filter(filter interface{}) ([]*auth.User, error) {

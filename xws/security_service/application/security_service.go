@@ -1,9 +1,12 @@
 package application
 
 import (
+	"bytes"
 	auth "dislinkt/common/domain"
 	"dislinkt/security_service/domain"
+	"github.com/pquerna/otp/totp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"image/png"
 )
 
 type SecurityService struct {
@@ -34,4 +37,32 @@ func (service *SecurityService) Update(id primitive.ObjectID, username string) (
 
 func (service *SecurityService) Delete(id primitive.ObjectID) error {
 	return service.store.Delete(id)
+}
+
+func (service *SecurityService) SetupOTP(username string) (string, []byte, error) {
+	key, err := totp.Generate(totp.GenerateOpts{
+		Issuer:      "dislinkt.com",
+		AccountName: username,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	var buf bytes.Buffer
+	img, err := key.Image(200, 200)
+	if err != nil {
+		panic(err)
+	}
+	png.Encode(&buf, img)
+
+	err = service.store.SaveOTPSecret(username, key.Secret())
+	if err != nil {
+		return "", nil, err
+	}
+
+	return key.Secret(), buf.Bytes(), nil
+}
+
+func (service *SecurityService) GetOTPSecret(username string) (string, error) {
+	return service.store.GetOTPSecret(username)
 }

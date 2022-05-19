@@ -22,6 +22,8 @@ type SecurityServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	SetupOTP(ctx context.Context, in *SetupOTPRequest, opts ...grpc.CallOption) (*SetupOTPResponse, error)
+	PasswordlessLogin(ctx context.Context, in *PasswordlessLoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 }
 
 type securityServiceClient struct {
@@ -77,6 +79,24 @@ func (c *securityServiceClient) Login(ctx context.Context, in *LoginRequest, opt
 	return out, nil
 }
 
+func (c *securityServiceClient) SetupOTP(ctx context.Context, in *SetupOTPRequest, opts ...grpc.CallOption) (*SetupOTPResponse, error) {
+	out := new(SetupOTPResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/SetupOTP", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *securityServiceClient) PasswordlessLogin(ctx context.Context, in *PasswordlessLoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/PasswordlessLogin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SecurityServiceServer is the server API for SecurityService service.
 // All implementations must embed UnimplementedSecurityServiceServer
 // for forward compatibility
@@ -86,6 +106,8 @@ type SecurityServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Update(context.Context, *UpdateRequest) (*UpdateResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	SetupOTP(context.Context, *SetupOTPRequest) (*SetupOTPResponse, error)
+	PasswordlessLogin(context.Context, *PasswordlessLoginRequest) (*LoginResponse, error)
 	mustEmbedUnimplementedSecurityServiceServer()
 }
 
@@ -107,6 +129,12 @@ func (*UnimplementedSecurityServiceServer) Update(context.Context, *UpdateReques
 }
 func (*UnimplementedSecurityServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (*UnimplementedSecurityServiceServer) SetupOTP(context.Context, *SetupOTPRequest) (*SetupOTPResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetupOTP not implemented")
+}
+func (*UnimplementedSecurityServiceServer) PasswordlessLogin(context.Context, *PasswordlessLoginRequest) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PasswordlessLogin not implemented")
 }
 func (*UnimplementedSecurityServiceServer) mustEmbedUnimplementedSecurityServiceServer() {}
 
@@ -204,6 +232,42 @@ func _SecurityService_Login_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SecurityService_SetupOTP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetupOTPRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).SetupOTP(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/SetupOTP",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).SetupOTP(ctx, req.(*SetupOTPRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SecurityService_PasswordlessLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PasswordlessLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).PasswordlessLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/PasswordlessLogin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).PasswordlessLogin(ctx, req.(*PasswordlessLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _SecurityService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "security.SecurityService",
 	HandlerType: (*SecurityServiceServer)(nil),
@@ -227,6 +291,14 @@ var _SecurityService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _SecurityService_Login_Handler,
+		},
+		{
+			MethodName: "SetupOTP",
+			Handler:    _SecurityService_SetupOTP_Handler,
+		},
+		{
+			MethodName: "PasswordlessLogin",
+			Handler:    _SecurityService_PasswordlessLogin_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

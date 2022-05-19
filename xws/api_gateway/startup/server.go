@@ -13,9 +13,11 @@ import (
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type Server struct {
@@ -26,10 +28,56 @@ type Server struct {
 func NewServer(config *cfg.Config) *Server {
 	server := &Server{
 		config: config,
-		mux:    runtime.NewServeMux(),
+		mux:    runtime.NewServeMux(
+		//runtime.WithForwardResponseOption(append),
+		),
 	}
 	server.initHandlers()
 	return server
+}
+
+func append(ctx context.Context, w http.ResponseWriter, resp proto.Message) error {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	return nil
+}
+
+func cors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h := w.Header()
+
+		// TODO: be careful!
+		o := r.Header.Get("Origin")
+		h.Set("Access-Control-Allow-Origin", o)
+
+		if r.Method == http.MethodOptions {
+			h.Set("Access-Control-Allow-Methods", strings.Join(
+				[]string{
+					http.MethodOptions,
+					http.MethodGet,
+					http.MethodPut,
+					http.MethodHead,
+					http.MethodPost,
+					http.MethodDelete,
+					http.MethodPatch,
+					http.MethodTrace,
+				}, ", ",
+			))
+
+			h.Set("Access-Control-Allow-Headers", strings.Join(
+				[]string{
+					"Access-Control-Allow-Headers",
+					"Origin",
+					"X-Requested-With",
+					"Content-Type",
+					"Accept",
+				}, ", ",
+			))
+
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (server *Server) initHandlers() {
@@ -76,7 +124,7 @@ func (server *Server) Start() {
 	serverCertFile := getCertPath() + "cert/server-cert.pem"
 	serverKeyFile := getCertPath() + "cert/server-key.pem"
 	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%s", server.config.Port),
-		serverCertFile, serverKeyFile, server.mux))
+		serverCertFile, serverKeyFile, cors(server.mux)))
 }
 
 func getCertPath() string {

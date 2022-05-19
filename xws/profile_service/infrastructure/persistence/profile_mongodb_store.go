@@ -22,12 +22,13 @@ type ProfileMongoDBStore struct {
 
 func NewProfileMongoDBStore(client *mongo.Client) domain.ProfileStore {
 	profiles := client.Database(DATABASE).Collection(COLLECTION)
+	_, err := profiles.Indexes().DropOne(context.TODO(), "fullName_text")
 	index := mongo.IndexModel{
-		Keys:    bson.D{{"fullName", "text"}},
-		Options: options.Index().SetUnique(true),
+		Keys: bson.D{{"fullName", "text"}},
+		//Options: options.Index().SetUnique(true),
 	}
 	opts := options.CreateIndexes().SetMaxTime(20 * time.Second)
-	_, err := profiles.Indexes().CreateOne(context.TODO(), index, opts)
+	_, err = profiles.Indexes().CreateOne(context.TODO(), index, opts)
 
 	if err != nil {
 		panic(err)

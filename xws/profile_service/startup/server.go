@@ -39,8 +39,8 @@ func accessibleRoles() map[string]string {
 	const profileServicePath = "/profile.ProfileService/"
 
 	return map[string]string{
+		profileServicePath + "GetAll": "search:all-profiles",
 		//profileServicePath + "Get":    {"user"},
-		//profileServicePath + "GetAll":    {"user"},
 		//profileServicePath + "Create": {"user"},
 		//profileServicePath + "Update": {"user"},
 	}

@@ -70,6 +70,7 @@ func cors(next http.Handler) http.Handler {
 					"X-Requested-With",
 					"Content-Type",
 					"Accept",
+					"Authorization",
 				}, ", ",
 			))
 

@@ -140,6 +140,10 @@ export default {
       qrCode: ""
     }
   },
+  mounted() {
+    this.$store.commit('setUser', null);
+    this.$store.commit('setToken', null);
+  },
   methods: {
     openRegisterDialog() {
       this.dialogRegister = true;
@@ -175,6 +179,7 @@ export default {
         firstName: this.firstName,
         lastName: this.lastName,
       };
+      const loading = this.$vs.loading();
       const response = await axios.post(`${process.env.VUE_APP_BACKEND}/security/user`, registeredUser)
         .catch(error => {
           this.$vs.notification({
@@ -183,8 +188,10 @@ export default {
             color: "danger",
             position: "top-right"
           });
+          loading.close();
           throw error;
       });
+      loading.close()
       this.$vs.notification({
         title: "Success",
         text: "Registered successfully! Verify your email to login",
@@ -202,8 +209,10 @@ export default {
               color: "danger",
               position: "top-right"
             });
+            loading.close()
             throw error;
           });
+        loading.close()
         this.secret = response.data.secret;
         this.qrCode = response.data.qrCode;
         this.dialogOtp = true;
@@ -224,6 +233,7 @@ export default {
       if (!this.isLoginValid()) {
         return;
       }
+      const loading = this.$vs.loading();
       const response = await axios.post(`${process.env.VUE_APP_BACKEND}/security/login`, {
         username: this.username,
         password: this.password
@@ -234,8 +244,10 @@ export default {
           color: "danger",
           position: "top-right"
         });
+        loading.close()
         throw error
       });
+      loading.close()
       this.$vs.notification({
         title: "Success",
         text: "Logged in successfully",
@@ -251,9 +263,10 @@ export default {
             color: "danger",
             position: "top-right"
           });
-          throw error
+          throw error;
         });
       this.$store.commit("setUser", user.data?.user);
+      await this.$router.push(`/${this.$store.getters.user?.role}`);
     },
     resetOtp() {
 
@@ -265,6 +278,7 @@ export default {
       if (!this.isPasswordlessLoginValid()) {
         return;
       }
+      const loading = this.$vs.loading();
       const response = await axios.post(`${process.env.VUE_APP_BACKEND}/security/passwordlessLogin`, {
         username: this.username,
         otp: this.totp
@@ -275,8 +289,10 @@ export default {
           color: "danger",
           position: "top-right"
         });
+        loading.close()
         throw error
       });
+      loading.close()
       this.$vs.notification({
         title: "Success",
         text: "Logged in successfully",
@@ -295,6 +311,7 @@ export default {
           throw error
         });
       this.$store.commit("setUser", user.data?.user);
+      await this.$router.push(`/${this.$store.getters.user?.role}`);
     },
   }
 }

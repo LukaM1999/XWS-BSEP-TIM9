@@ -25,12 +25,14 @@ var rolePermissions = []*auth.RolePermission{
 		Role: "admin",
 		Permissions: []string{
 			"read:all-users",
+			"read:profile",
 		},
 	},
 	{
 		Role: "user",
 		Permissions: []string{
-			"*",
+			"read:profile",
+			"search:all-profiles",
 		},
 	},
 }

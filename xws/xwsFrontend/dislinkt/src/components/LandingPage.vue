@@ -9,14 +9,37 @@
               Register
             </h4>
           </template>
-          <div class="con-form" style="display: inline-block">
+          <div class="con-form" style="display: inline-block;">
             <div class="row">
               <div class="col">
-                <vs-input required class="mt-2" primary v-model="username" label-placeholder="Username"/>
-                <vs-input required class="mt-4" primary v-model="email" label-placeholder="Email"/>
-                <vs-input required class="mt-4" primary v-model="firstName" label-placeholder="First name"/>
-                <vs-input required class="mt-4" primary v-model="lastName" label-placeholder="Last name"/>
-                <vs-input required class="mt-4" type="password" primary v-model="password" label-placeholder="Password"
+                <vs-input required
+                          :success="isSuccess($v.username)"
+                          :danger="isInvalid($v.username)"
+                          class="mt-2" primary v-model="$v.username.$model"
+                          label-placeholder="Username">
+                </vs-input>
+                <label v-if="isError($v.username)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+                <vs-input required
+                          :success="isSuccess($v.email)"
+                          :danger="isInvalid($v.email)"
+                          class="mt-4" primary v-model="$v.email.$model" label-placeholder="Email"/>
+                <label v-if="isError($v.email)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+                <vs-input required
+                          :success="isSuccess($v.firstName)"
+                          :danger="isInvalid($v.firstName)"
+                          class="mt-4" primary v-model="$v.firstName.$model" label-placeholder="First name"/>
+                <label v-if="isError($v.firstName)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+
+                <vs-input required
+                          :success="isSuccess($v.lastName)"
+                          :danger="isInvalid($v.lastName)"
+                          class="mt-4" primary v-model="$v.lastName.$model" label-placeholder="Last name"/>
+                <label v-if="isError($v.lastName)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+
+                <vs-input required
+                          :success="isSuccess($v.password)"
+                          :danger="isInvalid($v.password)"
+                          class="mt-4" type="password" primary v-model="$v.password.$model" label-placeholder="Password"
                           :visiblePassword="hasVisiblePassword"
                           icon-after
                           @click-icon="hasVisiblePassword = !hasVisiblePassword">
@@ -25,8 +48,14 @@
                     <i v-else class='bx bx-hide'></i>
                   </template>
                 </vs-input>
-                <password v-model="password" :strength-meter-only="true" :secureLength="8" :userInputs="[username, email, firstName, lastName]"/>
-                <vs-input required class="mt-4" type="password" primary v-model="confirmPassword" label-placeholder="Confirm password"/>
+                <label v-if="isError($v.password)" style="color: #FF9999; font-size: 10pt">Minimum 8<br>and maximum 20 characters,<br>at least one uppercase letter,<br>one lowercase letter,<br>one number,<br> one special character</label>
+                <password v-model="password" :strength-meter-only="true" :secureLength="8"
+                          :userInputs="[username, email, firstName, lastName]"/>
+                <vs-input required
+                          :success="isSuccess($v.confirmPassword)"
+                          :danger="isInvalid($v.confirmPassword)" danger-text="asdasd"
+                          class="mt-4" type="password" primary v-model="$v.confirmPassword.$model"
+                          label-placeholder="Confirm password"/>
                 <vs-checkbox class="mt-4" primary v-model="setupOtp">Setup OTP authentication?</vs-checkbox>
               </div>
             </div>
@@ -74,7 +103,8 @@
             <div v-if="activeTab === 'passwordless'" class="row">
               <div class="col">
                 <vs-input required class="mt-2" primary v-model="username" label-placeholder="Username"/>
-                <vs-input required class="mt-4" inputmode="numeric" pattern="[0-9]{6}" primary v-model="totp" label-placeholder="TOTP"/>
+                <vs-input required class="mt-4" inputmode="numeric" pattern="[0-9]{6}" primary v-model="totp"
+                          label-placeholder="TOTP"/>
               </div>
             </div>
           </div>
@@ -100,7 +130,7 @@
           <div class="con-form" style="display: inline-block">
             <div class="row">
               <div class="col">
-                <p>Secret: {{this.secret}}</p>
+                <p>Secret: {{ this.secret }}</p>
                 <img :src="`data:image/png;base64,${this.qrCode}`"/>
               </div>
             </div>
@@ -115,6 +145,11 @@
 import axios from "axios";
 import Password from 'vue-password-strength-meter';
 import zxcvbn from "zxcvbn";
+import {email, helpers, minLength, required, sameAs} from "vuelidate/lib/validators";
+const isPasswordStrong = (value, vm) => zxcvbn(value, [vm.username, vm.email, vm.firstName, vm.lastName])?.score >= 3
+const name = helpers.regex('name', /^[A-Z][a-z]+$/)
+const username = helpers.regex('username', /^[_a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[_a-zA-Z0-9]$/)
+const password = helpers.regex('password', /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/)
 
 export default {
   name: "LandingPage",
@@ -140,11 +175,53 @@ export default {
       qrCode: ""
     }
   },
+  validations: {
+    username: {
+      required,
+      username
+    },
+    email: {
+      required,
+      email
+    },
+    password: {
+      required,
+      minLength: minLength(8),
+      isPasswordStrong,
+      password
+    },
+    confirmPassword: {
+      sameAsPassword: sameAs('password')
+    },
+    firstName: {
+      required,
+      name
+    },
+    lastName: {
+      required,
+      name
+    }
+  },
   mounted() {
     this.$store.commit('setUser', null);
     this.$store.commit('setToken', null);
   },
   methods: {
+    isPasswordStrong(){
+      return zxcvbn(this.password, [this.username, this.email, this.firstName, this.lastName])?.score >= 3
+    },
+    isSuccess(validation) {
+      if(validation.$invalid === true) return false
+      return true
+    },
+    isInvalid(validation) {
+      if(validation.$invalid === true) return true
+      return false
+    },
+    isError(validation) {
+      if(validation.$error === true) return true
+      return false
+    },
     openRegisterDialog() {
       this.dialogRegister = true;
     },
@@ -159,8 +236,7 @@ export default {
       this.setupOtp = false;
     },
     isRegisterValid() {
-      return this.password.length >= 8 && this.password === this.confirmPassword &&
-        zxcvbn(this.password, [this.username, this.email, this.firstName, this.lastName])?.score >= 3;
+      return !this.$v.$invalid;
     },
     async registerUser() {
       if (!this.isRegisterValid()) {
@@ -190,7 +266,7 @@ export default {
           });
           loading.close();
           throw error;
-      });
+        });
       loading.close()
       this.$vs.notification({
         title: "Success",
@@ -200,7 +276,7 @@ export default {
       });
       this.dialogRegister = false;
 
-      if(this.setupOtp){
+      if (this.setupOtp) {
         const response = await axios.get(`${process.env.VUE_APP_BACKEND}/security/setupOtp/${this.username}`)
           .catch(error => {
             this.$vs.notification({
@@ -218,17 +294,21 @@ export default {
         this.dialogOtp = true;
       }
       this.resetRegister();
-    },
+    }
+    ,
     openLoginDialog() {
       this.dialogLogin = true;
-    },
+    }
+    ,
     resetLogin() {
       this.username = "";
       this.password = "";
-    },
+    }
+    ,
     isLoginValid() {
       return this.username.length > 0 && this.password.length > 0;
-    },
+    }
+    ,
     async login() {
       if (!this.isLoginValid()) {
         return;
@@ -267,13 +347,16 @@ export default {
         });
       this.$store.commit("setUser", user.data?.user);
       await this.$router.push(`/${this.$store.getters.user?.role}`);
-    },
+    }
+    ,
     resetOtp() {
 
-    },
+    }
+    ,
     isPasswordlessLoginValid() {
       return this.username.length > 0 && this.totp.length > 0;
-    },
+    }
+    ,
     async passwordlessLogin() {
       if (!this.isPasswordlessLoginValid()) {
         return;
@@ -312,7 +395,8 @@ export default {
         });
       this.$store.commit("setUser", user.data?.user);
       await this.$router.push(`/${this.$store.getters.user?.role}`);
-    },
+    }
+    ,
   }
 }
 </script>
@@ -329,4 +413,23 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+.dirty {
+  border-color: #5A5;
+  background: #EFE;
+}
+
+.dirty:focus {
+  outline-color: #8E8;
+}
+
+.error {
+  border-color: red;
+  background: #FDD;
+}
+
+.error:focus {
+  outline-color: #F99;
+}
+
 </style>

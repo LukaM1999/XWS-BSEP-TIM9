@@ -3,9 +3,11 @@ package api
 import (
 	"context"
 	"dislinkt/common/auth"
+	"dislinkt/common/domain"
 	pbProfile "dislinkt/common/proto/profile_service"
 	pb "dislinkt/common/proto/security_service"
 	"dislinkt/security_service/application"
+	"github.com/go-playground/validator"
 	"github.com/pquerna/otp/totp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc/codes"
@@ -17,6 +19,7 @@ type UserHandler struct {
 	service       *application.SecurityService
 	jwtManager    *auth.JWTManager
 	profileClient pbProfile.ProfileServiceClient
+	validate      *validator.Validate
 }
 
 func NewUserHandler(service *application.SecurityService,
@@ -25,6 +28,7 @@ func NewUserHandler(service *application.SecurityService,
 		service:       service,
 		jwtManager:    jwtManager,
 		profileClient: profileClient,
+		validate:      domain.NewUserValidator(),
 	}
 }
 
@@ -59,7 +63,13 @@ func (handler *UserHandler) GetAll(ctx context.Context, request *pb.GetAllReques
 }
 
 func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	registeredUser, err := handler.service.Register(mapPbToUser(request.User))
+	request.User.Role = "user"
+	mappedUser := mapPbToUser(request.User)
+	if err := handler.validate.Struct(mappedUser); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
+	}
+	mappedUser.Password = HashPassword(mappedUser.Password)
+	registeredUser, err := handler.service.Register(mappedUser)
 	if err != nil {
 		return nil, err
 	}

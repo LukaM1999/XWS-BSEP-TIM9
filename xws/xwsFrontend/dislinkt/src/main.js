@@ -7,6 +7,7 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 import Toasted from 'vue-toasted';
 import Vuesax from 'vuesax'
+import Vuelidate from 'vuelidate'
 import 'vuesax/dist/vuesax.css' //Vuesax styles
 import LandingPage from "@/components/LandingPage";
 import {isTokenExpired, jwtInterceptor} from "@/_helpers/jwt.interceptor";
@@ -28,6 +29,7 @@ Vue.use(Toasted, {
 Vue.use(Vuesax, {
   // options here
 })
+Vue.use(Vuelidate)
 
 export const store = new Vuex.Store({
   plugins: [createPersistedState()],

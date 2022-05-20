@@ -15,6 +15,7 @@
     "vue-password-strength-meter": "^1.7.2",
     "vue-router": "^3.5.3",
     "vue-toasted": "^1.1.28",
+    "vuelidate": "^0.7.7",
     "vuesax": "^4.0.1-alpha.25",
     "vuex": "^3.6.2",
     "vuex-persistedstate": "^4.1.0",

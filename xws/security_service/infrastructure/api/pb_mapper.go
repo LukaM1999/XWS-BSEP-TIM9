@@ -22,7 +22,7 @@ func mapPbToUser(pbUser *pb.User) *domain.User {
 	return &domain.User{
 		Id:       getObjectId(pbUser.Id),
 		Username: pbUser.Username,
-		Password: hashPassword(pbUser.Password),
+		Password: pbUser.Password,
 		Role:     pbUser.Role,
 	}
 }
@@ -34,7 +34,7 @@ func getObjectId(id string) primitive.ObjectID {
 	return primitive.NewObjectID()
 }
 
-func hashPassword(password string) string {
+func HashPassword(password string) string {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return ""

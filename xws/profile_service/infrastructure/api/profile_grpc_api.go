@@ -7,6 +7,10 @@ import (
 	pb "dislinkt/common/proto/profile_service"
 	pbSecurity "dislinkt/common/proto/security_service"
 	"dislinkt/profile_service/application"
+	"dislinkt/profile_service/domain"
+	"github.com/go-playground/validator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strings"
 )
 
@@ -16,6 +20,7 @@ type ProfileHandler struct {
 	postClient     pbPost.PostServiceClient
 	commentClient  pbComment.CommentServiceClient
 	securityClient pbSecurity.SecurityServiceClient
+	validate       *validator.Validate
 }
 
 func NewProfileHandler(service *application.ProfileService, postClient pbPost.PostServiceClient,
@@ -25,6 +30,7 @@ func NewProfileHandler(service *application.ProfileService, postClient pbPost.Po
 		postClient:     postClient,
 		commentClient:  commentClient,
 		securityClient: securityClient,
+		validate:       domain.NewProfileValidator(),
 	}
 }
 
@@ -58,6 +64,9 @@ func (handler *ProfileHandler) GetAll(ctx context.Context, request *pb.GetAllReq
 
 func (handler ProfileHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
 	profile := mapPbToProfile(request.Profile)
+	if err := handler.validate.Struct(profile); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
+	}
 	err := handler.service.Create(profile)
 	if err != nil {
 		return nil, err

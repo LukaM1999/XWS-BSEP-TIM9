@@ -26,6 +26,8 @@ type SecurityServiceClient interface {
 	SetupOTP(ctx context.Context, in *SetupOTPRequest, opts ...grpc.CallOption) (*SetupOTPResponse, error)
 	PasswordlessLogin(ctx context.Context, in *PasswordlessLoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	VerifyUser(ctx context.Context, in *VerifyUserRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
+	RecoverPassword(ctx context.Context, in *RecoverPasswordRequest, opts ...grpc.CallOption) (*RecoverPasswordResponse, error)
+	UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
 }
 
 type securityServiceClient struct {
@@ -108,6 +110,24 @@ func (c *securityServiceClient) VerifyUser(ctx context.Context, in *VerifyUserRe
 	return out, nil
 }
 
+func (c *securityServiceClient) RecoverPassword(ctx context.Context, in *RecoverPasswordRequest, opts ...grpc.CallOption) (*RecoverPasswordResponse, error) {
+	out := new(RecoverPasswordResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/RecoverPassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *securityServiceClient) UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error) {
+	out := new(UpdatePasswordResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/UpdatePassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SecurityServiceServer is the server API for SecurityService service.
 // All implementations must embed UnimplementedSecurityServiceServer
 // for forward compatibility
@@ -120,6 +140,8 @@ type SecurityServiceServer interface {
 	SetupOTP(context.Context, *SetupOTPRequest) (*SetupOTPResponse, error)
 	PasswordlessLogin(context.Context, *PasswordlessLoginRequest) (*LoginResponse, error)
 	VerifyUser(context.Context, *VerifyUserRequest) (*httpbody.HttpBody, error)
+	RecoverPassword(context.Context, *RecoverPasswordRequest) (*RecoverPasswordResponse, error)
+	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error)
 	mustEmbedUnimplementedSecurityServiceServer()
 }
 
@@ -150,6 +172,12 @@ func (*UnimplementedSecurityServiceServer) PasswordlessLogin(context.Context, *P
 }
 func (*UnimplementedSecurityServiceServer) VerifyUser(context.Context, *VerifyUserRequest) (*httpbody.HttpBody, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyUser not implemented")
+}
+func (*UnimplementedSecurityServiceServer) RecoverPassword(context.Context, *RecoverPasswordRequest) (*RecoverPasswordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecoverPassword not implemented")
+}
+func (*UnimplementedSecurityServiceServer) UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePassword not implemented")
 }
 func (*UnimplementedSecurityServiceServer) mustEmbedUnimplementedSecurityServiceServer() {}
 
@@ -301,6 +329,42 @@ func _SecurityService_VerifyUser_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SecurityService_RecoverPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecoverPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).RecoverPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/RecoverPassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).RecoverPassword(ctx, req.(*RecoverPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SecurityService_UpdatePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).UpdatePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/UpdatePassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).UpdatePassword(ctx, req.(*UpdatePasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _SecurityService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "security.SecurityService",
 	HandlerType: (*SecurityServiceServer)(nil),
@@ -336,6 +400,14 @@ var _SecurityService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyUser",
 			Handler:    _SecurityService_VerifyUser_Handler,
+		},
+		{
+			MethodName: "RecoverPassword",
+			Handler:    _SecurityService_RecoverPassword_Handler,
+		},
+		{
+			MethodName: "UpdatePassword",
+			Handler:    _SecurityService_UpdatePassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

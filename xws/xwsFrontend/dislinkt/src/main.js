@@ -12,6 +12,7 @@ import 'vuesax/dist/vuesax.css' //Vuesax styles
 import LandingPage from "@/components/LandingPage";
 import {isTokenExpired, jwtInterceptor} from "@/_helpers/jwt.interceptor";
 import HomePage from "@/components/HomePage";
+import PasswordReset from "@/components/PasswordReset";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -75,13 +76,21 @@ const routes = [
   {
     path: '/user',
     name: 'userHomepage',
-    component: HomePage
+    component: HomePage,
+    children: [
+
+      ]
   },
   {
     path: '/admin',
     name: 'adminHomepage',
     component: HomePage
-  }
+  },
+  {
+    path: '/passwordRecovery',
+    name: 'passwordRecovery',
+    component: PasswordReset
+  },
 ]
 
 export const router = new VueRouter({

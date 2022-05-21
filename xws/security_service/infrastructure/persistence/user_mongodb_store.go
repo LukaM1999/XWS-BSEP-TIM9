@@ -4,6 +4,7 @@ import (
 	"context"
 	auth "dislinkt/common/domain"
 	"dislinkt/security_service/domain"
+	"dislinkt/security_service/infrastructure/api"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,13 +17,15 @@ const (
 	COLLECTION2 = "rolePermission"
 	COLLECTION3 = "otpSecret"
 	COLLECTION4 = "userVerification"
+	COLLECTION5 = "passwordRecovery"
 )
 
 type UserMongoDBStore struct {
-	users             *mongo.Collection
-	rolePermissions   *mongo.Collection
-	otpSecrets        *mongo.Collection
-	userVerifications *mongo.Collection
+	users              *mongo.Collection
+	rolePermissions    *mongo.Collection
+	otpSecrets         *mongo.Collection
+	userVerifications  *mongo.Collection
+	passwordRecoveries *mongo.Collection
 }
 
 func NewUserMongoDBStore(client *mongo.Client) domain.UserStore {
@@ -30,11 +33,13 @@ func NewUserMongoDBStore(client *mongo.Client) domain.UserStore {
 	rolePermissions := client.Database(DATABASE).Collection(COLLECTION2)
 	otpSecrets := client.Database(DATABASE).Collection(COLLECTION3)
 	userVerifications := client.Database(DATABASE).Collection(COLLECTION4)
+	passwordRecoveries := client.Database(DATABASE).Collection(COLLECTION5)
 	return &UserMongoDBStore{
-		users:             users,
-		rolePermissions:   rolePermissions,
-		otpSecrets:        otpSecrets,
-		userVerifications: userVerifications,
+		users:              users,
+		rolePermissions:    rolePermissions,
+		otpSecrets:         otpSecrets,
+		userVerifications:  userVerifications,
+		passwordRecoveries: passwordRecoveries,
 	}
 }
 
@@ -89,6 +94,10 @@ func (store *UserMongoDBStore) DeleteAll() error {
 	if err != nil {
 		return err
 	}
+	_, err = store.passwordRecoveries.DeleteMany(context.TODO(), bson.D{{}})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -98,6 +107,14 @@ func (store *UserMongoDBStore) CreateRolePermission(rolePermission *auth.RolePer
 		return nil, err
 	}
 	return rolePermission, nil
+}
+
+func (store *UserMongoDBStore) CreatePasswordRecovery(passwordRecovery *domain.PasswordRecovery) error {
+	_, err := store.passwordRecoveries.InsertOne(context.TODO(), passwordRecovery)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (store *UserMongoDBStore) CreateUserVerification(userVerification *domain.UserVerification) (*domain.UserVerification, error) {
@@ -242,4 +259,38 @@ func (store *UserMongoDBStore) IsVerified(username string) (bool, error) {
 		return false, err
 	}
 	return userVerification.IsVerified, nil
+}
+
+func (store *UserMongoDBStore) UpdatePassword(token string, password string) (string, error) {
+	passwordRecovery, err := store.filterOnePasswordRecovery(bson.M{"token": token})
+	if err != nil {
+		return "", err
+	}
+	if passwordRecovery.IsRecovered {
+		return "Already recovered", nil
+	}
+	if passwordRecovery.TimeCreated.AddDate(0, 0, 1).Before(time.Now()) {
+		return "Recovery expired.", nil
+	}
+	_, err = store.passwordRecoveries.UpdateOne(context.TODO(), bson.M{"token": token}, bson.M{"$set": bson.M{"isRecovered": true}})
+	if err != nil {
+		return "", err
+	}
+	_, err = store.users.UpdateOne(context.TODO(), bson.M{"username": passwordRecovery.Username},
+		bson.M{"$set": bson.M{"password": api.HashPassword(password)}})
+	if err != nil {
+		return "", err
+	}
+	_, err = store.userVerifications.UpdateOne(context.TODO(), bson.M{"username": passwordRecovery.Username},
+		bson.M{"$set": bson.M{"isVerified": true}})
+	if err != nil {
+		return "", err
+	}
+	return "Password is recovered", nil
+}
+
+func (store *UserMongoDBStore) filterOnePasswordRecovery(filter interface{}) (PasswordRecovery *domain.PasswordRecovery, err error) {
+	result := store.passwordRecoveries.FindOne(context.TODO(), filter)
+	err = result.Decode(&PasswordRecovery)
+	return
 }

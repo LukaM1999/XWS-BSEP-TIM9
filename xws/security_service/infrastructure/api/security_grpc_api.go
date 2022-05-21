@@ -226,3 +226,33 @@ func (handler *UserHandler) VerifyUser(ctx context.Context, req *pb.VerifyUserRe
 		Data:        body.Bytes(),
 	}, nil
 }
+
+func (handler *UserHandler) RecoverPassword(ctx context.Context, req *pb.RecoverPasswordRequest) (*pb.RecoverPasswordResponse, error) {
+	token, err := handler.service.GenerateVerificationToken()
+	if err != nil {
+		return nil, err
+	}
+	err = handler.service.CreatePasswordRecovery(&securityDomain.PasswordRecovery{
+		Id:          primitive.NewObjectID(),
+		Username:    req.Username,
+		Token:       token,
+		TimeCreated: time.Now(),
+		IsRecovered: false,
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = handler.service.SendRecoverPasswordEmail(req.GetEmail(), req.GetUsername(), token)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.RecoverPasswordResponse{}, nil
+}
+
+func (handler *UserHandler) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordRequest) (*pb.UpdatePasswordResponse, error) {
+	err := handler.service.UpdatePassword(req.GetToken(), req.GetPassword())
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdatePasswordResponse{}, nil
+}

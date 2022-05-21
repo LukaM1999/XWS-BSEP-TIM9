@@ -52,6 +52,18 @@ service SecurityService{
       get : "/security/verifyUser"
     };
   }
+  rpc RecoverPassword(RecoverPasswordRequest) returns (RecoverPasswordResponse){
+    option (google.api.http) = {
+      post : "/security/recoverPassword"
+      body : "*"
+    };
+  }
+  rpc UpdatePassword(UpdatePasswordRequest) returns(UpdatePasswordResponse) {
+    option (google.api.http) = {
+      patch: "/security/updatePassword"
+      body: "*"
+    };
+  }
 }
 
 message GetRequest {
@@ -120,3 +132,17 @@ message PasswordlessLoginRequest {
 message VerifyUserRequest {
   string token = 1;
 }
+
+message RecoverPasswordRequest {
+  string email = 1;
+  string username = 2;
+}
+
+message RecoverPasswordResponse {}
+
+message UpdatePasswordRequest {
+  string token = 1;
+  string password = 2;
+}
+
+message UpdatePasswordResponse {}

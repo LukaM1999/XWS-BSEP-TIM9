@@ -18,4 +18,6 @@ type UserStore interface {
 	CreateUserVerification(userVerification *UserVerification) (*UserVerification, error)
 	VerifyUser(token string) (string, error)
 	IsVerified(username string) (bool, error)
+	UpdatePassword(token string, password string) (string, error)
+	CreatePasswordRecovery(passwordRecovery *PasswordRecovery) error
 }

@@ -149,3 +149,68 @@ func (service *SecurityService) IsVerified(username string) (bool, error) {
 	}
 	return isVerified, nil
 }
+
+func (service *SecurityService) SendRecoverPasswordEmail(email string, username string, token string) error {
+	// Sender data.
+	from := "isatestmail2021@gmail.com"
+	password := "ftnftnftn"
+
+	// Receiver email address.
+	to := []string{
+		email,
+	}
+
+	// smtp server configuration.
+	smtpHost := "smtp.gmail.com"
+	smtpPort := "587"
+
+	// Authentication.
+	auth := smtp.PlainAuth("", from, password, smtpHost)
+
+	t, err := template.ParseFiles("./application/recoverPassword.html")
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	var body bytes.Buffer
+
+	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	body.Write([]byte(fmt.Sprintf("Subject: This is a test subject \n%s\n\n", mimeHeaders)))
+
+	t.Execute(&body, struct {
+		Name    string
+		Message string
+		Token   string
+	}{
+		Name:    username,
+		Message: "Click link below to recover your password",
+		Token:   token,
+	})
+
+	// Sending email.
+	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Println("Email Sent!")
+
+	return nil
+}
+
+func (service *SecurityService) UpdatePassword(token string, password string) error {
+	_, err := service.store.UpdatePassword(token, password)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (service *SecurityService) CreatePasswordRecovery(passwordRecovery *domain.PasswordRecovery) error {
+	err := service.store.CreatePasswordRecovery(passwordRecovery)
+	if err != nil {
+		return err
+	}
+	return nil
+}

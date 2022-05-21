@@ -9,6 +9,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
 	github.com/joho/godotenv v1.4.0
 	go.mongodb.org/mongo-driver v1.9.1
+	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	google.golang.org/grpc v1.46.0
 	google.golang.org/protobuf v1.28.0
 )

@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/proto"
 	"log"
 	"net/http"
 	"os"
@@ -36,18 +35,11 @@ func NewServer(config *cfg.Config) *Server {
 	return server
 }
 
-func append(ctx context.Context, w http.ResponseWriter, resp proto.Message) error {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	return nil
-}
-
 func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
 
-		// TODO: be careful!
-		o := r.Header.Get("Origin")
-		h.Set("Access-Control-Allow-Origin", o)
+		h.Set("Access-Control-Allow-Origin", "https://localhost:7777")
 
 		if r.Method == http.MethodOptions {
 			h.Set("Access-Control-Allow-Methods", strings.Join(

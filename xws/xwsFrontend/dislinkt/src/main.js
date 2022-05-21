@@ -36,6 +36,7 @@ export const store = new Vuex.Store({
   state: {
     user: null,
     token: null,
+    failedLoginAttempts: 0,
   },
   mutations: {
     setToken(state, token) {
@@ -43,6 +44,12 @@ export const store = new Vuex.Store({
     },
     setUser(state, user) {
       state.user = user
+    },
+    incrementFailedLoginAttempts(state) {
+      state.failedLoginAttempts++
+    },
+    resetFailedLoginAttempts(state) {
+      state.failedLoginAttempts = 0
     }
   },
   getters: {
@@ -51,6 +58,9 @@ export const store = new Vuex.Store({
     },
     user(state) {
       return state.user
+    },
+    failedLoginAttempts(state) {
+      return state.failedLoginAttempts
     }
   }
 })

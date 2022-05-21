@@ -1,5 +1,9 @@
 <template>
-  <div class="container">
+  <div style="overflow-x: hidden">
+      <vue-recaptcha style="position: absolute; bottom: 30px; left: 30px; z-index: 100000" v-if="showCaptcha" ref="recaptcha" sitekey="6Len6gcgAAAAAK-QuPZGnklGAlC5aKsthR2aMKLx"
+                     @verify="captchaVerified">
+
+      </vue-recaptcha>
     <div class="row justify-content-end">
       <div class="col-1">
         <vs-button @click="openRegisterDialog()">Register</vs-button>
@@ -70,7 +74,7 @@
         </vs-dialog>
       </div>
       <div class="col-1">
-        <vs-button @click="openLoginDialog()">Login</vs-button>
+        <vs-button :disabled="isLoginDisabled()" @click="openLoginDialog()">Login</vs-button>
         <vs-dialog :prevent-close="true" @close="resetLogin()" width="15%" v-model="dialogLogin">
           <template #header>
             <h4 class="not-margin me-3 ms-3">
@@ -146,6 +150,7 @@ import axios from "axios";
 import Password from 'vue-password-strength-meter';
 import zxcvbn from "zxcvbn";
 import {email, helpers, minLength, required, sameAs} from "vuelidate/lib/validators";
+import { VueRecaptcha } from 'vue-recaptcha';
 const isPasswordStrong = (value, vm) => zxcvbn(value, [vm.username, vm.email, vm.firstName, vm.lastName])?.score >= 3
 const name = helpers.regex('name', /^[A-Z][a-z]+$/)
 const username = helpers.regex('username', /^[_a-zA-Z0-9]([._-](?![._-])|[a-zA-Z0-9]){3,18}[_a-zA-Z0-9]$/)
@@ -154,7 +159,8 @@ const password = helpers.regex('password', /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*
 export default {
   name: "LandingPage",
   components: {
-    Password
+    Password,
+    VueRecaptcha
   },
   data() {
     return {
@@ -172,7 +178,8 @@ export default {
       setupOtp: false,
       dialogOtp: false,
       secret: "",
-      qrCode: ""
+      qrCode: "",
+      showCaptcha: false,
     }
   },
   validations: {
@@ -209,6 +216,9 @@ export default {
   methods: {
     isPasswordStrong(){
       return zxcvbn(this.password, [this.username, this.email, this.firstName, this.lastName])?.score >= 3
+    },
+    isLoginDisabled(){
+      return this.$store.getters.failedLoginAttempts > 5
     },
     isSuccess(validation) {
       if(validation.$invalid === true) return false
@@ -294,21 +304,26 @@ export default {
         this.dialogOtp = true;
       }
       this.resetRegister();
-    }
-    ,
+    },
+    captchaVerified() {
+      setTimeout(() => {
+        this.showCaptcha = false;
+        this.$store.commit('resetFailedLoginAttempts')
+      }, 2000);
+    },
     openLoginDialog() {
       this.dialogLogin = true;
-    }
-    ,
+    },
+
     resetLogin() {
       this.username = "";
       this.password = "";
-    }
-    ,
+    },
+
     isLoginValid() {
       return this.username.length > 0 && this.password.length > 0;
-    }
-    ,
+    },
+
     async login() {
       if (!this.isLoginValid()) {
         return;
@@ -325,6 +340,13 @@ export default {
           position: "top-right"
         });
         loading.close()
+        this.$store.commit('incrementFailedLoginAttempts');
+        if(this.isLoginDisabled()) {
+          this.dialogLogin = false;
+          this.resetLogin();
+          this.showCaptcha = true;
+          this.$refs.recaptcha.execute();
+        }
         throw error
       });
       loading.close()
@@ -347,16 +369,12 @@ export default {
         });
       this.$store.commit("setUser", user.data?.user);
       await this.$router.push(`/${this.$store.getters.user?.role}`);
-    }
-    ,
-    resetOtp() {
+    },
 
-    }
-    ,
     isPasswordlessLoginValid() {
       return this.username.length > 0 && this.totp.length > 0;
-    }
-    ,
+    },
+
     async passwordlessLogin() {
       if (!this.isPasswordlessLoginValid()) {
         return;
@@ -366,13 +384,20 @@ export default {
         username: this.username,
         otp: this.totp
       }).catch(error => {
+        loading.close()
         this.$vs.notification({
           title: "Error",
           text: "Invalid username/totp",
           color: "danger",
           position: "top-right"
         });
-        loading.close()
+        this.$store.commit('incrementFailedLoginAttempts');
+        if(this.isLoginDisabled()) {
+          this.dialogLogin = false;
+          this.resetLogin();
+          this.showCaptcha = true;
+          this.$refs.recaptcha.execute();
+        }
         throw error
       });
       loading.close()

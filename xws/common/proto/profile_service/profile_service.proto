@@ -31,6 +31,11 @@ service ProfileService{
       body: "profile"
     };
   }
+  rpc Delete(DeleteRequest) returns(DeleteResponse) {
+    option (google.api.http) = {
+      delete: "/profile/{id}"
+    };
+  }
 }
 
 message GetRequest {
@@ -64,6 +69,13 @@ message UpdateRequest {
 
 message UpdateResponse {
   Profile profile = 1;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
 }
 
 message Profile {

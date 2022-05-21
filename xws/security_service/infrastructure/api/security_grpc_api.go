@@ -1,17 +1,23 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"dislinkt/common/auth"
 	"dislinkt/common/domain"
 	pbProfile "dislinkt/common/proto/profile_service"
 	pb "dislinkt/common/proto/security_service"
 	"dislinkt/security_service/application"
+	securityDomain "dislinkt/security_service/domain"
+	"fmt"
 	"github.com/go-playground/validator"
 	"github.com/pquerna/otp/totp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/genproto/googleapis/api/httpbody"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"text/template"
+	"time"
 )
 
 type UserHandler struct {
@@ -87,6 +93,26 @@ func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterReq
 		handler.service.Delete(registeredUser.Id)
 		return nil, err
 	}
+	token, err := handler.service.GenerateVerificationToken()
+	if err != nil {
+		return nil, err
+	}
+	userVerification, err := handler.service.CreateUserVerification(&securityDomain.UserVerification{
+		Id:          primitive.NewObjectID(),
+		Username:    registeredUser.Username,
+		Token:       token,
+		TimeCreated: time.Now(),
+		IsVerified:  false,
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = handler.service.SendVerificationEmail(request.GetUser().GetUsername(), request.GetEmail(), userVerification.Token)
+	if err != nil {
+		handler.service.Delete(registeredUser.Id)
+		handler.profileClient.Delete(ctx, &pbProfile.DeleteRequest{Id: registeredUser.Id.Hex()})
+		return nil, err
+	}
 	return &pb.RegisterResponse{
 		User: &pb.User{
 			Id:       registeredUser.Id.Hex(),
@@ -113,6 +139,13 @@ func (handler *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*p
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
 	}
 
+	isVerified, err := handler.service.IsVerified(req.GetUsername())
+	if err != nil {
+		return nil, err
+	}
+	if !isVerified {
+		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
+	}
 	if user == nil || !user.IsCorrectPassword(req.GetPassword()) {
 		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
 	}
@@ -155,10 +188,41 @@ func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.Passw
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
 	}
+	isVerified, err := handler.service.IsVerified(req.GetUsername())
+	if err != nil {
+		return nil, err
+	}
+	if !isVerified {
+		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
+	}
 	token, err := handler.jwtManager.Generate(user)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot generate access token")
 	}
 
 	return &pb.LoginResponse{AccessToken: token}, nil
+}
+
+func (handler *UserHandler) VerifyUser(ctx context.Context, req *pb.VerifyUserRequest) (*httpbody.HttpBody, error) {
+	message, err := handler.service.VerifyUser(req.GetToken())
+	if err != nil {
+		return nil, err
+	}
+	t, err := template.ParseFiles("./application/verified.html")
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	var body bytes.Buffer
+
+	t.Execute(&body, struct {
+		Message string
+	}{
+		Message: message,
+	})
+	return &httpbody.HttpBody{
+		ContentType: "text/html",
+		Data:        body.Bytes(),
+	}, nil
 }

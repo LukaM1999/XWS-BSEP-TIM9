@@ -15,4 +15,7 @@ type UserStore interface {
 	CreateRolePermission(rolePermission *auth.RolePermission) (*auth.RolePermission, error)
 	SaveOTPSecret(username string, secret string) error
 	GetOTPSecret(username string) (string, error)
+	CreateUserVerification(userVerification *UserVerification) (*UserVerification, error)
+	VerifyUser(token string) (string, error)
+	IsVerified(username string) (bool, error)
 }

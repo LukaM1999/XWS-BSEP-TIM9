@@ -5,6 +5,7 @@ option go_package = "dislinkt/common/security";
 package security;
 
 import "google/api/annotations.proto";
+import "google/api/httpbody.proto";
 
 service SecurityService{
   rpc Get(GetRequest) returns(GetResponse) {
@@ -44,6 +45,11 @@ service SecurityService{
     option (google.api.http) = {
       post : "/security/passwordlessLogin"
       body : "*"
+    };
+  }
+  rpc VerifyUser(VerifyUserRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {
+      get : "/security/verifyUser"
     };
   }
 }
@@ -109,4 +115,8 @@ message SetupOTPResponse {
 message PasswordlessLoginRequest {
   string username = 1;
   string otp = 2;
+}
+
+message VerifyUserRequest {
+  string token = 1;
 }

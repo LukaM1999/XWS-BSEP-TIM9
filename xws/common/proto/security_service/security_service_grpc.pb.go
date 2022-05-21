@@ -4,6 +4,7 @@ package security
 
 import (
 	context "context"
+	httpbody "google.golang.org/genproto/googleapis/api/httpbody"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -24,6 +25,7 @@ type SecurityServiceClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	SetupOTP(ctx context.Context, in *SetupOTPRequest, opts ...grpc.CallOption) (*SetupOTPResponse, error)
 	PasswordlessLogin(ctx context.Context, in *PasswordlessLoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	VerifyUser(ctx context.Context, in *VerifyUserRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 }
 
 type securityServiceClient struct {
@@ -97,6 +99,15 @@ func (c *securityServiceClient) PasswordlessLogin(ctx context.Context, in *Passw
 	return out, nil
 }
 
+func (c *securityServiceClient) VerifyUser(ctx context.Context, in *VerifyUserRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/VerifyUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SecurityServiceServer is the server API for SecurityService service.
 // All implementations must embed UnimplementedSecurityServiceServer
 // for forward compatibility
@@ -108,6 +119,7 @@ type SecurityServiceServer interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	SetupOTP(context.Context, *SetupOTPRequest) (*SetupOTPResponse, error)
 	PasswordlessLogin(context.Context, *PasswordlessLoginRequest) (*LoginResponse, error)
+	VerifyUser(context.Context, *VerifyUserRequest) (*httpbody.HttpBody, error)
 	mustEmbedUnimplementedSecurityServiceServer()
 }
 
@@ -135,6 +147,9 @@ func (*UnimplementedSecurityServiceServer) SetupOTP(context.Context, *SetupOTPRe
 }
 func (*UnimplementedSecurityServiceServer) PasswordlessLogin(context.Context, *PasswordlessLoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PasswordlessLogin not implemented")
+}
+func (*UnimplementedSecurityServiceServer) VerifyUser(context.Context, *VerifyUserRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyUser not implemented")
 }
 func (*UnimplementedSecurityServiceServer) mustEmbedUnimplementedSecurityServiceServer() {}
 
@@ -268,6 +283,24 @@ func _SecurityService_PasswordlessLogin_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SecurityService_VerifyUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).VerifyUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/VerifyUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).VerifyUser(ctx, req.(*VerifyUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _SecurityService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "security.SecurityService",
 	HandlerType: (*SecurityServiceServer)(nil),
@@ -299,6 +332,10 @@ var _SecurityService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PasswordlessLogin",
 			Handler:    _SecurityService_PasswordlessLogin_Handler,
+		},
+		{
+			MethodName: "VerifyUser",
+			Handler:    _SecurityService_VerifyUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

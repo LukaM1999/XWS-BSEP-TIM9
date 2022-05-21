@@ -27,8 +27,9 @@ type Server struct {
 func NewServer(config *cfg.Config) *Server {
 	server := &Server{
 		config: config,
-		mux:    runtime.NewServeMux(
-		//runtime.WithForwardResponseOption(append),
+		mux: runtime.NewServeMux(
+			//runtime.WithForwardResponseOption(append),
+			runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.HTTPBodyMarshaler{&runtime.JSONPb{}}),
 		),
 	}
 	server.initHandlers()
@@ -63,6 +64,7 @@ func cors(next http.Handler) http.Handler {
 					"Content-Type",
 					"Accept",
 					"Authorization",
+					"Location",
 				}, ", ",
 			))
 

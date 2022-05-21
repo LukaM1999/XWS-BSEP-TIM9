@@ -110,6 +110,18 @@ func (store *ProfileMongoDBStore) filterOne(filter interface{}) (profile *domain
 	return
 }
 
+func (store *ProfileMongoDBStore) Delete(id string) error {
+	profileId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = store.profiles.DeleteOne(context.TODO(), bson.M{"_id": profileId})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func decode(cursor *mongo.Cursor) (profiles []*domain.Profile, err error) {
 	for cursor.Next(context.TODO()) {
 		var Profile domain.Profile

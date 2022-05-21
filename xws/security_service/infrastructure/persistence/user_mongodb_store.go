@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"time"
 )
 
 const (
@@ -14,22 +15,26 @@ const (
 	COLLECTION1 = "user"
 	COLLECTION2 = "rolePermission"
 	COLLECTION3 = "otpSecret"
+	COLLECTION4 = "userVerification"
 )
 
 type UserMongoDBStore struct {
-	users           *mongo.Collection
-	rolePermissions *mongo.Collection
-	otpSecrets      *mongo.Collection
+	users             *mongo.Collection
+	rolePermissions   *mongo.Collection
+	otpSecrets        *mongo.Collection
+	userVerifications *mongo.Collection
 }
 
 func NewUserMongoDBStore(client *mongo.Client) domain.UserStore {
 	users := client.Database(DATABASE).Collection(COLLECTION1)
 	rolePermissions := client.Database(DATABASE).Collection(COLLECTION2)
 	otpSecrets := client.Database(DATABASE).Collection(COLLECTION3)
+	userVerifications := client.Database(DATABASE).Collection(COLLECTION4)
 	return &UserMongoDBStore{
-		users:           users,
-		rolePermissions: rolePermissions,
-		otpSecrets:      otpSecrets,
+		users:             users,
+		rolePermissions:   rolePermissions,
+		otpSecrets:        otpSecrets,
+		userVerifications: userVerifications,
 	}
 }
 
@@ -80,6 +85,10 @@ func (store *UserMongoDBStore) DeleteAll() error {
 	if err != nil {
 		return err
 	}
+	_, err = store.userVerifications.DeleteMany(context.TODO(), bson.D{{}})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -89,6 +98,14 @@ func (store *UserMongoDBStore) CreateRolePermission(rolePermission *auth.RolePer
 		return nil, err
 	}
 	return rolePermission, nil
+}
+
+func (store *UserMongoDBStore) CreateUserVerification(userVerification *domain.UserVerification) (*domain.UserVerification, error) {
+	_, err := store.userVerifications.InsertOne(context.TODO(), userVerification)
+	if err != nil {
+		return nil, err
+	}
+	return userVerification, nil
 }
 
 func (store *UserMongoDBStore) SaveOTPSecret(username string, secret string) error {
@@ -146,4 +163,83 @@ func decode(cursor *mongo.Cursor) (users []*auth.User, err error) {
 	}
 	err = cursor.Err()
 	return
+}
+
+func (store *UserMongoDBStore) getUserVerificationByToken(token string) (*domain.UserVerification, error) {
+	filter := bson.M{"token": token}
+	return store.filterOneVerification(filter)
+}
+
+func (store *UserMongoDBStore) filterVerification(filter interface{}) ([]*domain.UserVerification, error) {
+	cursor, err := store.userVerifications.Find(context.TODO(), filter)
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			return
+		}
+	}(cursor, context.TODO())
+
+	if err != nil {
+		return nil, err
+	}
+	return decodeVerification(cursor)
+}
+
+func (store *UserMongoDBStore) filterOneVerification(filter interface{}) (UserVerification *domain.UserVerification, err error) {
+	result := store.userVerifications.FindOne(context.TODO(), filter)
+	err = result.Decode(&UserVerification)
+	return
+}
+
+func decodeVerification(cursor *mongo.Cursor) (verifications []*domain.UserVerification, err error) {
+	for cursor.Next(context.TODO()) {
+		var UserVerification domain.UserVerification
+		err = cursor.Decode(&UserVerification)
+		if err != nil {
+			return
+		}
+		verifications = append(verifications, &UserVerification)
+	}
+	err = cursor.Err()
+	return
+}
+
+func (store *UserMongoDBStore) VerifyUser(token string) (string, error) {
+	userVerification, err := store.filterOneVerification(bson.M{"token": token})
+	if err != nil {
+		return "", err
+	}
+	if userVerification.IsVerified {
+		return "Already verified.", nil
+	}
+	if userVerification.TimeCreated.AddDate(0, 0, 1).Before(time.Now()) {
+		return "Verification expired.", nil
+	}
+	_, err = store.userVerifications.UpdateOne(context.TODO(), bson.M{"token": token}, bson.M{"$set": bson.M{"isVerified": true}})
+	if err != nil {
+		return "", err
+	}
+	return "Successfully verified!", nil
+}
+
+func (store *UserMongoDBStore) UpdateUserVerification(id primitive.ObjectID, userVerification *domain.UserVerification) error {
+	userVerifications, err := store.filterVerification(bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+	for _, userVerification := range userVerifications {
+		_, err := store.userVerifications.UpdateOne(context.TODO(), bson.M{"_id": userVerification.Id}, bson.M{"$set": bson.M{"userVerification": userVerification}})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (store *UserMongoDBStore) IsVerified(username string) (bool, error) {
+	userVerification, err := store.filterOneVerification(bson.M{"username": username})
+	if err != nil {
+		return false, err
+	}
+	return userVerification.IsVerified, nil
 }

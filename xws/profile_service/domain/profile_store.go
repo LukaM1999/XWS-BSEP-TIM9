@@ -6,4 +6,5 @@ type ProfileStore interface {
 	Create(profile *Profile) error
 	Update(profileId string, profile *Profile) error
 	DeleteAll() error
+	Delete(id string) error
 }

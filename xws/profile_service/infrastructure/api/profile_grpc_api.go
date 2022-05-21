@@ -122,3 +122,11 @@ func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequ
 		Profile: mapProfileToPb(profile),
 	}, nil
 }
+
+func (handler *ProfileHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+	err := handler.service.Delete(request.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.DeleteResponse{}, nil
+}

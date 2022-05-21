@@ -29,3 +29,7 @@ func (service *ProfileService) Create(profile *domain.Profile) error {
 func (service *ProfileService) Update(profileId string, profile *domain.Profile) error {
 	return service.store.Update(profileId, profile)
 }
+
+func (service *ProfileService) Delete(id string) error {
+	return service.store.Delete(id)
+}

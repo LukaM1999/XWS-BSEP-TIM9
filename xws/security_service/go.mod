@@ -7,6 +7,7 @@ replace dislinkt/common => ../common
 require (
 	dislinkt/common v1.0.0
 	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/google/uuid v1.1.2
 	github.com/joho/godotenv v1.4.0
 	github.com/pquerna/otp v1.3.0
 	go.mongodb.org/mongo-driver v1.9.1

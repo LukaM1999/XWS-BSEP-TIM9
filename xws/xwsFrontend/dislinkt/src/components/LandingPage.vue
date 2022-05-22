@@ -255,6 +255,9 @@ export default {
   mounted() {
     this.$store.commit('setUser', null);
     this.$store.commit('setToken', null);
+    if(this.isLoginDisabled()) {
+      this.showCaptcha = true;
+    }
   },
   methods: {
     isPasswordStrong() {

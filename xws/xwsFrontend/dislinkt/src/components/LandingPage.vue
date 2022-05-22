@@ -191,6 +191,7 @@ import Password from 'vue-password-strength-meter';
 import zxcvbn from "zxcvbn";
 import {email, helpers, minLength, required, sameAs} from "vuelidate/lib/validators";
 import {VueRecaptcha} from 'vue-recaptcha';
+import isPasswordCompromised from '@mathiscode/password-leak'
 
 const isPasswordStrong = (value, vm) => zxcvbn(value, [vm.username, vm.email, vm.firstName, vm.lastName])?.score >= 3
 const name = helpers.regex('name', /^[A-Z][a-z]+$/)
@@ -292,7 +293,6 @@ export default {
       return !this.$v.email.$invalid && !this.$v.username.$invalid;
     },
     async passwordRecovery() {
-      console.log(this.email)
       const loading = this.$vs.loading();
       await axios.post(`${process.env.VUE_APP_BACKEND}/security/recoverPassword`, {
         username: this.username,
@@ -319,10 +319,22 @@ export default {
         })
     },
     async registerUser() {
+      const loading = this.$vs.loading();
       if (!this.isRegisterValid()) {
         return;
       }
       if (this.password !== this.confirmPassword) {
+        return;
+      }
+      const isCompromised = await isPasswordCompromised(this.password)
+      if (isCompromised) {
+        loading.close();
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Password is compromised',
+          color: 'danger',
+          position: 'top-right'
+        })
         return;
       }
       const registeredUser = {
@@ -335,7 +347,6 @@ export default {
         firstName: this.firstName,
         lastName: this.lastName,
       };
-      const loading = this.$vs.loading();
       const response = await axios.post(`${process.env.VUE_APP_BACKEND}/security/user`, registeredUser)
         .catch(error => {
           this.$vs.notification({
@@ -494,7 +505,6 @@ export default {
       this.$store.commit("setUser", user.data?.user);
       await this.$router.push(`/${this.$store.getters.user?.role}`);
     }
-    ,
   }
 }
 </script>

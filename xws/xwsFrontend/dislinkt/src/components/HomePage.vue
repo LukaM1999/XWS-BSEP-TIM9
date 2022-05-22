@@ -4,6 +4,7 @@
     <vs-button primary @click="getAllUsers()">Get all users</vs-button>
     <vs-button primary @click="getProfile()">Get profile</vs-button>
     <vs-button primary @click="searchProfile()">Search profile</vs-button>
+    <vs-button primary @click="logOut()">Log out</vs-button>
   </div>
 </div>
 
@@ -16,6 +17,11 @@ import axios from 'axios';
 export default {
   name: "HomePage",
   methods: {
+    logOut(){
+      this.$store.commit('setToken', null);
+      this.$store.commit('setUser', null);
+      this.$router.push('/');
+    },
     async getAllUsers() {
       const loading = this.$vs.loading();
       const response = await axios.get(process.env.VUE_APP_BACKEND + '/security/user').catch(error => {

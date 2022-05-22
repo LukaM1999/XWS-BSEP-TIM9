@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@mathiscode/password-leak": "^1.2.11",
     "@vue/composition-api": "^1.6.1",
     "axios": "^0.27.2",
     "core-js": "^3.6.5",
@@ -35,6 +36,6 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^6.2.2",
-    "vue-template-compiler": "^2.6.11"
+    "vue-template-compiler": "^2.6.14"
   }
 }

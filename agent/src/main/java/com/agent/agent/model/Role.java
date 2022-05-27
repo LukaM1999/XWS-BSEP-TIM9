@@ -1,26 +1,24 @@
 package com.agent.agent.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 // POJO koji implementira Spring Security GrantedAuthority kojim se mogu definisati role u aplikaciji
 
 @Entity
-@Table(name="ROLE")
+@Table(name = "role")
 public class Role implements GrantedAuthority, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name="roleName")
-    private String roleName;
-
     @Id
-    @Column(name="id")
-    @SequenceGenerator(name = "role_id_gen", sequenceName = "role_id_seq", initialValue = 1, allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "role_id_gen")
-    Long id;
+    @Column(name="role_name")
+    private String roleName;
 
     //@JsonIgnore
     @Override
@@ -37,13 +35,5 @@ public class Role implements GrantedAuthority, Serializable {
     }
 
     public Role(){}
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
 }
 

@@ -1,5 +1,6 @@
 package com.agent.agent.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,13 +21,14 @@ public class Company {
     @ManyToOne(targetEntity = RegisteredUser.class, fetch = FetchType.EAGER)
     @Getter
     @Setter
+    @JsonIgnore
     private RegisteredUser companyOwner;
 
     @Column(name = "owner_username")
     @Getter
     @Setter
     private String ownerUsername;
-    @Column
+    @Column(unique = true)
     @Getter
     @Setter
     private String name;

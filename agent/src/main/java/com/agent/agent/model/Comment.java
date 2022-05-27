@@ -17,6 +17,11 @@ public class Comment {
     @Column
     @Getter
     @Setter
+    private String companyName;
+
+    @Column
+    @Getter
+    @Setter
     private String position;
 
     @Column
@@ -53,7 +58,9 @@ public class Comment {
     public Comment() {
     }
 
-    public Comment(String position, String seniority, String engagement, boolean currentlyEmployed, String subject, String content, double rating) {
+    public Comment(String companyName, String position, String seniority, String engagement, boolean currentlyEmployed,
+                   String subject, String content, double rating) {
+        this.companyName = companyName;
         this.position = position;
         this.seniority = seniority;
         this.engagement = engagement;

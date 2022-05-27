@@ -17,12 +17,12 @@ public class Salary {
     @Column
     @Getter
     @Setter
-    private String position;
+    private String companyName;
 
     @Column
     @Getter
     @Setter
-    private String seniority;
+    private String position;
 
     @Column
     @Getter
@@ -42,9 +42,8 @@ public class Salary {
     public Salary() {
     }
 
-    public Salary(String position, String seniority, String engagement, boolean currentlyEmployed, double monthlyNetSalary) {
+    public Salary(String position, String engagement, boolean currentlyEmployed, double monthlyNetSalary) {
         this.position = position;
-        this.seniority = seniority;
         this.engagement = engagement;
         this.currentlyEmployed = currentlyEmployed;
         this.monthlyNetSalary = monthlyNetSalary;

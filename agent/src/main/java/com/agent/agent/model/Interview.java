@@ -17,6 +17,11 @@ public class Interview {
     @Column
     @Getter
     @Setter
+    private String companyName;
+
+    @Column
+    @Getter
+    @Setter
     private String position;
 
     @Column
@@ -57,7 +62,9 @@ public class Interview {
     public Interview() {
     }
 
-    public Interview(String position, String year, String subject, String hr, String technical, int duration, int difficulty, double rating) {
+    public Interview(String companyName, String position, String year, String subject, String hr, String technical,
+                     int duration, int difficulty, double rating) {
+        this.companyName = companyName;
         this.position = position;
         this.year = year;
         this.subject = subject;

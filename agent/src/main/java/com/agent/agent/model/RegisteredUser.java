@@ -25,7 +25,7 @@ public class RegisteredUser implements UserDetails {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column
+    @Column(name = "username")
     private String username;
     @Column
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -33,11 +33,11 @@ public class RegisteredUser implements UserDetails {
     @Column
     @Getter
     @Setter
-    private String name;
+    private String firstName;
     @Column
     @Getter
     @Setter
-    private String surname;
+    private String lastName;
     @Column
     @Getter
     @Setter
@@ -65,13 +65,20 @@ public class RegisteredUser implements UserDetails {
     @Column(name = "last_password_reset_date")
     private Timestamp lastPasswordResetDate;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="roleName")
     private Role role;
 
     @OneToMany(mappedBy = "companyOwner", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @Getter
     @Setter
+    @JsonIgnore
     private Set<Company> companies = new LinkedHashSet<>();
+
+    @Column
+    @Getter
+    @Setter
+    private String dislinktToken;
 
     public Role getRole() {
         return role;

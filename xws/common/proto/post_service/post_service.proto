@@ -64,6 +64,18 @@ service PostService{
       body: "profile"
     };
   }
+  rpc CreateJob(CreateJobRequest) returns(CreateJobResponse) {
+    option (google.api.http) = {
+      post: "/post/job",
+      body: "jobOffer"
+    };
+  }
+  rpc PromoteJob(PromoteJobRequest) returns(PromoteJobResponse) {
+    option (google.api.http) = {
+      post: "/post/promote-job",
+      body: "*"
+    };
+  }
 }
 
 message GetRequest {
@@ -122,6 +134,23 @@ message UpdateProfileResponse {
   Profile profile = 1;
 }
 
+message CreateJobRequest {
+  JobOffer jobOffer = 1;
+}
+
+message CreateJobResponse {
+  JobOffer jobOffer = 1;
+}
+
+message PromoteJobRequest {
+  string token = 1;
+  JobOffer jobOffer = 2;
+}
+
+message PromoteJobResponse {
+  JobOffer jobOffer = 1;
+}
+
 message Post {
   string id = 1;
   google.protobuf.Timestamp createdAt = 2;
@@ -145,5 +174,15 @@ message Connection {
   string id = 1;
   string issuerId = 2;
   string subjectId = 3;
+}
+
+message JobOffer {
+  string id = 1;
+  Profile profile = 2;
+  string company = 3;
+  string position = 4;
+  string description = 5;
+  string criteria = 6;
+  google.protobuf.Timestamp createdAt = 7;
 }
 

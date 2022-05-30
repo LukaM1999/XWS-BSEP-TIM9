@@ -15,16 +15,19 @@ const (
 	DATABASE    = "post_service"
 	COLLECTION1 = "connection"
 	COLLECTION2 = "post"
+	COLLECTION3 = "job"
 )
 
 type PostMongoDBStore struct {
 	posts       *mongo.Collection
 	connections *mongo.Collection
+	jobs        *mongo.Collection
 }
 
 func NewPostMongoDBStore(client *mongo.Client) domain.PostStore {
 	connections := client.Database(DATABASE).Collection(COLLECTION1)
 	posts := client.Database(DATABASE).Collection(COLLECTION2)
+	jobs := client.Database(DATABASE).Collection(COLLECTION3)
 	index := mongo.IndexModel{
 		Keys:    bson.D{{"fullName", "text"}},
 		Options: options.Index().SetUnique(true),
@@ -39,6 +42,7 @@ func NewPostMongoDBStore(client *mongo.Client) domain.PostStore {
 	return &PostMongoDBStore{
 		connections: connections,
 		posts:       posts,
+		jobs:        jobs,
 	}
 }
 
@@ -169,6 +173,10 @@ func (store *PostMongoDBStore) DeleteAll() error {
 	if err != nil {
 		return err
 	}
+	_, err = store.jobs.DeleteMany(context.TODO(), bson.D{{}})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -232,4 +240,14 @@ func decodeConnections(cursor *mongo.Cursor) (connections []*domain.Connection, 
 	}
 	err = cursor.Err()
 	return
+}
+
+func (store *PostMongoDBStore) CreateJob(job *domain.JobOffer) (*domain.JobOffer, error) {
+	result, err := store.jobs.InsertOne(context.TODO(), job)
+	if err != nil {
+		return nil, err
+	}
+	job.Id = result.InsertedID.(primitive.ObjectID)
+
+	return job, nil
 }

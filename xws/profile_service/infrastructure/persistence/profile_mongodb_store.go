@@ -2,7 +2,9 @@ package persistence
 
 import (
 	"context"
+	"crypto/rand"
 	"dislinkt/profile_service/domain"
+	"encoding/base32"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -133,4 +135,33 @@ func decode(cursor *mongo.Cursor) (profiles []*domain.Profile, err error) {
 	}
 	err = cursor.Err()
 	return
+}
+
+func (store *ProfileMongoDBStore) GetByToken(token string) (*domain.Profile, error) {
+	filter := bson.M{"agentToken": token}
+	return store.filterOne(filter)
+}
+
+func (store *ProfileMongoDBStore) GenerateToken(id primitive.ObjectID) (string, error) {
+	filter := bson.M{"_id": id}
+	profile, err := store.filterOne(filter)
+	if err != nil {
+		return "", err
+	}
+	token := getToken(10)
+	profile.AgentToken = token
+	err = store.Update(profile.Id.Hex(), profile)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func getToken(length int) string {
+	randomBytes := make([]byte, 32)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		panic(err)
+	}
+	return base32.StdEncoding.EncodeToString(randomBytes)[:length]
 }

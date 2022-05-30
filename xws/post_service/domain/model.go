@@ -29,3 +29,13 @@ type Connection struct {
 	IssuerId  primitive.ObjectID `bson:"_issuerId"`
 	SubjectId primitive.ObjectID `bson:"_subjectId"`
 }
+
+type JobOffer struct {
+	Id          primitive.ObjectID `bson:"_id"`
+	Profile     Profile            `bson:"profile"`
+	Company     string             `bson:"company"`
+	Position    string             `bson:"position"`
+	Description string             `bson:"description"`
+	Criteria    string             `bson:"criteria"`
+	CreatedAt   time.Time          `bson:"createdAt"`
+}

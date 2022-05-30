@@ -142,3 +142,23 @@ func (handler *PostHandler) UpdateProfile(ctx context.Context, request *pb.Updat
 		Profile: request.Profile,
 	}, nil
 }
+
+func (handler *PostHandler) CreateJob(ctx context.Context, request *pb.CreateJobRequest) (*pb.CreateJobResponse, error) {
+	job, err := handler.service.CreateJob(mapPbToJob(request.JobOffer))
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CreateJobResponse{
+		JobOffer: mapJobToPb(job),
+	}, nil
+}
+
+func (handler *PostHandler) PromoteJob(ctx context.Context, request *pb.PromoteJobRequest) (*pb.PromoteJobResponse, error) {
+	job, err := handler.service.PromoteJob(mapPbToJob(request.JobOffer), request.Token)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.PromoteJobResponse{
+		JobOffer: mapJobToPb(job),
+	}, nil
+}

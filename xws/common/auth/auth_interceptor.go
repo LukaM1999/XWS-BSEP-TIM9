@@ -36,11 +36,12 @@ func (interceptor *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 	) (interface{}, error) {
 		log.Println("--> unary interceptor: ", info.FullMethod)
 
-		err := interceptor.authorize(ctx, info.FullMethod)
+		err, userId, username := interceptor.authorize(ctx, info.FullMethod)
 		if err != nil {
 			return nil, err
 		}
-
+		ctx = context.WithValue(ctx, "userId", userId)
+		ctx = context.WithValue(ctx, "username", username)
 		return handler(ctx, req)
 	}
 }
@@ -55,7 +56,7 @@ func (interceptor *AuthInterceptor) Stream() grpc.StreamServerInterceptor {
 	) error {
 		log.Println("--> stream interceptor: ", info.FullMethod)
 
-		err := interceptor.authorize(stream.Context(), info.FullMethod)
+		err, _, _ := interceptor.authorize(stream.Context(), info.FullMethod)
 		if err != nil {
 			return err
 		}
@@ -70,45 +71,45 @@ func getSecurityDatabaseClient(host, port string) (*mongo.Client, error) {
 	return mongo.Connect(context.TODO(), options)
 }
 
-func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string) error {
+func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string) (error, string, string) {
 	permission, ok := interceptor.accessibleRoles[method]
 	if !ok {
 		// everyone can access
-		return nil
+		return nil, "", ""
 	}
 
 	securityClient, err := getSecurityDatabaseClient("localhost", "27017")
 	if err != nil {
-		return status.Errorf(codes.Internal, "could not connect to security database: %v", err)
+		return status.Errorf(codes.Internal, "could not connect to security database: %v", err), "", ""
 	}
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return status.Errorf(codes.Unauthenticated, "metadata is not provided")
+		return status.Errorf(codes.Unauthenticated, "metadata is not provided"), "", ""
 	}
 
 	values := md["authorization"]
 	if len(values) == 0 {
-		return status.Errorf(codes.Unauthenticated, "authorization token is not provided")
+		return status.Errorf(codes.Unauthenticated, "authorization token is not provided"), "", ""
 	}
 
 	accessToken := values[0]
 	claims, err := interceptor.jwtManager.Verify(accessToken)
 	if err != nil {
-		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
+		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err), "", ""
 	}
 
 	filter := bson.D{{"role", claims.Role}}
 	rolePermission := &auth.RolePermission{}
 	err = securityClient.Database("security_service").Collection("rolePermission").FindOne(context.TODO(), filter).Decode(rolePermission)
 	if err != nil {
-		return status.Errorf(codes.Internal, "could not find role permissions: %v", err)
+		return status.Errorf(codes.Internal, "could not find role permissions: %v", err), "", ""
 	}
 	for _, p := range rolePermission.Permissions {
 		if p == permission || p == "*" {
-			return nil
+			return nil, claims.UserId, claims.Username
 		}
 	}
 
-	return status.Error(codes.PermissionDenied, "no permission to access this RPC")
+	return status.Error(codes.PermissionDenied, "no permission to access this RPC"), "", ""
 }

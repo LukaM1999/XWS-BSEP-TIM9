@@ -36,6 +36,11 @@ service ProfileService{
       delete: "/profile/{id}"
     };
   }
+  rpc GenerateToken(GenerateTokenRequest) returns(GenerateTokenResponse) {
+    option (google.api.http) = {
+      get: "/profile/{id}/token"
+    };
+  }
 }
 
 message GetRequest {
@@ -76,6 +81,14 @@ message DeleteRequest {
 }
 
 message DeleteResponse {
+}
+
+message GenerateTokenRequest {
+  string id = 1;
+}
+
+message GenerateTokenResponse {
+  string token = 1;
 }
 
 message Profile {

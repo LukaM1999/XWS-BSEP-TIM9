@@ -2,11 +2,13 @@ package application
 
 import (
 	"dislinkt/post_service/domain"
+	app "dislinkt/profile_service/application"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type PostService struct {
-	store domain.PostStore
+	store          domain.PostStore
+	profileService app.ProfileService
 }
 
 func NewPostService(store domain.PostStore) *PostService {
@@ -49,4 +51,16 @@ func (service *PostService) CreateConnection(connection *domain.Connection) erro
 
 func (service *PostService) DeleteConnection(id primitive.ObjectID) error {
 	return service.store.DeleteConnection(id)
+}
+
+func (service *PostService) CreateJob(job *domain.JobOffer) (*domain.JobOffer, error) {
+	return service.store.CreateJob(job)
+}
+
+func (service *PostService) PromoteJob(job *domain.JobOffer, token string) (*domain.JobOffer, error) {
+	_, err := service.profileService.GetByToken(token)
+	if err != nil {
+		return nil, err
+	}
+	return service.store.CreateJob(job)
 }

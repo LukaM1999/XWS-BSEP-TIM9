@@ -130,3 +130,16 @@ func (handler *ProfileHandler) Delete(ctx context.Context, request *pb.DeleteReq
 	}
 	return &pb.DeleteResponse{}, nil
 }
+
+func (handler *ProfileHandler) GenerateToken(ctx context.Context, request *pb.GenerateTokenRequest) (*pb.GenerateTokenResponse, error) {
+	if ctx.Value("userId") != request.Id {
+		return nil, status.Errorf(codes.Unauthenticated, "user not authenticated")
+	}
+	token, err := handler.service.GenerateToken(request.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GenerateTokenResponse{
+		Token: token,
+	}, nil
+}

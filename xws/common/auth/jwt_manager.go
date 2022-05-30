@@ -16,6 +16,7 @@ type JWTManager struct {
 // UserClaims is a custom JWT claims that contains some user's information
 type UserClaims struct {
 	jwt.StandardClaims
+	UserId   string `json:"userId"`
 	Username string `json:"username"`
 	Role     string `json:"role"`
 }
@@ -31,6 +32,7 @@ func (manager *JWTManager) Generate(user *domain.User) (string, error) {
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(manager.tokenDuration).Unix(),
 		},
+		UserId:   user.Id.Hex(),
 		Username: user.Username,
 		Role:     user.Role,
 	}

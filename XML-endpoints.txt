@@ -23,6 +23,8 @@ PUT Update /post/{id}
 POST CreateConnection /post/connection
 DELETE DeleteConnection /post/connection/{id}
 PUT UpdateProfile /post/profile
+POST CreateJob /post/job
+POST PromoteJob /post/promote-job
 
 
 Reaction service:

@@ -48,12 +48,28 @@ public class CompanyController {
         return new ResponseEntity<>(createdCompany, HttpStatus.CREATED);
     }
 
-    @GetMapping("")
+    @GetMapping("/search")
     public ResponseEntity<List<Company>> searchCompanies(@RequestParam(value = "name", required = false) String name) {
         List<Company> companies = companyService.searchCompanies(name);
         if(companies.isEmpty())
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(companies, HttpStatus.OK);
+    }
+
+    @GetMapping("")
+    public ResponseEntity<List<Company>> getAllApproved() {
+        List<Company> companies = companyService.getAllApproved();
+        if(companies.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(companies, HttpStatus.OK);
+    }
+
+    @GetMapping("/{companyName}")
+    public ResponseEntity<Company> getCompany(@PathVariable String companyName) {
+        Company company = companyService.getCompanyByName(companyName);
+        if(company == null)
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(company, HttpStatus.OK);
     }
 
     @PostMapping("/comment")

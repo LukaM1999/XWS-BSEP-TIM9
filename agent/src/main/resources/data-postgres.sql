@@ -13,6 +13,33 @@ insert into company(id, owner_username, name, address, city, country, phone, ema
                                             'Serbia', '066433235', 'codemime@gmail.com', 'www.codemime.com', 'Code Mime is a
                                             software development company that specializes in developing web and mobile
                                             applications.', '2000', '100-120', 'IT', true);
+
+insert into company(id, owner_username, name, address, city, country, phone, email, website, description, year_established,
+                    size, industry, is_approved) values (2, 'imbiamba', 'Code Tribe Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
+                                                         'Serbia', '066433235', 'codemime@gmail.com', 'www.codemime.com', 'Code Mime is a
+                                            software development company that specializes in developing web and mobile
+                                            applications.', '2000', '100-120', 'IT', true);
+
+insert into company(id, owner_username, name, address, city, country, phone, email, website, description, year_established,
+                    size, industry, is_approved) values (3, 'imbiamba', 'Code Five Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
+                                                         'Serbia', '066433235', 'codemime@gmail.com', 'www.codemime.com', 'Code Mime is a
+                                            software development company that specializes in developing web and mobile
+                                            applications.', '2000', '100-120', 'IT', true);
+
+insert into company(id, owner_username, name, address, city, country, phone, email, website, description, year_established,
+                    size, industry, is_approved) values (4, 'imbiamba', 'Code Lime Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
+                                                         'Serbia', '066433235', 'codemime@gmail.com', 'www.codemime.com', 'Code Mime is a
+                                            software development company that specializes in developing web and mobile
+                                            applications.', '2000', '100-120', 'IT', true);
+
+insert into company(id, owner_username, name, address, city, country, phone, email, website, description, year_established,
+                    size, industry, is_approved) values (5, 'imbiamba', 'Code Crime Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
+                                                         'Serbia', '066433235', 'codemime@gmail.com', 'www.codemime.com', 'Code Mime is a
+                                            software development company that specializes in developing web and mobile
+                                            applications. Code Mime is a
+                                            software development company that specializes in developing web and mobile
+                                            applications.', '2000', '100-120', 'IT', true);
+
 insert into salary(id, company_name, position, engagement, currently_employed, monthly_net_salary)
 values (1, 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 900);
 

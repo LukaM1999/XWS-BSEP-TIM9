@@ -13,6 +13,8 @@ public interface CompanyService {
 
     List<Company> getAllUnapproved();
 
+    List<Company> getAllApproved();
+
     List<Company> searchCompanies(String name);
 
     Company getCompanyByName(String name);

@@ -51,6 +51,11 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    public List<Company> getAllApproved() {
+        return companyRepository.findAllApproved();
+    }
+
+    @Override
     public List<Company> searchCompanies(String name) {
         return companyRepository.searchCompanies(name);
     }
@@ -64,4 +69,6 @@ public class CompanyServiceImpl implements CompanyService {
     public Company updateCompany(Company company) {
         return companyRepository.save(company);
     }
+
+
 }

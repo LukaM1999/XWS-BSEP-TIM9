@@ -56,7 +56,7 @@ public class Company {
     @Getter
     @Setter
     private String website;
-    @Column
+    @Column(columnDefinition = "VARCHAR(1000) default ''")
     @Getter
     @Setter
     private String description;

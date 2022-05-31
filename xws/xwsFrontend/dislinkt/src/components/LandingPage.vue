@@ -1,186 +1,253 @@
 <template>
-  <div style="overflow-x: hidden">
-    <vue-recaptcha style="position: absolute; bottom: 30px; left: 30px; z-index: 100000" v-if="showCaptcha"
-                   ref="recaptcha" sitekey="6Len6gcgAAAAAK-QuPZGnklGAlC5aKsthR2aMKLx"
-                   @verify="captchaVerified">
-
-    </vue-recaptcha>
-    <div class="row justify-content-end">
-      <div class="col-1">
-        <vs-button @click="openRegisterDialog()">Register</vs-button>
-        <vs-dialog :prevent-close="true" @close="resetRegister()" auto-width v-model="dialogRegister">
-          <template #header>
-            <h4 class="not-margin me-3 ms-3">
-              Register
-            </h4>
-          </template>
-          <div class="con-form" style="display: inline-block;">
+  <div>
+    <div>
+      <div class="center examplex">
+        <vs-navbar target-scroll="#padding-scroll-content" style="background-color: lavenderblush;" padding-scroll
+                   center-collapsed v-model="active">
+          <template #left>
             <div class="row">
               <div class="col">
-                <vs-input required
-                          :success="isSuccess($v.username)"
-                          :danger="isInvalid($v.username)"
-                          class="mt-2" primary v-model="$v.username.$model"
-                          label-placeholder="Username">
-                </vs-input>
-                <label v-if="isError($v.username)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
-                <vs-input required
-                          :success="isSuccess($v.email)"
-                          :danger="isInvalid($v.email)"
-                          class="mt-4" primary v-model="$v.email.$model" label-placeholder="Email"/>
-                <label v-if="isError($v.email)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
-                <vs-input required
-                          :success="isSuccess($v.firstName)"
-                          :danger="isInvalid($v.firstName)"
-                          class="mt-4" primary v-model="$v.firstName.$model" label-placeholder="First name"/>
-                <label v-if="isError($v.firstName)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
-
-                <vs-input required
-                          :success="isSuccess($v.lastName)"
-                          :danger="isInvalid($v.lastName)"
-                          class="mt-4" primary v-model="$v.lastName.$model" label-placeholder="Last name"/>
-                <label v-if="isError($v.lastName)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
-
-                <vs-input required
-                          :success="isSuccess($v.password)"
-                          :danger="isInvalid($v.password)"
-                          class="mt-4" type="password" primary v-model="$v.password.$model" label-placeholder="Password"
-                          :visiblePassword="hasVisiblePassword"
-                          icon-after
-                          @click-icon="hasVisiblePassword = !hasVisiblePassword">
-                  <template #icon>
-                    <i v-if="!hasVisiblePassword" class='bx bx-show-alt'></i>
-                    <i v-else class='bx bx-hide'></i>
-                  </template>
-                </vs-input>
-                <label v-if="isError($v.password)" style="color: #FF9999; font-size: 10pt">Minimum 8<br>and maximum 20
-                  characters,<br>at least one uppercase letter,<br>one lowercase letter,<br>one number,<br> one special
-                  character</label>
-                <password v-model="password" :strength-meter-only="true" :secureLength="8"
-                          :userInputs="[username, email, firstName, lastName]"/>
-                <vs-input required
-                          :success="isSuccess($v.confirmPassword)"
-                          :danger="isInvalid($v.confirmPassword)" danger-text="asdasd"
-                          class="mt-4" type="password" primary v-model="$v.confirmPassword.$model"
-                          label-placeholder="Confirm password"/>
-                <vs-checkbox class="mt-4" primary v-model="setupOtp">Setup OTP authentication?</vs-checkbox>
+                <img src="/logo.png" width="100" height="100" alt="">
+              </div>
+              <div class="col align-self-center">
+                <p
+                  style="font-family: 'Bauhaus 93'; margin-bottom: 0rem; margin-left:-2rem ;  font-size: xxx-large; color: #be1d7b">
+                  DISLINKT</p>
               </div>
             </div>
-          </div>
-          <template #footer>
-            <div class="footer-dialog">
-              <vs-button :disabled="!isRegisterValid()" @click="registerUser()" block>
-                Register
-              </vs-button>
-            </div>
           </template>
-        </vs-dialog>
+          <vs-navbar-item :active="active == 'guide'" id="guide">
+            Guide
+          </vs-navbar-item>
+          <vs-navbar-item :active="active == 'docs'" id="docs">
+            Documents
+          </vs-navbar-item>
+          <vs-navbar-item :active="active == 'components'" id="components">
+            Components
+          </vs-navbar-item>
+          <vs-navbar-item :active="active == 'license'" id="license">
+            license
+          </vs-navbar-item>
+          <template #right>
+            <vs-button flat :disabled="isLoginDisabled()" @click="openLoginDialog()" color="#be1d7b">Login</vs-button>
+            <vs-button @click="openRegisterDialog()" color="#be1d7b" gradient>Get Started</vs-button>
+          </template>
+        </vs-navbar>
       </div>
-      <div class="col-1">
-        <vs-button :disabled="isLoginDisabled()" @click="openLoginDialog()">Login</vs-button>
-        <vs-dialog :prevent-close="true" @close="resetLogin()" width="15%" v-model="dialogLogin">
-          <template #header>
-            <h4 class="not-margin me-3 ms-3">
-              Login
-            </h4>
-          </template>
-          <vs-navbar color="#7d33ff" text-white square v-model="activeTab">
-            <vs-navbar-item :active="activeTab === 'standard'" id="standard">
-              Standard
-            </vs-navbar-item>
-            <vs-navbar-item :active="activeTab === 'passwordless'" id="passwordless">
-              Passwordless
-            </vs-navbar-item>
-          </vs-navbar>
-          <div class="con-form" style="display: inline-block; padding-top: 3.5rem">
-            <div v-if="activeTab === 'standard'" class="row">
-              <div class="col">
-                <vs-input required class="mt-2" primary v-model="username" label-placeholder="Username"/>
-                <vs-input required class="mt-4" type="password" primary v-model="password" label-placeholder="Password"
-                          :visiblePassword="hasVisiblePassword"
-                          icon-after
-                          @click-icon="hasVisiblePassword = !hasVisiblePassword">
-                  <template #icon>
-                    <i v-if="!hasVisiblePassword" class='bx bx-show-alt'></i>
-                    <i v-else class='bx bx-hide'></i>
-                  </template>
-                </vs-input>
-                <vs-button flat size="small" @click="openEmailDialog">
-                  Forgot password?
-                </vs-button>
-                <vs-dialog :prevent-close="true" @close="resetRegister()" auto-width v-model="dialogEmail">
-                  <template #header>
-                    <h4 class="not-margin me-3 ms-3">
-                      Password recovery
-                    </h4>
-                  </template>
-                  <div class="con-form" style="display: inline-block;">
-                    <div class="row">
-                      <div class="col">
-                        <vs-input required
-                                  :success="isSuccess($v.username)"
-                                  :danger="isInvalid($v.username)"
-                                  class="mt-2" primary v-model="$v.username.$model"
-                                  label-placeholder="Username">
-                        </vs-input>
-                        <label v-if="isError($v.username)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+      <vue-recaptcha style="position: absolute; bottom: 30px; left: 30px; z-index: 100000" v-if="showCaptcha"
+                     ref="recaptcha" sitekey="6Len6gcgAAAAAK-QuPZGnklGAlC5aKsthR2aMKLx"
+                     @verify="captchaVerified">
 
-                        <vs-input required
-                                  :success="isSuccess($v.email)"
-                                  :danger="isInvalid($v.email)"
-                                  class="mt-4" primary v-model="$v.email.$model"
-                                  label-placeholder="Please enter email"/>
-                        <label v-if="isError($v.email)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+      </vue-recaptcha>
+      <div class="row justify-content-end">
+        <div class="col-1">
+          <vs-dialog :prevent-close="true" @close="resetRegister()" auto-width v-model="dialogRegister">
+            <template #header>
+              <h4 class="not-margin me-3 ms-3">
+                Register
+              </h4>
+            </template>
+            <div class="con-form" style="display: inline-block;">
+              <div class="row">
+                <div class="col">
+                  <vs-input required
+                            :success="isSuccess($v.username)"
+                            :danger="isInvalid($v.username)"
+                            class="mt-2" primary v-model="$v.username.$model"
+                            label-placeholder="Username">
+                  </vs-input>
+                  <label v-if="isError($v.username)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+                  <vs-input required
+                            :success="isSuccess($v.email)"
+                            :danger="isInvalid($v.email)"
+                            class="mt-4" primary v-model="$v.email.$model" label-placeholder="Email"/>
+                  <label v-if="isError($v.email)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+                  <vs-input required
+                            :success="isSuccess($v.firstName)"
+                            :danger="isInvalid($v.firstName)"
+                            class="mt-4" primary v-model="$v.firstName.$model" label-placeholder="First name"/>
+                  <label v-if="isError($v.firstName)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+
+                  <vs-input required
+                            :success="isSuccess($v.lastName)"
+                            :danger="isInvalid($v.lastName)"
+                            class="mt-4" primary v-model="$v.lastName.$model" label-placeholder="Last name"/>
+                  <label v-if="isError($v.lastName)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+
+                  <vs-input required
+                            :success="isSuccess($v.password)"
+                            :danger="isInvalid($v.password)"
+                            class="mt-4" type="password" primary v-model="$v.password.$model"
+                            label-placeholder="Password"
+                            :visiblePassword="hasVisiblePassword"
+                            icon-after
+                            @click-icon="hasVisiblePassword = !hasVisiblePassword">
+                    <template #icon>
+                      <i v-if="!hasVisiblePassword" class='bx bx-show-alt'></i>
+                      <i v-else class='bx bx-hide'></i>
+                    </template>
+                  </vs-input>
+                  <label v-if="isError($v.password)" style="color: #FF9999; font-size: 10pt">Minimum 8<br>and maximum 20
+                    characters,<br>at least one uppercase letter,<br>one lowercase letter,<br>one number,<br> one
+                    special
+                    character</label>
+                  <password v-model="password" :strength-meter-only="true" :secureLength="8"
+                            :userInputs="[username, email, firstName, lastName]"/>
+                  <vs-input required
+                            :success="isSuccess($v.confirmPassword)"
+                            :danger="isInvalid($v.confirmPassword)" danger-text="asdasd"
+                            class="mt-4" type="password" primary v-model="$v.confirmPassword.$model"
+                            label-placeholder="Confirm password"/>
+                  <vs-checkbox class="mt-4" primary v-model="setupOtp">Setup OTP authentication?</vs-checkbox>
+                </div>
+              </div>
+            </div>
+            <template #footer>
+              <div class="footer-dialog">
+                <vs-button :disabled="!isRegisterValid()" @click="registerUser()" block>
+                  Register
+                </vs-button>
+              </div>
+            </template>
+          </vs-dialog>
+        </div>
+        <div class="col-1">
+          <vs-dialog :prevent-close="true" @close="resetLogin()" width="15%" v-model="dialogLogin">
+            <template #header>
+              <h4 class="not-margin me-3 ms-3">
+                Login
+              </h4>
+            </template>
+            <vs-navbar color="#be1d7b" text-white square v-model="activeTab">
+              <vs-navbar-item :active="activeTab === 'standard'" id="standard">
+                Standard
+              </vs-navbar-item>
+              <vs-navbar-item :active="activeTab === 'passwordless'" id="passwordless">
+                Passwordless
+              </vs-navbar-item>
+            </vs-navbar>
+            <div class="con-form" style="display: inline-block; padding-top: 3.5rem">
+              <div v-if="activeTab === 'standard'" class="row">
+                <div class="col">
+                  <vs-input required class="mt-2" primary v-model="username" label-placeholder="Username"/>
+                  <vs-input required class="mt-4" type="password" primary v-model="password"
+                            label-placeholder="Password"
+                            :visiblePassword="hasVisiblePassword"
+                            icon-after
+                            @click-icon="hasVisiblePassword = !hasVisiblePassword">
+                    <template #icon>
+                      <i v-if="!hasVisiblePassword" class='bx bx-show-alt'></i>
+                      <i v-else class='bx bx-hide'></i>
+                    </template>
+                  </vs-input>
+                  <vs-button flat size="small" @click="openEmailDialog">
+                    Forgot password?
+                  </vs-button>
+                  <vs-dialog :prevent-close="true" @close="resetRegister()" auto-width v-model="dialogEmail">
+                    <template #header>
+                      <h4 class="not-margin me-3 ms-3">
+                        Password recovery
+                      </h4>
+                    </template>
+                    <div class="con-form" style="display: inline-block;">
+                      <div class="row">
+                        <div class="col">
+                          <vs-input required
+                                    :success="isSuccess($v.username)"
+                                    :danger="isInvalid($v.username)"
+                                    class="mt-2" primary v-model="$v.username.$model"
+                                    label-placeholder="Username">
+                          </vs-input>
+                          <label v-if="isError($v.username)" style="color: #FF9999; font-size: 10pt">Invalid
+                            input</label>
+
+                          <vs-input required
+                                    :success="isSuccess($v.email)"
+                                    :danger="isInvalid($v.email)"
+                                    class="mt-4" primary v-model="$v.email.$model"
+                                    label-placeholder="Please enter email"/>
+                          <label v-if="isError($v.email)" style="color: #FF9999; font-size: 10pt">Invalid input</label>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <template #footer>
-                    <div class="footer-dialog">
-                      <vs-button :disabled="!isEmailValid()" @click="passwordRecovery()" block>
-                        Reset password
-                      </vs-button>
-                    </div>
-                  </template>
-                </vs-dialog>
+                    <template #footer>
+                      <div class="footer-dialog">
+                        <vs-button :disabled="!isEmailValid()" @click="passwordRecovery()" block>
+                          Reset password
+                        </vs-button>
+                      </div>
+                    </template>
+                  </vs-dialog>
+                </div>
+              </div>
+              <div v-if="activeTab === 'passwordless'" class="row">
+                <div class="col">
+                  <vs-input required class="mt-2" primary v-model="username" label-placeholder="Username"/>
+                  <vs-input required class="mt-4" inputmode="numeric" pattern="[0-9]{6}" primary v-model="totp"
+                            label-placeholder="TOTP"/>
+                </div>
               </div>
             </div>
-            <div v-if="activeTab === 'passwordless'" class="row">
-              <div class="col">
-                <vs-input required class="mt-2" primary v-model="username" label-placeholder="Username"/>
-                <vs-input required class="mt-4" inputmode="numeric" pattern="[0-9]{6}" primary v-model="totp"
-                          label-placeholder="TOTP"/>
+            <template #footer>
+              <div class="footer-dialog">
+                <vs-button v-if="activeTab === 'standard'" :disabled="!isLoginValid()" @click="login()" block>
+                  Login
+                </vs-button>
+                <vs-button v-if="activeTab === 'passwordless'"
+                           :disabled="!isPasswordlessLoginValid()"
+                           @click="passwordlessLogin()" block>
+                  Login
+                </vs-button>
+              </div>
+            </template>
+          </vs-dialog>
+          <vs-dialog :prevent-close="true" @close="resetOtp()" auto-width v-model="dialogOtp">
+            <template #header>
+              <h4 class="not-margin me-3 ms-3">
+                OTP Setup
+              </h4>
+            </template>
+            <div class="con-form" style="display: inline-block">
+              <div class="row">
+                <div class="col">
+                  <p>Secret: {{ this.secret }}</p>
+                  <img :src="`data:image/png;base64,${this.qrCode}`"/>
+                </div>
               </div>
             </div>
-          </div>
-          <template #footer>
-            <div class="footer-dialog">
-              <vs-button v-if="activeTab === 'standard'" :disabled="!isLoginValid()" @click="login()" block>
-                Login
-              </vs-button>
-              <vs-button v-if="activeTab === 'passwordless'"
-                         :disabled="!isPasswordlessLoginValid()"
-                         @click="passwordlessLogin()" block>
-                Login
-              </vs-button>
-            </div>
-          </template>
-        </vs-dialog>
-        <vs-dialog :prevent-close="true" @close="resetOtp()" auto-width v-model="dialogOtp">
-          <template #header>
-            <h4 class="not-margin me-3 ms-3">
-              OTP Setup
-            </h4>
-          </template>
-          <div class="con-form" style="display: inline-block">
-            <div class="row">
-              <div class="col">
-                <p>Secret: {{ this.secret }}</p>
-                <img :src="`data:image/png;base64,${this.qrCode}`"/>
-              </div>
-            </div>
-          </div>
-        </vs-dialog>
+          </vs-dialog>
+        </div>
       </div>
+    </div>
+    <div class="row" style="margin-top: 10rem; background-color: transparent;">
+      <div class="col"></div>
+      <div class="col d-flex justify-content-center" style="background-color: transparent">
+        <vs-card type="2" style="background: transparent">
+          <template #title>
+            <h3>Pot with a plant</h3>
+          </template>
+          <template #img>
+            <img src="/proba.jpg" alt="">
+          </template>
+          <template #text>
+            <p>
+              Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+            </p>
+          </template>
+          <template #interactions>
+            <vs-button icon>
+              <i class='bx bx-like'></i>
+            </vs-button>
+            <vs-button danger icon>
+              <i class='bx bx-dislike'></i>
+            </vs-button>
+            <vs-button class="btn-chat" dark icon>
+              <i class='bx bx-chat'></i>
+            </vs-button>
+          </template>
+        </vs-card>
+      </div>
+      <div class="col"></div>
     </div>
   </div>
 </template>
@@ -223,6 +290,7 @@ export default {
       secret: "",
       qrCode: "",
       showCaptcha: false,
+      active: 'guide'
     }
   },
   validations: {
@@ -255,7 +323,7 @@ export default {
   mounted() {
     this.$store.commit('setUser', null);
     this.$store.commit('setToken', null);
-    if(this.isLoginDisabled()) {
+    if (this.isLoginDisabled()) {
       this.showCaptcha = true;
     }
   },
@@ -541,6 +609,11 @@ input[type=number] {
 
 .error:focus {
   outline-color: #F99;
+}
+
+.vs-card{
+  background: transparent;
+  min-width: 100%;
 }
 
 </style>

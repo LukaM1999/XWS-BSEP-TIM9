@@ -29,7 +29,15 @@ Vue.use(Toasted, {
 })
 Vue.use(Vuesax, {
   // options here
+  colors: {
+    primary: '#be1d7b',
+  },
+  vsCard: {
+    minWidth: '100%',
+    background: 'transparent',
+  }
 })
+
 Vue.use(Vuelidate)
 
 export const store = new Vuex.Store({

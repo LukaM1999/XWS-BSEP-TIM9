@@ -13,6 +13,8 @@ import LandingPage from "@/components/LandingPage";
 import {isTokenExpired, jwtInterceptor} from "@/_helpers/jwt.interceptor";
 import HomePage from "@/components/HomePage";
 import PasswordReset from "@/components/PasswordReset";
+import Post from "@/components/Post";
+import ConnectionsPosts from "@/components/ConnectionsPosts";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -86,6 +88,11 @@ const routes = [
     name: 'userHomepage',
     component: HomePage,
     children: [
+      {
+        path: 'posts',
+        name: 'posts',
+        component: ConnectionsPosts
+      }
 
       ]
   },

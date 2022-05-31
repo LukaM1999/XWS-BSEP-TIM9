@@ -1,12 +1,60 @@
 <template>
-<div class="row">
-  <div class="col">
-    <vs-button primary @click="getAllUsers()">Get all users</vs-button>
-    <vs-button primary @click="getProfile()">Get profile</vs-button>
-    <vs-button primary @click="searchProfile()">Search profile</vs-button>
-    <vs-button primary @click="logOut()">Log out</vs-button>
+  <div>
+    <div class="center examplex">
+      <vs-navbar target-scroll="#padding-scroll-content" style="background-color: lavenderblush;" padding-scroll
+                 center-collapsed v-model="active">
+        <template #left>
+          <div class="row">
+            <div class="col">
+              <img src="/logo.png" width="100" height="100" alt="">
+            </div>
+            <div class="col align-self-center">
+              <p
+                style="font-family: 'Bauhaus 93'; margin-bottom: 0rem; margin-left:-2rem ;  font-size: xxx-large; color: #be1d7b">
+                DISLINKT</p>
+            </div>
+          </div>
+        </template>
+        <div class="row d-flex justify-content-center">
+          <div class="col">
+            <vs-navbar-item :active="active == 'guide'" id="guide" to="/user/posts">
+              For you
+            </vs-navbar-item>
+            <vs-navbar-item :active="active == 'docs'" id="docs">
+              Connections
+            </vs-navbar-item>
+            <vs-navbar-item :active="active == 'components'" id="components">
+              Job offers
+            </vs-navbar-item>
+            <vs-navbar-item :active="active == 'message'" id="message">
+              Messages
+            </vs-navbar-item>
+            <vs-navbar-item :active="active == 'license'" id="license">
+              Profile
+            </vs-navbar-item>
+          </div>
+
+        </div>
+
+        <template #right>
+          <vs-button @click="logOut()">Log out</vs-button>
+        </template>
+      </vs-navbar>
+    </div>
+    <div class="row" style="margin-top: 10rem;">
+      <div class="col">
+        <vs-button primary @click="getAllUsers()">Get all users</vs-button>
+        <vs-button primary @click="getProfile()">Get profile</vs-button>
+        <vs-button primary @click="searchProfile()">Search profile</vs-button>
+        <vs-button primary @click="logOut()">Log out</vs-button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <router-view></router-view>
+      </div>
+    </div>
   </div>
-</div>
 
 </template>
 
@@ -16,8 +64,13 @@ import axios from 'axios';
 
 export default {
   name: "HomePage",
+  data() {
+    return {
+      active: 'guide',
+    }
+  },
   methods: {
-    logOut(){
+    logOut() {
       this.$store.commit('setToken', null);
       this.$store.commit('setUser', null);
       this.$router.push('/');
@@ -84,6 +137,9 @@ export default {
         position: 'top-right',
         duration: 10000
       });
+    },
+    changeRoute(path){
+      this.$router.replace(path)
     }
   }
 }

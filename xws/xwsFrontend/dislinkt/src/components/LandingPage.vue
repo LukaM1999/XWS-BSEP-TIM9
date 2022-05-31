@@ -16,18 +16,6 @@
               </div>
             </div>
           </template>
-          <vs-navbar-item :active="active == 'guide'" id="guide">
-            Guide
-          </vs-navbar-item>
-          <vs-navbar-item :active="active == 'docs'" id="docs">
-            Documents
-          </vs-navbar-item>
-          <vs-navbar-item :active="active == 'components'" id="components">
-            Components
-          </vs-navbar-item>
-          <vs-navbar-item :active="active == 'license'" id="license">
-            license
-          </vs-navbar-item>
           <template #right>
             <vs-button flat :disabled="isLoginDisabled()" @click="openLoginDialog()" color="#be1d7b">Login</vs-button>
             <vs-button @click="openRegisterDialog()" color="#be1d7b" gradient>Get Started</vs-button>
@@ -222,30 +210,7 @@
     <div class="row" style="margin-top: 10rem; background-color: transparent;">
       <div class="col"></div>
       <div class="col d-flex justify-content-center" style="background-color: transparent">
-        <vs-card type="2" style="background: transparent">
-          <template #title>
-            <h3>Pot with a plant</h3>
-          </template>
-          <template #img>
-            <img src="/proba.jpg" alt="">
-          </template>
-          <template #text>
-            <p>
-              Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-            </p>
-          </template>
-          <template #interactions>
-            <vs-button icon>
-              <i class='bx bx-like'></i>
-            </vs-button>
-            <vs-button danger icon>
-              <i class='bx bx-dislike'></i>
-            </vs-button>
-            <vs-button class="btn-chat" dark icon>
-              <i class='bx bx-chat'></i>
-            </vs-button>
-          </template>
-        </vs-card>
+        <Post :post="post"></Post>
       </div>
       <div class="col"></div>
     </div>
@@ -259,6 +224,7 @@ import zxcvbn from "zxcvbn";
 import {email, helpers, minLength, required, sameAs} from "vuelidate/lib/validators";
 import {VueRecaptcha} from 'vue-recaptcha';
 import isPasswordCompromised from '@mathiscode/password-leak'
+import Post from "@/components/Post";
 
 const isPasswordStrong = (value, vm) => zxcvbn(value, [vm.username, vm.email, vm.firstName, vm.lastName])?.score >= 3
 const name = helpers.regex('name', /^[A-Z][a-z]+$/)
@@ -268,6 +234,7 @@ const password = helpers.regex('password', /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*
 export default {
   name: "LandingPage",
   components: {
+    Post,
     Password,
     VueRecaptcha
   },
@@ -290,7 +257,19 @@ export default {
       secret: "",
       qrCode: "",
       showCaptcha: false,
-      active: 'guide'
+      active: 'guide',
+      post: {
+        id: "6210611b624b2da721f63fe3",
+        createdAt: "0001-01-01T00:00:00Z",
+        profile: {
+          id: "62706d1b624b3da748f63fe3",
+          firstName: "Luka",
+          lastName: "Miletic"
+        },
+        content: {
+          text: "Check out my github page"
+        }
+      }
     }
   },
   validations: {

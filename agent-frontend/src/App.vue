@@ -37,4 +37,8 @@ h1 {
 .vs-navbar__item {
   font-size: 1rem !important;
 }
+
+.vs-card {
+  max-width: 100% !important;
+}
 </style>

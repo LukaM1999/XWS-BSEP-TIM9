@@ -115,9 +115,6 @@
           <template #title>
             <h3>{{company.name}}</h3>
           </template>
-          <template #img>
-            <img src="" alt="">
-          </template>
           <template #text>
             <p class="text-lg-start">Address: <strong>{{company.country}} {{company.city}}, {{company.address}}</strong></p>
             <p class="text-lg-start">Employees: <strong>{{company.size}}</strong></p>

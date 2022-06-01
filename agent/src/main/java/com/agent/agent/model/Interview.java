@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table
@@ -58,6 +59,16 @@ public class Interview {
     @Getter
     @Setter
     private double rating;
+
+    @Column
+    @Getter
+    @Setter
+    private LocalDate dateCreated;
+
+    @Column(columnDefinition = "boolean default false")
+    @Getter
+    @Setter
+    private boolean acceptedOffer;
 
     public Interview() {
     }

@@ -7,14 +7,15 @@
            <img @click="$router.push('/')" style="cursor: pointer" src="/logo.png" width="100" height="100" alt="">
          </div>
          <div class="col align-self-center">
-           <p
-             style="font-family: 'Bauhaus 93'; margin-bottom: 0rem; margin-left:-2rem ;  font-size: xxx-large; color: #048ce3">
+           <p @click="$router.push('/')"
+             style="font-family: 'Bauhaus 93'; margin-bottom: 0rem;
+             margin-left:-2rem ;  font-size: xxx-large; color: #048ce3; cursor: pointer">
              AGENTY</p>
          </div>
        </div>
      </template>
      <template #right>
-       <vs-navbar-item :to="`/company-profile/${companyName}`"
+       <vs-navbar-item :to="`/company-profile/${companyName}/overview`"
                        :active="active === 'overview'" id="overview">
          Overview
        </vs-navbar-item>
@@ -32,11 +33,7 @@
        </vs-navbar-item>
      </template>
    </vs-navbar>
-   <div class="row">
-     <div class="col">
-       <router-view></router-view>
-     </div>
-   </div>
+   <router-view></router-view>
  </div>
 </template>
 

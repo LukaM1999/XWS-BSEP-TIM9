@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table
@@ -23,11 +24,6 @@ public class Comment {
     @Getter
     @Setter
     private String position;
-
-    @Column
-    @Getter
-    @Setter
-    private String seniority;
 
     @Column
     @Getter
@@ -54,15 +50,19 @@ public class Comment {
     @Setter
     private double rating;
 
+    @Column
+    @Getter
+    @Setter
+    private LocalDate dateCreated;
+
     //Constructors
     public Comment() {
     }
 
-    public Comment(String companyName, String position, String seniority, String engagement, boolean currentlyEmployed,
+    public Comment(String companyName, String position, String engagement, boolean currentlyEmployed,
                    String subject, String content, double rating) {
         this.companyName = companyName;
         this.position = position;
-        this.seniority = seniority;
         this.engagement = engagement;
         this.currentlyEmployed = currentlyEmployed;
         this.subject = subject;

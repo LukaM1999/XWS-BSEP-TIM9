@@ -70,5 +70,10 @@ public class CompanyServiceImpl implements CompanyService {
         return companyRepository.save(company);
     }
 
+    @Override
+    public void updateCompanyRating(double rating, String companyName) {
+        companyRepository.updateCompanyRating(rating, companyName);
+    }
+
 
 }

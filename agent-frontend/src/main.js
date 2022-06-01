@@ -9,12 +9,14 @@ import Toasted from 'vue-toasted';
 import Vuesax from 'vuesax'
 import Vuelidate from 'vuelidate'
 import 'vuesax/dist/vuesax.css' //Vuesax styles
+import moment from 'moment'
 import LandingPage from "@/components/LandingPage";
 import {isTokenExpired, jwtInterceptor} from "@/_helpers/jwt.interceptor";
 import CompanyProfile from "@/components/CompanyProfile";
 import Comments from "@/components/Comments";
 import Salaries from "@/components/Salaries";
 import Interviews from "@/components/Interviews";
+import Overview from "@/components/Overview";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -68,7 +70,13 @@ const routes = [
     path: '/company-profile/:companyName',
     name: 'company-profile',
     component: CompanyProfile,
+    redirect: {name: 'company-overview'},
     children: [
+      {
+        path: 'overview',
+        name: 'company-overview',
+        component: Overview
+      },
       {
         path: 'comments',
         name: 'company-comments',
@@ -116,6 +124,12 @@ router.beforeEach((to, from, next) => {
   }
   else next()
 })
+
+Vue.filter('formatDate', function(value) {
+  if (value) {
+    return moment(String(value)).format('DD.MM.YYYY.')
+  }
+});
 
 export var vue = new Vue({
   render: h => h(App),

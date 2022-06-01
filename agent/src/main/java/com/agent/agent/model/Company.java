@@ -76,6 +76,14 @@ public class Company {
     @Getter
     @Setter
     private boolean isApproved;
+    @Column(columnDefinition = "Decimal(3,2) default '0.00'")
+    @Getter
+    @Setter
+    private double rating;
+    @Column(columnDefinition = "INTEGER default '0'")
+    @Getter
+    @Setter
+    private int ratingCount;
 
     public Company() {
         super();

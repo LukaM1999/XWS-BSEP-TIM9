@@ -20,4 +20,5 @@ public interface CompanyService {
     Company getCompanyByName(String name);
 
     Company updateCompany(Company company);
+    void updateCompanyRating(double rating, String companyName);
 }

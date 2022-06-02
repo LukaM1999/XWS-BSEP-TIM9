@@ -12,36 +12,36 @@ insert into registered_user(username, password, role_name, enabled)
 values ('tinaa', '$2a$10$46vcjpM2KOvc76hjcNb9NOgXsNKpWXR1b.tEXetZcWV0l4FQc8i5.', 'USER', true);
 
 insert into company(id, owner_username, name, address, city, country, phone, email, website, description, year_established,
-                    size, industry, is_approved, rating, rating_count) values (1, 'imbiamba', 'Code Mime Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
+                    size, industry, is_approved, rating, rating_count) values (nextval('company_id_seq'), 'imbiamba', 'Code Mime Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
                                             'Serbia', '066433235', 'codemime@gmail.com', 'www.codemime.com', 'Code Mime is a
                                             software development company that specializes in developing web and mobile
-                                            applications.', '2000', '100-120', 'IT', true, 2.75, 4);
+                                            applications.', '2000', '101-250', 'IT', true, 2.75, 4);
 
 insert into company(id, owner_username, name, address, city, country, phone, email, website, description, year_established,
-                    size, industry, is_approved) values (2, 'imbiamba', 'Code Tribe Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
+                    size, industry, is_approved) values (nextval('company_id_seq'), 'imbiamba', 'Code Tribe Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
                                                          'Serbia', '066433235', 'codemime@gmail.com', 'www.codemime.com', 'Code Mime is a
                                             software development company that specializes in developing web and mobile
                                             applications.', '2000', '100-120', 'IT', true);
 
 insert into company(id, owner_username, name, address, city, country, phone, email, website, description, year_established,
-                    size, industry, is_approved) values (3, 'imbiamba', 'Code Five Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
+                    size, industry, is_approved) values (nextval('company_id_seq'), 'imbiamba', 'Code Five Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
                                                          'Serbia', '066433235', 'codemime@gmail.com', 'www.codemime.com', 'Code Mime is a
                                             software development company that specializes in developing web and mobile
-                                            applications.', '2000', '100-120', 'IT', true);
+                                            applications.', '2000', '101-250', 'IT', true);
 
 insert into company(id, owner_username, name, address, city, country, phone, email, website, description, year_established,
-                    size, industry, is_approved) values (4, 'imbiamba', 'Code Lime Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
+                    size, industry, is_approved) values (nextval('company_id_seq'), 'imbiamba', 'Code Lime Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
                                                          'Serbia', '066433235', 'codemime@gmail.com', 'www.codemime.com', 'Code Mime is a
                                             software development company that specializes in developing web and mobile
-                                            applications.', '2000', '100-120', 'IT', true);
+                                            applications.', '2000', '101-250', 'IT', true);
 
 insert into company(id, owner_username, name, address, city, country, phone, email, website, description, year_established,
-                    size, industry, is_approved) values (5, 'imbiamba', 'Code Crime Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
+                    size, industry, is_approved) values (nextval('company_id_seq'), 'imbiamba', 'Code Crime Inc.', 'Bulevar oslobodjenja 18','Novi Sad',
                                                          'Serbia', '066433235', 'codemime@gmail.com', 'www.codemime.com', 'Code Mime is a
                                             software development company that specializes in developing web and mobile
                                             applications. Code Mime is a
                                             software development company that specializes in developing web and mobile
-                                            applications.', '2000', '100-120', 'IT', true);
+                                            applications.', '2000', '101-250', 'IT', true);
 
 insert into salary(id, company_name, position, engagement, currently_employed, monthly_net_salary)
 values (nextval('salary_id_seq'), 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 900);

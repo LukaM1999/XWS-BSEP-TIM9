@@ -159,10 +159,10 @@ export default {
   components:{
     StarRating,
   },
-  mounted() {
+  async mounted() {
     this.$parent.active = 'comments';
-    this.getComments();
-    this.getPositions();
+    await this.getComments();
+    await this.getPositions();
     this.role = this.$store.getters.user?.role?.authority;
   },
   methods: {

@@ -29,4 +29,6 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     @Transactional
     @Query("UPDATE Company c SET c.rating = (c.rating * c.ratingCount + ?1) / (c.ratingCount + 1), c.ratingCount = c.ratingCount + 1 WHERE c.name = ?2")
     void updateCompanyRating(double rating, String companyName);
+
+    List<Company> findByOwnerUsername(String ownerUsername);
 }

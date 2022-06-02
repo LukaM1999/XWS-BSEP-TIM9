@@ -4,7 +4,7 @@
       <template #left>
         <div class="row">
           <div class="col">
-            <img style="cursor: pointer" src="/logo.png" width="100" height="100" alt="">
+            <img src="/logo.png" width="100" height="100" alt="">
           </div>
           <div class="col align-self-center">
             <p
@@ -133,7 +133,6 @@ import axios from "axios";
 import Password from 'vue-password-strength-meter';
 import zxcvbn from "zxcvbn";
 import {email, helpers, minLength, required, sameAs} from "vuelidate/lib/validators";
-import {VueRecaptcha} from 'vue-recaptcha';
 import isPasswordCompromised from '@mathiscode/password-leak'
 
 const isPasswordStrong = (value, vm) => zxcvbn(value, [vm.username, vm.email, vm.firstName, vm.lastName])?.score >= 3
@@ -290,15 +289,9 @@ export default {
         throw error
       });
       loading.close()
-      this.$vs.notification({
-        title: "Success",
-        text: "Logged in successfully",
-        color: "success",
-        position: "top-right"
-      });
       this.$store.commit("setToken", response.data?.accessToken);
       this.$store.commit("setUser", response.data?.user);
-      //await this.$router.push(`/${this.$store.getters.user?.role}`);
+      await this.$router.push(`/home`);
     },
   }
 }

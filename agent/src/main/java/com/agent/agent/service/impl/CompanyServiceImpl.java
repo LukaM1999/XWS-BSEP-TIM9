@@ -30,8 +30,10 @@ public class CompanyServiceImpl implements CompanyService {
         if(company == null) return false;
         RegisteredUser owner = registeredUserRepository.findByUsername(company.getOwnerUsername());
         if(owner == null) return false;
-        owner.setRole(roleRepository.findByRoleName("COMPANY_OWNER"));
-        registeredUserRepository.save(owner);
+        if(owner.getRole().getAuthority().equals("USER")){
+            owner.setRole(roleRepository.findByRoleName("COMPANY_OWNER"));
+            registeredUserRepository.save(owner);
+        }
         company.setApproved(true);
         companyRepository.save(company);
         return true;
@@ -73,6 +75,11 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public void updateCompanyRating(double rating, String companyName) {
         companyRepository.updateCompanyRating(rating, companyName);
+    }
+
+    @Override
+    public List<Company> getOwnerCompanies(String ownerUsername) {
+        return companyRepository.findByOwnerUsername(ownerUsername);
     }
 
 

@@ -42,6 +42,10 @@ export default {
   width: 200px !important;
 }
 
+.vs-input .user{
+  width: 100% !important;
+}
+
 h1 {
   color: white;
 }

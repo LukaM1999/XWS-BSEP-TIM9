@@ -17,6 +17,10 @@ import Comments from "@/components/Comments";
 import Salaries from "@/components/Salaries";
 import Interviews from "@/components/Interviews";
 import Overview from "@/components/Overview";
+import HomePage from "@/components/HomePage";
+import Companies from "@/components/Companies";
+import Profile from "@/components/Profile";
+import OwnerCompanies from "@/components/OwnerCompanies";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -48,6 +52,16 @@ export const store = new Vuex.Store({
     setUser(state, user) {
       state.user = user
     },
+    updateUser(state, user) {
+      state.user.firstName = user.firstName
+      state.user.lastName = user.lastName
+      state.user.email = user.email
+      state.user.address = user.address
+      state.user.city = user.city
+      state.user.country = user.country
+      state.user.phone = user.phone
+    }
+
   },
   getters: {
     token(state) {
@@ -93,6 +107,29 @@ const routes = [
         component: Interviews
       }
     ]
+  },
+  {
+    path: '/home',
+    name: 'home-page',
+    component: HomePage,
+    redirect: {name: 'companies'},
+    children: [
+      {
+        path: 'my-companies',
+        name: 'owner-companies',
+        component: OwnerCompanies
+      },
+      {
+        path: 'companies',
+        name: 'companies',
+        component: Companies
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: Profile,
+      },
+  ]
   },
 ]
 

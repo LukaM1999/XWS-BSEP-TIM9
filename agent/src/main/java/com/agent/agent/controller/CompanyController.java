@@ -39,7 +39,7 @@ public class CompanyController {
     private CompanyDTOMapper companyDTOMapper;
 
     @PostMapping("")
-    @PreAuthorize("hasAuthority('USER')")
+    @PreAuthorize("hasAnyAuthority('USER', 'COMPANY_OWNER')")
     public ResponseEntity<Company> createCompany(@RequestBody Company company) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Company createdCompany = companyService.createCompany(company, (RegisteredUser) auth.getPrincipal());
@@ -59,6 +59,19 @@ public class CompanyController {
     @GetMapping("")
     public ResponseEntity<List<Company>> getAllApproved() {
         List<Company> companies = companyService.getAllApproved();
+        if(companies.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(companies, HttpStatus.OK);
+    }
+
+    @GetMapping("/owner/{ownerUsername}")
+    @PreAuthorize("hasAuthority('COMPANY_OWNER')")
+    public ResponseEntity<List<Company>> getOwnerCompanies(@PathVariable String ownerUsername) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        RegisteredUser companyOwner = (RegisteredUser) auth.getPrincipal();
+        if(!companyOwner.getUsername().equals(ownerUsername))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        List<Company> companies = companyService.getOwnerCompanies(ownerUsername);
         if(companies.isEmpty())
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(companies, HttpStatus.OK);

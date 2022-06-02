@@ -55,7 +55,6 @@ public class Comment {
     @Setter
     private LocalDate dateCreated;
 
-    //Constructors
     public Comment() {
     }
 

@@ -26,8 +26,20 @@ export default {
   margin-top: 60px;
 }
 
-.vs-input {
+[type="search"] {
   width: 500px !important;
+}
+
+.vs-input [type="text"] {
+  width: 500px !important;
+}
+
+.vs-input .subject {
+  width: 100% !important;
+}
+
+.vs-select {
+  width: 200px !important;
 }
 
 h1 {

@@ -6,6 +6,7 @@ import com.agent.agent.service.InterviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -16,6 +17,7 @@ public class InterviewServiceImpl implements InterviewService {
 
     @Override
     public Interview addInterview(Interview interview) {
+        interview.setDateCreated(LocalDate.now());
         return interviewRepository.save(interview);
     }
 

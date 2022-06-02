@@ -44,34 +44,34 @@ insert into company(id, owner_username, name, address, city, country, phone, ema
                                             applications.', '2000', '100-120', 'IT', true);
 
 insert into salary(id, company_name, position, engagement, currently_employed, monthly_net_salary)
-values (1, 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 900);
+values (nextval('salary_id_seq'), 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 900);
 
 insert into salary(id, company_name, position, engagement, currently_employed, monthly_net_salary)
-values (2, 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 800);
+values (nextval('salary_id_seq'), 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 800);
 
 insert into salary(id, company_name, position, engagement, currently_employed, monthly_net_salary)
-values (3, 'Code Mime Inc.', 'Software Developer (Junior)', 'Full-time', true, 700);
+values (nextval('salary_id_seq'), 'Code Mime Inc.', 'Software Developer (Junior)', 'Full-time', true, 700);
 
 insert into salary(id, company_name, position, engagement, currently_employed, monthly_net_salary)
-values (4, 'Code Mime Inc.', 'Software Developer (Junior)', 'Full-time', true, 650);
+values (nextval('salary_id_seq'), 'Code Mime Inc.', 'Software Developer (Junior)', 'Full-time', true, 650);
 
 
 insert into comment(id, company_name, position, engagement, currently_employed, subject, content, rating, date_created)
-values (1, 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 'Very good company', 'The best people around!!!',
+values (nextval('comment_id_seq'), 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 'Very good company', 'The best people around!!!',
         5, current_date);
 
 insert into comment(id, company_name, position, engagement, currently_employed, subject, content, rating, date_created)
-values (2, 'Code Mime Inc.', 'Software Engineer (Senior)', 'Full-time', false, 'Meh.', 'Indifferent...',
+values (nextval('comment_id_seq'), 'Code Mime Inc.', 'Software Engineer (Senior)', 'Full-time', false, 'Meh.', 'Indifferent...',
         3, current_date);
 
 insert into comment(id, company_name, position, engagement, currently_employed, subject, content, rating, date_created)
-values (3, 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', false, 'Atrocious!!!', 'Never EVER even think about joining!!!',
+values (nextval('comment_id_seq'), 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', false, 'Atrocious!!!', 'Never EVER even think about joining!!!',
         1, current_date);
 
 insert into comment(id, company_name, position, engagement, currently_employed, subject, content, rating, date_created)
-values (4, 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 'Very bad company but good people', 'Leaves very much to be desired',
+values (nextval('comment_id_seq'), 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 'Very bad company but good people', 'Leaves very much to be desired',
         2, current_date);
 
 insert into interview(id, company_name, position, year, subject, hr, technical, duration, rating, difficulty, date_created)
-values (1, 'Code Mime Inc.', 'Software Engineer', '2018', 'Interesting interview', 'Very polite and compassionate!',
+values (nextval('interview_id_seq'), 'Code Mime Inc.', 'Software Engineer', '2018', 'Interesting interview', 'Very polite and compassionate!',
         'Two senior devs. Interesting questions.', 3, 4, 2, current_date);

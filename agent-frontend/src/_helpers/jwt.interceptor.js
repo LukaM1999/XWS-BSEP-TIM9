@@ -5,7 +5,7 @@ export function jwtInterceptor(){
   axios.interceptors.request.use(async config => {
       const token = store.getters.token;
       if (token && !isTokenExpired(token)) {
-          config.headers.common['Authorization'] = token;
+          config.headers.common['Authorization'] = 'Bearer ' + token;
       } else {
         store.commit('setToken', null);
         store.commit('setUser', null);

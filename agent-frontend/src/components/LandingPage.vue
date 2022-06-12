@@ -291,7 +291,8 @@ export default {
       loading.close()
       this.$store.commit("setToken", response.data?.accessToken);
       this.$store.commit("setUser", response.data?.user);
-      await this.$router.push(`/home`);
+      this.$store.state.user.role.authority === "ADMIN" ?
+        await this.$router.push("/home/requests") : await this.$router.push('/home/companies');
     },
   }
 }

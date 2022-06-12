@@ -39,7 +39,6 @@ export default {
     this.$parent.active = 'companies';
   },
   computed: {
-    //Search by company name
     filteredCompanies() {
       return this.companies.filter(company => {
         return company.name.toLowerCase().includes(this.companySearch.toLowerCase())

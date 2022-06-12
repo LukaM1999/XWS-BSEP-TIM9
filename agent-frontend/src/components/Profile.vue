@@ -72,6 +72,16 @@
           </vs-input>
         </div>
       </div>
+      <div v-if="role === 'COMPANY_OWNER'" class="row mt-3">
+        <div class="col">
+          <vs-input
+            warn
+            v-model="dislinktToken"
+            label-placeholder="Dislinkt API token"
+            class="mb-3">
+          </vs-input>
+        </div>
+      </div>
       <div class="row justify-content-center">
         <div class="col d-flex justify-content-center">
           <vs-button @click="editProfile" class="vs-button--size-large" color="#7dcdec"><strong>Save changes</strong></vs-button>
@@ -98,6 +108,7 @@ export default {
       phone: "",
       role: "",
       positions: [],
+      dislinktToken: "",
     }
   },
   mounted() {
@@ -107,7 +118,6 @@ export default {
         e.style.width = "100%";
         e.style.height = "3rem";
       }
-
     });
     this.user = this.$store.getters.user;
     this.firstName = this.user.firstName;
@@ -117,6 +127,7 @@ export default {
     this.city = this.user.city;
     this.country = this.user.country;
     this.phone = this.user.phone;
+    this.dislinktToken = this.user.dislinktToken;
     this.role = this.$store.getters.user?.role?.authority;
     this.$parent.active = 'profile';
   },
@@ -136,6 +147,7 @@ export default {
         city: this.city,
         country: this.country,
         phone: this.phone,
+        dislinktToken: this.dislinktToken,
       }
       await axios.patch(`${process.env.VUE_APP_BACKEND}/user`, user).then(response => {
         if(response.status === 200){

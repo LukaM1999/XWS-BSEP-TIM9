@@ -82,5 +82,10 @@ public class CompanyServiceImpl implements CompanyService {
         return companyRepository.findByOwnerUsername(ownerUsername);
     }
 
+    @Override
+    public int declineCompany(String companyName) {
+        return companyRepository.deleteCompanyByName(companyName);
+    }
+
 
 }

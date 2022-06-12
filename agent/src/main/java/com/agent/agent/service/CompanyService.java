@@ -23,4 +23,6 @@ public interface CompanyService {
     void updateCompanyRating(double rating, String companyName);
 
     List<Company> getOwnerCompanies(String ownerUsername);
+
+    int declineCompany(String companyName);
 }

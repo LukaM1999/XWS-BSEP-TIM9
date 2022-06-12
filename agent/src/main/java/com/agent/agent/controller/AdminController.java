@@ -32,4 +32,11 @@ public class AdminController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @DeleteMapping("/company/{companyName}")
+    public ResponseEntity<Company> declineCompany(@PathVariable String companyName) {
+        if(companyService.declineCompany(companyName) < 1)
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

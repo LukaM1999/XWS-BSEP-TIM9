@@ -21,6 +21,7 @@ import HomePage from "@/components/HomePage";
 import Companies from "@/components/Companies";
 import Profile from "@/components/Profile";
 import OwnerCompanies from "@/components/OwnerCompanies";
+import Requests from "@/components/Requests";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -60,6 +61,7 @@ export const store = new Vuex.Store({
       state.user.city = user.city
       state.user.country = user.country
       state.user.phone = user.phone
+      state.user.dislinktToken = user.dislinktToken
     }
 
   },
@@ -112,8 +114,12 @@ const routes = [
     path: '/home',
     name: 'home-page',
     component: HomePage,
-    redirect: {name: 'companies'},
     children: [
+      {
+        path: 'requests',
+        name: 'admin-requests',
+        component: Requests,
+      },
       {
         path: 'my-companies',
         name: 'owner-companies',

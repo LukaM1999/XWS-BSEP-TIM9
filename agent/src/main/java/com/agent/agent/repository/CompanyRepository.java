@@ -31,4 +31,8 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     void updateCompanyRating(double rating, String companyName);
 
     List<Company> findByOwnerUsername(String ownerUsername);
+
+    @Modifying
+    @Transactional
+    int deleteCompanyByName(String name);
 }

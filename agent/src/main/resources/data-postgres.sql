@@ -41,7 +41,7 @@ insert into company(id, owner_username, name, address, city, country, phone, ema
                                             software development company that specializes in developing web and mobile
                                             applications. Code Mime is a
                                             software development company that specializes in developing web and mobile
-                                            applications.', '2000', '101-250', 'IT', true);
+                                            applications.', '2000', '101-250', 'IT', false);
 
 insert into salary(id, company_name, position, engagement, currently_employed, monthly_net_salary)
 values (nextval('salary_id_seq'), 'Code Mime Inc.', 'Software Engineer (Junior)', 'Full-time', true, 900);

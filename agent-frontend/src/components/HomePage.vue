@@ -17,15 +17,19 @@
         </div>
       </template>
       <template #right>
+        <vs-navbar-item v-if="role === 'ADMIN'" :to="`/home/requests`"
+                        :active="active === 'requests'" id="requests">
+          Requests
+        </vs-navbar-item>
         <vs-navbar-item v-if="role === 'COMPANY_OWNER'" :to="`/home/my-companies`"
                         :active="active === 'my-companies'" id="my-companies">
           My companies
         </vs-navbar-item>
-        <vs-navbar-item :to="`/home/companies`"
+        <vs-navbar-item v-if="role !== 'ADMIN'" :to="`/home/companies`"
                         :active="active === 'companies'" id="companies">
           Companies
         </vs-navbar-item>
-        <vs-navbar-item :to="`/home/profile`"
+        <vs-navbar-item v-if="role !== 'ADMIN'" :to="`/home/profile`"
                         :active="active === 'profile'" id="profile">
           Profile
         </vs-navbar-item>
@@ -55,6 +59,7 @@ export default {
   async mounted() {
     await this.getAllCompanies();
     this.role = this.$store.getters.user?.role?.authority;
+    if(this.role === 'ADMIN') this.active = 'requests';
   },
   computed:{
     //Search by company name

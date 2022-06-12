@@ -12,8 +12,8 @@ import (
 	securityGw "dislinkt/common/proto/security_service"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -39,6 +39,13 @@ func NewServer(config *cfg.Config) *Server {
 func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
+
+		log.WithFields(log.Fields{
+			"method":     r.Method,
+			"url":        r.URL.String(),
+			"origin":     r.Header.Get("Origin"),
+			"user-agent": r.Header.Get("User-Agent"),
+		}).Info("CORS filter")
 
 		h.Set("Access-Control-Allow-Origin", "https://localhost:7777")
 

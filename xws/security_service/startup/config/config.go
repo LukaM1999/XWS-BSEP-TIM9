@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/joho/godotenv"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 )
 

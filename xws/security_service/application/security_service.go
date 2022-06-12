@@ -79,7 +79,7 @@ func (service *SecurityService) GetOTPSecret(username string) (string, error) {
 func (service *SecurityService) SendVerificationEmail(username string, email string, token string) error {
 	// Sender data.
 	from := "isatestmail2021@gmail.com"
-	password := "ftnftnftn"
+	password := "yciuowcxhvykcots"
 
 	// Receiver email address.
 	to := []string{
@@ -153,7 +153,7 @@ func (service *SecurityService) IsVerified(username string) (bool, error) {
 func (service *SecurityService) SendRecoverPasswordEmail(email string, username string, token string) error {
 	// Sender data.
 	from := "isatestmail2021@gmail.com"
-	password := "ftnftnftn"
+	password := "yciuowcxhvykcots"
 
 	// Receiver email address.
 	to := []string{

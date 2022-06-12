@@ -4,11 +4,10 @@ import (
 	"context"
 	auth "dislinkt/common/domain"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -23,6 +22,16 @@ type AuthInterceptor struct {
 
 // NewAuthInterceptor returns a new auth interceptor
 func NewAuthInterceptor(jwtManager *JWTManager, accessibleRoles map[string]string) *AuthInterceptor {
+	//log.SetLevel(log.InfoLevel)
+	//log.SetReportCaller(true)
+	//multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
+	//	Filename:   "../../logs/xws.log",
+	//	MaxSize:    1,
+	//	MaxBackups: 3,
+	//	MaxAge:     28,
+	//	Compress:   true,
+	//})
+	//log.SetOutput(multiWriter)
 	return &AuthInterceptor{jwtManager, accessibleRoles}
 }
 
@@ -72,6 +81,10 @@ func getSecurityDatabaseClient(host, port string) (*mongo.Client, error) {
 }
 
 func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string) (error, string, string) {
+	logger := log.WithFields(log.Fields{
+		"method": method,
+	})
+	logger.Info("Authorizing")
 	permission, ok := interceptor.accessibleRoles[method]
 	if !ok {
 		// everyone can access
@@ -80,22 +93,26 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 
 	securityClient, err := getSecurityDatabaseClient("localhost", "27017")
 	if err != nil {
+		logger.Error("Error getting security database client")
 		return status.Errorf(codes.Internal, "could not connect to security database: %v", err), "", ""
 	}
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
+		logger.Error("Error getting metadata from incoming context")
 		return status.Errorf(codes.Unauthenticated, "metadata is not provided"), "", ""
 	}
 
 	values := md["authorization"]
 	if len(values) == 0 {
+		logger.Error("Error getting authorization from metadata")
 		return status.Errorf(codes.Unauthenticated, "authorization token is not provided"), "", ""
 	}
 
 	accessToken := values[0]
 	claims, err := interceptor.jwtManager.Verify(accessToken)
 	if err != nil {
+		logger.Error("Error verifying access token")
 		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err), "", ""
 	}
 
@@ -103,13 +120,15 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 	rolePermission := &auth.RolePermission{}
 	err = securityClient.Database("security_service").Collection("rolePermission").FindOne(context.TODO(), filter).Decode(rolePermission)
 	if err != nil {
+		logger.WithField("role", claims.Role).Error("Error getting role permissions")
 		return status.Errorf(codes.Internal, "could not find role permissions: %v", err), "", ""
 	}
 	for _, p := range rolePermission.Permissions {
 		if p == permission || p == "*" {
+			logger.Info("Authorized")
 			return nil, claims.UserId, claims.Username
 		}
 	}
-
+	logger.WithField("role", claims.Role).Error("Error authorizing")
 	return status.Error(codes.PermissionDenied, "no permission to access this RPC"), "", ""
 }

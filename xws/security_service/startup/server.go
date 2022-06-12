@@ -11,10 +11,10 @@ import (
 	"dislinkt/security_service/infrastructure/persistence"
 	"dislinkt/security_service/startup/config"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
 	"net"
 	"time"
 )
@@ -101,7 +101,7 @@ func (server *Server) startGrpcServer(userHandler *api.UserHandler, jwtManager *
 	interceptor := auth.NewAuthInterceptor(jwtManager, accessibleRoles())
 	tlsCredentials, err := auth.LoadTLSServerCredentials()
 	if err != nil {
-		panic("cannot load TLS credentials: %w")
+		log.Fatalf("failed to load TLS credentials: %v", err)
 	}
 	serverOptions := []grpc.ServerOption{
 		grpc.Creds(tlsCredentials),

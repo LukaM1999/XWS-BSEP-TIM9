@@ -1,0 +1,1289 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet"
+        href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css"
+        integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.3.1/build/styles/atom-one-dark.min.css">
+
+    <title>NPM Audit Report</title>
+    <meta name="description" content="17 known vulnerabilities found.">
+
+    <style>
+        pre {
+            background-color: #333333;
+            padding: 15px;
+        }
+
+        pre code {
+            color: #fff;
+        }
+    </style>
+
+</head>
+
+<body class="mb-3">
+    <div class="container">
+        <h1 class="mt-5 text-center">NPM Audit Report</h1>
+
+        <div class="text-center">
+            <div class="card-deck my-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            17
+                        </h5>
+                        <p class="card-text">Known vulnerabilities</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            1,426
+                        </h5>
+                        <p class="card-text">Dependencies</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            June 12th 2022, 7:24:50 pm
+                        </h5>
+                        <p class="card-text">Last updated</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-deck my-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            1
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-danger">critical</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            11
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-warning">high</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            3
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-secondary">moderate</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            2
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-primary">low</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            0
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-info">info</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+
+                <table id="advisories" class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Module</th>
+                            <th scope="col">Severity</th>
+                            <th scope="col">CVEs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-ww39-953v-wcq6" data-toggle="modal" data-target="#advisory-modal-1067329">Regular expression denial of service in glob-parent</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/glob-parent" target="_blank"
+                                    rel="noopener">glob-parent</a>
+                            </td>
+                            <td data-order="2"><span
+                                    class="badge badge-warning">high</span></td>
+                            <td>
+                                CWE-400
+                                , CVE-2020-28469
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-pw2r-vq6v-hr8c" data-toggle="modal" data-target="#advisory-modal-1067407">Exposure of Sensitive Information to an Unauthorized Actor in follow-redirects</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/follow-redirects" target="_blank"
+                                    rel="noopener">follow-redirects</a>
+                            </td>
+                            <td data-order="3"><span
+                                    class="badge badge-secondary">moderate</span></td>
+                            <td>
+                                CWE-200
+                                , CVE-2022-0536
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-8fr3-hfg3-gpgp" data-toggle="modal" data-target="#advisory-modal-1067452">Open Redirect in node-forge</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                    rel="noopener">node-forge</a>
+                            </td>
+                            <td data-order="3"><span
+                                    class="badge badge-secondary">moderate</span></td>
+                            <td>
+                                CWE-601
+                                , CVE-2022-0122
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-74fj-2j2h-c42q" data-toggle="modal" data-target="#advisory-modal-1067459">Exposure of sensitive information in follow-redirects</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/follow-redirects" target="_blank"
+                                    rel="noopener">follow-redirects</a>
+                            </td>
+                            <td data-order="2"><span
+                                    class="badge badge-warning">high</span></td>
+                            <td>
+                                CWE-359
+                                , CVE-2022-0155
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-5rrq-pxf6-6jx5" data-toggle="modal" data-target="#advisory-modal-1067471">Prototype Pollution in node-forge debug API.</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                    rel="noopener">node-forge</a>
+                            </td>
+                            <td data-order="4"><span
+                                    class="badge badge-primary">low</span></td>
+                            <td>
+                                CWE-1321
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-gf8q-jrpm-jvxq" data-toggle="modal" data-target="#advisory-modal-1067473">URL parsing in node-forge could lead to undesired behavior.</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                    rel="noopener">node-forge</a>
+                            </td>
+                            <td data-order="4"><span
+                                    class="badge badge-primary">low</span></td>
+                            <td>
+                                
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-4w2v-q235-vp99" data-toggle="modal" data-target="#advisory-modal-1068281">Server-Side Request Forgery in Axios</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/axios" target="_blank"
+                                    rel="noopener">axios</a>
+                            </td>
+                            <td data-order="2"><span
+                                    class="badge badge-warning">high</span></td>
+                            <td>
+                                CWE-918
+                                , CVE-2020-28168
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-cph5-m8f7-6c5x" data-toggle="modal" data-target="#advisory-modal-1070315">Incorrect Comparison in axios</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/axios" target="_blank"
+                                    rel="noopener">axios</a>
+                            </td>
+                            <td data-order="2"><span
+                                    class="badge badge-warning">high</span></td>
+                            <td>
+                                CWE-400,CWE-697
+                                , CVE-2021-3749
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-2r2c-g63r-vccr" data-toggle="modal" data-target="#advisory-modal-1070354">Improper Verification of Cryptographic Signature in &#x60;node-forge&#x60;</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                    rel="noopener">node-forge</a>
+                            </td>
+                            <td data-order="3"><span
+                                    class="badge badge-secondary">moderate</span></td>
+                            <td>
+                                CWE-347
+                                , CVE-2022-24773
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-x4jg-mjrx-434g" data-toggle="modal" data-target="#advisory-modal-1070355">Improper Verification of Cryptographic Signature in node-forge</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                    rel="noopener">node-forge</a>
+                            </td>
+                            <td data-order="2"><span
+                                    class="badge badge-warning">high</span></td>
+                            <td>
+                                CWE-347
+                                , CVE-2022-24772
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-cfm4-qjh2-4765" data-toggle="modal" data-target="#advisory-modal-1070356">Improper Verification of Cryptographic Signature in node-forge</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                    rel="noopener">node-forge</a>
+                            </td>
+                            <td data-order="2"><span
+                                    class="badge badge-warning">high</span></td>
+                            <td>
+                                CWE-347
+                                , CVE-2022-24771
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-phwq-j96m-2c2q" data-toggle="modal" data-target="#advisory-modal-1070412">Template injection in ejs</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/ejs" target="_blank"
+                                    rel="noopener">ejs</a>
+                            </td>
+                            <td data-order="1"><span
+                                    class="badge badge-danger">critical</span></td>
+                            <td>
+                                CWE-74
+                                , CVE-2022-29078
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <a href="https://github.com/advisories/GHSA-rp65-9cf3-cjxr" data-toggle="modal" data-target="#advisory-modal-1070415">Inefficient Regular Expression Complexity in nth-check</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/nth-check" target="_blank"
+                                    rel="noopener">nth-check</a>
+                            </td>
+                            <td data-order="2"><span
+                                    class="badge badge-warning">high</span></td>
+                            <td>
+                                CWE-1333
+                                , CVE-2021-3803
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1067329">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-warning">high</span>
+                        Regular expression denial of service in glob-parent
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/glob-parent" target="_blank"
+                                        rel="noopener">glob-parent</a>
+                                </li>
+                                <li>Published: June 7th 2021 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-400</li>
+                                <li>CVE-2020-28469</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;5.1.2</li>
+                                <li>Patched: &gt;&#x3D;5.1.2</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><p>This affects the package glob-parent before 5.1.2. The enclosure regex used to check for strings ending in enclosure containing path separator.</p>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@vue/cli-plugin-babel&gt;webpack&gt;watchpack&gt;watchpack-chokidar2&gt;chokidar&gt;glob-parent </li>
+                    </ul>
+                    <ul>
+                        <li>@vue/cli-plugin-eslint&gt;globby&gt;fast-glob&gt;glob-parent </li>
+                    </ul>
+                    <ul>
+                        <li>@vue/cli-service&gt;copy-webpack-plugin&gt;glob-parent </li>
+                    </ul>
+                    <ul>
+                        <li>@vue/cli-service&gt;webpack-dev-server&gt;chokidar&gt;glob-parent </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 5.1.2 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2020-28469">https://nvd.nist.gov/vuln/detail/CVE-2020-28469</a></li>
+<li><a href="https://github.com/gulpjs/glob-parent/pull/36">https://github.com/gulpjs/glob-parent/pull/36</a></li>
+<li><a href="https://github.com/gulpjs/glob-parent/blob/6ce8d11f2f1ed8e80a9526b1dc8cf3aa71f43474/index.js%23L9">https://github.com/gulpjs/glob-parent/blob/6ce8d11f2f1ed8e80a9526b1dc8cf3aa71f43474/index.js%23L9</a></li>
+<li><a href="https://github.com/gulpjs/glob-parent/releases/tag/v5.1.2">https://github.com/gulpjs/glob-parent/releases/tag/v5.1.2</a></li>
+<li><a href="https://snyk.io/vuln/SNYK-JAVA-ORGWEBJARSBOWERGITHUBES128-1059093">https://snyk.io/vuln/SNYK-JAVA-ORGWEBJARSBOWERGITHUBES128-1059093</a></li>
+<li><a href="https://snyk.io/vuln/SNYK-JAVA-ORGWEBJARSNPM-1059092">https://snyk.io/vuln/SNYK-JAVA-ORGWEBJARSNPM-1059092</a></li>
+<li><a href="https://snyk.io/vuln/SNYK-JS-GLOBPARENT-1016905">https://snyk.io/vuln/SNYK-JS-GLOBPARENT-1016905</a></li>
+<li><a href="https://www.oracle.com/security-alerts/cpujan2022.html">https://www.oracle.com/security-alerts/cpujan2022.html</a></li>
+<li><a href="https://github.com/advisories/GHSA-ww39-953v-wcq6">https://github.com/advisories/GHSA-ww39-953v-wcq6</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-ww39-953v-wcq6" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1067407">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-secondary">moderate</span>
+                        Exposure of Sensitive Information to an Unauthorized Actor in follow-redirects
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/follow-redirects" target="_blank"
+                                        rel="noopener">follow-redirects</a>
+                                </li>
+                                <li>Published: February 10th 2022 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-200</li>
+                                <li>CVE-2022-0536</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;1.14.8</li>
+                                <li>Patched: &gt;&#x3D;1.14.8</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><p>Exposure of Sensitive Information to an Unauthorized Actor in NPM follow-redirects prior to 1.14.8.</p>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@mathiscode/password-leak&gt;axios&gt;follow-redirects </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 1.14.8 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2022-0536">https://nvd.nist.gov/vuln/detail/CVE-2022-0536</a></li>
+<li><a href="https://github.com/follow-redirects/follow-redirects/commit/62e546a99c07c3ee5e4e0718c84a6ca127c5c445">https://github.com/follow-redirects/follow-redirects/commit/62e546a99c07c3ee5e4e0718c84a6ca127c5c445</a></li>
+<li><a href="https://huntr.dev/bounties/7cf2bf90-52da-4d59-8028-a73b132de0db">https://huntr.dev/bounties/7cf2bf90-52da-4d59-8028-a73b132de0db</a></li>
+<li><a href="https://github.com/advisories/GHSA-pw2r-vq6v-hr8c">https://github.com/advisories/GHSA-pw2r-vq6v-hr8c</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-pw2r-vq6v-hr8c" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1067452">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-secondary">moderate</span>
+                        Open Redirect in node-forge
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                        rel="noopener">node-forge</a>
+                                </li>
+                                <li>Published: January 21st 2022 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-601</li>
+                                <li>CVE-2022-0122</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;1.0.0</li>
+                                <li>Patched: &gt;&#x3D;1.0.0</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><p>parseUrl functionality in node-forge mishandles certain uses of backslash such as https:///\ and interprets the URI as a relative path. </p>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@vue/cli-service&gt;webpack-dev-server&gt;selfsigned&gt;node-forge </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 1.0.0 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2022-0122">https://nvd.nist.gov/vuln/detail/CVE-2022-0122</a></li>
+<li><a href="https://github.com/digitalbazaar/forge/commit/db8016c805371e72b06d8e2edfe0ace0df934a5e">https://github.com/digitalbazaar/forge/commit/db8016c805371e72b06d8e2edfe0ace0df934a5e</a></li>
+<li><a href="https://huntr.dev/bounties/41852c50-3c6d-4703-8c55-4db27164a4ae">https://huntr.dev/bounties/41852c50-3c6d-4703-8c55-4db27164a4ae</a></li>
+<li><a href="https://github.com/advisories/GHSA-8fr3-hfg3-gpgp">https://github.com/advisories/GHSA-8fr3-hfg3-gpgp</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-8fr3-hfg3-gpgp" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1067459">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-warning">high</span>
+                        Exposure of sensitive information in follow-redirects
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/follow-redirects" target="_blank"
+                                        rel="noopener">follow-redirects</a>
+                                </li>
+                                <li>Published: January 12th 2022 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-359</li>
+                                <li>CVE-2022-0155</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;1.14.7</li>
+                                <li>Patched: &gt;&#x3D;1.14.7</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><p>follow-redirects is vulnerable to Exposure of Private Personal Information to an Unauthorized Actor</p>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@mathiscode/password-leak&gt;axios&gt;follow-redirects </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 1.14.7 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2022-0155">https://nvd.nist.gov/vuln/detail/CVE-2022-0155</a></li>
+<li><a href="https://github.com/follow-redirects/follow-redirects/commit/8b347cbcef7c7b72a6e9be20f5710c17d6163c22">https://github.com/follow-redirects/follow-redirects/commit/8b347cbcef7c7b72a6e9be20f5710c17d6163c22</a></li>
+<li><a href="https://huntr.dev/bounties/fc524e4b-ebb6-427d-ab67-a64181020406">https://huntr.dev/bounties/fc524e4b-ebb6-427d-ab67-a64181020406</a></li>
+<li><a href="https://github.com/advisories/GHSA-74fj-2j2h-c42q">https://github.com/advisories/GHSA-74fj-2j2h-c42q</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-74fj-2j2h-c42q" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1067471">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-primary">low</span>
+                        Prototype Pollution in node-forge debug API.
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                        rel="noopener">node-forge</a>
+                                </li>
+                                <li>Published: January 8th 2022 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-1321</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;1.0.0</li>
+                                <li>Patched: &gt;&#x3D;1.0.0</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><h3 id="impact">Impact</h3>
+<p>The <code>forge.debug</code> API had a potential prototype pollution issue if called with untrusted input. The API was only used for internal debug purposes in a safe way and never documented or advertised.  It is suspected that uses of this API, if any exist, would likely not have used untrusted inputs in a vulnerable way.</p>
+<h3 id="patches">Patches</h3>
+<p>The <code>forge.debug</code> API and related functions were removed in 1.0.0.</p>
+<h3 id="workarounds">Workarounds</h3>
+<p>Don&#39;t use the <code>forge.debug</code> API directly or indirectly with untrusted input.</p>
+<h3 id="references">References</h3>
+<ul>
+<li><a href="https://www.huntr.dev/bounties/1-npm-node-forge/">https://www.huntr.dev/bounties/1-npm-node-forge/</a></li>
+</ul>
+<h3 id="for-more-information">For more information</h3>
+<p>If you have any questions or comments about this advisory:</p>
+<ul>
+<li>Open an issue in <a href="https://github.com/digitalbazaar/forge">forge</a>.</li>
+<li>Email us at <a href="mailto:&#x73;&#x75;&#x70;&#x70;&#x6f;&#114;&#116;&#x40;&#100;&#x69;&#x67;&#105;&#116;&#x61;&#108;&#x62;&#x61;&#x7a;&#97;&#97;&#114;&#46;&#99;&#x6f;&#x6d;">&#x73;&#x75;&#x70;&#x70;&#x6f;&#114;&#116;&#x40;&#100;&#x69;&#x67;&#105;&#116;&#x61;&#108;&#x62;&#x61;&#x7a;&#97;&#97;&#114;&#46;&#99;&#x6f;&#x6d;</a>.</li>
+</ul>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@vue/cli-service&gt;webpack-dev-server&gt;selfsigned&gt;node-forge </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 1.0.0 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://github.com/digitalbazaar/forge/security/advisories/GHSA-5rrq-pxf6-6jx5">https://github.com/digitalbazaar/forge/security/advisories/GHSA-5rrq-pxf6-6jx5</a></li>
+<li><a href="https://github.com/advisories/GHSA-5rrq-pxf6-6jx5">https://github.com/advisories/GHSA-5rrq-pxf6-6jx5</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-5rrq-pxf6-6jx5" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1067473">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-primary">low</span>
+                        URL parsing in node-forge could lead to undesired behavior.
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                        rel="noopener">node-forge</a>
+                                </li>
+                                <li>Published: January 8th 2022 </li>
+                                <li>Reported by: </li>
+                                <li></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;1.0.0</li>
+                                <li>Patched: &gt;&#x3D;1.0.0</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><h3 id="impact">Impact</h3>
+<p>The regex used for the <code>forge.util.parseUrl</code> API would not properly parse certain inputs resulting in a parsed data structure that could lead to undesired behavior.</p>
+<h3 id="patches">Patches</h3>
+<p><code>forge.util.parseUrl</code> and other very old related URL APIs were removed in 1.0.0 in favor of letting applications use the more modern WHATWG URL Standard API.</p>
+<h3 id="workarounds">Workarounds</h3>
+<p>Ensure code does not directly or indirectly call <code>forge.util.parseUrl</code> with untrusted input.</p>
+<h3 id="references">References</h3>
+<ul>
+<li><a href="https://www.huntr.dev/bounties/41852c50-3c6d-4703-8c55-4db27164a4ae/">https://www.huntr.dev/bounties/41852c50-3c6d-4703-8c55-4db27164a4ae/</a></li>
+</ul>
+<h3 id="for-more-information">For more information</h3>
+<p>If you have any questions or comments about this advisory:</p>
+<ul>
+<li>Open an issue in <a href="https://github.com/digitalbazaar/forge">forge</a></li>
+<li>Email us at <a href="mailto:&#115;&#117;&#112;&#112;&#x6f;&#x72;&#x74;&#x40;&#100;&#x69;&#x67;&#105;&#x74;&#x61;&#x6c;&#98;&#97;&#x7a;&#x61;&#97;&#114;&#x2e;&#x63;&#x6f;&#109;">&#115;&#117;&#112;&#112;&#x6f;&#x72;&#x74;&#x40;&#100;&#x69;&#x67;&#105;&#x74;&#x61;&#x6c;&#98;&#97;&#x7a;&#x61;&#97;&#114;&#x2e;&#x63;&#x6f;&#109;</a></li>
+</ul>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@vue/cli-service&gt;webpack-dev-server&gt;selfsigned&gt;node-forge </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 1.0.0 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://github.com/digitalbazaar/forge/security/advisories/GHSA-gf8q-jrpm-jvxq">https://github.com/digitalbazaar/forge/security/advisories/GHSA-gf8q-jrpm-jvxq</a></li>
+<li><a href="https://github.com/advisories/GHSA-gf8q-jrpm-jvxq">https://github.com/advisories/GHSA-gf8q-jrpm-jvxq</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-gf8q-jrpm-jvxq" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1068281">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-warning">high</span>
+                        Server-Side Request Forgery in Axios
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/axios" target="_blank"
+                                        rel="noopener">axios</a>
+                                </li>
+                                <li>Published: January 4th 2021 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-918</li>
+                                <li>CVE-2020-28168</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;0.21.1</li>
+                                <li>Patched: &gt;&#x3D;0.21.1</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><p>Axios NPM package 0.21.0 contains a Server-Side Request Forgery (SSRF) vulnerability where an attacker is able to bypass a proxy by providing a URL that responds with a redirect to a restricted host or IP address.</p>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@mathiscode/password-leak&gt;axios </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 0.21.1 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2020-28168">https://nvd.nist.gov/vuln/detail/CVE-2020-28168</a></li>
+<li><a href="https://github.com/axios/axios/issues/3369">https://github.com/axios/axios/issues/3369</a></li>
+<li><a href="https://github.com/axios/axios/commit/c7329fefc890050edd51e40e469a154d0117fc55">https://github.com/axios/axios/commit/c7329fefc890050edd51e40e469a154d0117fc55</a></li>
+<li><a href="https://snyk.io/vuln/SNYK-JS-AXIOS-1038255">https://snyk.io/vuln/SNYK-JS-AXIOS-1038255</a></li>
+<li><a href="https://www.npmjs.com/package/axios">https://www.npmjs.com/package/axios</a></li>
+<li><a href="https://www.npmjs.com/advisories/1594">https://www.npmjs.com/advisories/1594</a></li>
+<li><a href="https://lists.apache.org/thread.html/r954d80fd18e9dafef6e813963eb7e08c228151c2b6268ecd63b35d1f@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/r954d80fd18e9dafef6e813963eb7e08c228151c2b6268ecd63b35d1f@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/r25d53acd06f29244b8a103781b0339c5e7efee9099a4d52f0c230e4a@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/r25d53acd06f29244b8a103781b0339c5e7efee9099a4d52f0c230e4a@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/rdfd2901b8b697a3f6e2c9c6ecc688fd90d7f881937affb5144d61d6e@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/rdfd2901b8b697a3f6e2c9c6ecc688fd90d7f881937affb5144d61d6e@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://github.com/advisories/GHSA-4w2v-q235-vp99">https://github.com/advisories/GHSA-4w2v-q235-vp99</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-4w2v-q235-vp99" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1070315">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-warning">high</span>
+                        Incorrect Comparison in axios
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/axios" target="_blank"
+                                        rel="noopener">axios</a>
+                                </li>
+                                <li>Published: September 1st 2021 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-400,CWE-697</li>
+                                <li>CVE-2021-3749</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;0.21.2</li>
+                                <li>Patched: &gt;&#x3D;0.21.2</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><p>axios is vulnerable to Inefficient Regular Expression Complexity</p>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@mathiscode/password-leak&gt;axios </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 0.21.2 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-3749">https://nvd.nist.gov/vuln/detail/CVE-2021-3749</a></li>
+<li><a href="https://github.com/axios/axios/commit/5b457116e31db0e88fede6c428e969e87f290929">https://github.com/axios/axios/commit/5b457116e31db0e88fede6c428e969e87f290929</a></li>
+<li><a href="https://huntr.dev/bounties/1e8f07fc-c384-4ff9-8498-0690de2e8c31">https://huntr.dev/bounties/1e8f07fc-c384-4ff9-8498-0690de2e8c31</a></li>
+<li><a href="https://www.npmjs.com/package/axios">https://www.npmjs.com/package/axios</a></li>
+<li><a href="https://lists.apache.org/thread.html/r075d464dce95cd13c03ff9384658edcccd5ab2983b82bfc72b62bb10@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/r075d464dce95cd13c03ff9384658edcccd5ab2983b82bfc72b62bb10@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/r216f0fd0a3833856d6a6a1fada488cadba45f447d87010024328ccf2@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/r216f0fd0a3833856d6a6a1fada488cadba45f447d87010024328ccf2@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/r3ae6d2654f92c5851bdb73b35e96b0e4e3da39f28ac7a1b15ae3aab8@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/r3ae6d2654f92c5851bdb73b35e96b0e4e3da39f28ac7a1b15ae3aab8@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/r4bf1b32983f50be00f9752214c1b53738b621be1c2b0dbd68c7f2391@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/r4bf1b32983f50be00f9752214c1b53738b621be1c2b0dbd68c7f2391@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/r7324ecc35b8027a51cb6ed629490fcd3b2d7cf01c424746ed5744bf1@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/r7324ecc35b8027a51cb6ed629490fcd3b2d7cf01c424746ed5744bf1@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/r74d0b359408fff31f87445261f0ee13bdfcac7d66f6b8e846face321@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/r74d0b359408fff31f87445261f0ee13bdfcac7d66f6b8e846face321@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/ra15d63c54dc6474b29f72ae4324bcb03038758545b3ab800845de7a1@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/ra15d63c54dc6474b29f72ae4324bcb03038758545b3ab800845de7a1@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/rc263bfc5b53afcb7e849605478d73f5556eb0c00d1f912084e407289@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/rc263bfc5b53afcb7e849605478d73f5556eb0c00d1f912084e407289@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/rfa094029c959da0f7c8cd7dc9c4e59d21b03457bf0cedf6c93e1bb0a@%3Cdev.druid.apache.org%3E">https://lists.apache.org/thread.html/rfa094029c959da0f7c8cd7dc9c4e59d21b03457bf0cedf6c93e1bb0a@%3Cdev.druid.apache.org%3E</a></li>
+<li><a href="https://lists.apache.org/thread.html/rfc5c478053ff808671aef170f3d9fc9d05cc1fab8fb64431edc66103@%3Ccommits.druid.apache.org%3E">https://lists.apache.org/thread.html/rfc5c478053ff808671aef170f3d9fc9d05cc1fab8fb64431edc66103@%3Ccommits.druid.apache.org%3E</a></li>
+<li><a href="https://github.com/advisories/GHSA-cph5-m8f7-6c5x">https://github.com/advisories/GHSA-cph5-m8f7-6c5x</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-cph5-m8f7-6c5x" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1070354">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-secondary">moderate</span>
+                        Improper Verification of Cryptographic Signature in &#x60;node-forge&#x60;
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                        rel="noopener">node-forge</a>
+                                </li>
+                                <li>Published: March 18th 2022 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-347</li>
+                                <li>CVE-2022-24773</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;1.3.0</li>
+                                <li>Patched: &gt;&#x3D;1.3.0</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><h3 id="impact">Impact</h3>
+<p>RSA PKCS#1 v1.5 signature verification code is not properly checking <code>DigestInfo</code> for a proper ASN.1 structure. This can lead to successful verification with signatures that contain invalid structures but a valid digest.</p>
+<h3 id="patches">Patches</h3>
+<p>The issue has been addressed in <code>node-forge</code> <code>1.3.0</code>.</p>
+<h3 id="for-more-information">For more information</h3>
+<p>If you have any questions or comments about this advisory:</p>
+<ul>
+<li>Open an issue in <a href="https://github.com/digitalbazaar/forge">forge</a></li>
+<li>Email us at <a href="mailto:security@digitalbazaar.com">example email address</a></li>
+</ul>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@vue/cli-service&gt;webpack-dev-server&gt;selfsigned&gt;node-forge </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 1.3.0 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://github.com/digitalbazaar/forge/security/advisories/GHSA-2r2c-g63r-vccr">https://github.com/digitalbazaar/forge/security/advisories/GHSA-2r2c-g63r-vccr</a></li>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2022-24773">https://nvd.nist.gov/vuln/detail/CVE-2022-24773</a></li>
+<li><a href="https://github.com/digitalbazaar/forge/commit/3f0b49a0573ef1bb7af7f5673c0cfebf00424df1">https://github.com/digitalbazaar/forge/commit/3f0b49a0573ef1bb7af7f5673c0cfebf00424df1</a></li>
+<li><a href="https://github.com/digitalbazaar/forge/commit/bb822c02df0b61211836472e29b9790cc541cdb2">https://github.com/digitalbazaar/forge/commit/bb822c02df0b61211836472e29b9790cc541cdb2</a></li>
+<li><a href="https://github.com/advisories/GHSA-2r2c-g63r-vccr">https://github.com/advisories/GHSA-2r2c-g63r-vccr</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-2r2c-g63r-vccr" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1070355">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-warning">high</span>
+                        Improper Verification of Cryptographic Signature in node-forge
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                        rel="noopener">node-forge</a>
+                                </li>
+                                <li>Published: March 18th 2022 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-347</li>
+                                <li>CVE-2022-24772</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;1.3.0</li>
+                                <li>Patched: &gt;&#x3D;1.3.0</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><h3 id="impact">Impact</h3>
+<p>RSA PKCS#1 v1.5 signature verification code does not check for tailing garbage bytes after decoding a <code>DigestInfo</code> ASN.1 structure. This can allow padding bytes to be removed and garbage data added to forge a signature when a low public exponent is being used.</p>
+<h3 id="patches">Patches</h3>
+<p>The issue has been addressed in <code>node-forge</code> <code>1.3.0</code>.</p>
+<h3 id="references">References</h3>
+<p>For more information, please see
+<a href="https://mailarchive.ietf.org/arch/msg/openpgp/5rnE9ZRN1AokBVj3VqblGlP63QE/">&quot;Bleichenbacher&#39;s RSA signature forgery based on implementation error&quot;</a>
+by Hal Finney.</p>
+<h3 id="for-more-information">For more information</h3>
+<p>If you have any questions or comments about this advisory:</p>
+<ul>
+<li>Open an issue in <a href="https://github.com/digitalbazaar/forge">forge</a></li>
+<li>Email us at <a href="mailto:security@digitalbazaar.com">example email address</a></li>
+</ul>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@vue/cli-service&gt;webpack-dev-server&gt;selfsigned&gt;node-forge </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 1.3.0 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://github.com/digitalbazaar/forge/security/advisories/GHSA-x4jg-mjrx-434g">https://github.com/digitalbazaar/forge/security/advisories/GHSA-x4jg-mjrx-434g</a></li>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2022-24772">https://nvd.nist.gov/vuln/detail/CVE-2022-24772</a></li>
+<li><a href="https://github.com/digitalbazaar/forge/commit/3f0b49a0573ef1bb7af7f5673c0cfebf00424df1">https://github.com/digitalbazaar/forge/commit/3f0b49a0573ef1bb7af7f5673c0cfebf00424df1</a></li>
+<li><a href="https://github.com/digitalbazaar/forge/commit/bb822c02df0b61211836472e29b9790cc541cdb2">https://github.com/digitalbazaar/forge/commit/bb822c02df0b61211836472e29b9790cc541cdb2</a></li>
+<li><a href="https://github.com/advisories/GHSA-x4jg-mjrx-434g">https://github.com/advisories/GHSA-x4jg-mjrx-434g</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-x4jg-mjrx-434g" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1070356">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-warning">high</span>
+                        Improper Verification of Cryptographic Signature in node-forge
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/node-forge" target="_blank"
+                                        rel="noopener">node-forge</a>
+                                </li>
+                                <li>Published: March 18th 2022 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-347</li>
+                                <li>CVE-2022-24771</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;1.3.0</li>
+                                <li>Patched: &gt;&#x3D;1.3.0</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><h3 id="impact">Impact</h3>
+<p>RSA PKCS#1 v1.5 signature verification code is lenient in checking the digest algorithm structure. This can allow a crafted structure that steals padding bytes and uses unchecked portion of the PKCS#1 encoded message to forge a signature when a low public exponent is being used.</p>
+<h3 id="patches">Patches</h3>
+<p>The issue has been addressed in <code>node-forge</code> <code>1.3.0</code>.</p>
+<h3 id="references">References</h3>
+<p>For more information, please see
+<a href="https://mailarchive.ietf.org/arch/msg/openpgp/5rnE9ZRN1AokBVj3VqblGlP63QE/">&quot;Bleichenbacher&#39;s RSA signature forgery based on implementation error&quot;</a>
+by Hal Finney.</p>
+<h3 id="for-more-information">For more information</h3>
+<p>If you have any questions or comments about this advisory:</p>
+<ul>
+<li>Open an issue in <a href="https://github.com/digitalbazaar/forge">forge</a></li>
+<li>Email us at <a href="mailto:security@digitalbazaar.com">example email address</a></li>
+</ul>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@vue/cli-service&gt;webpack-dev-server&gt;selfsigned&gt;node-forge </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 1.3.0 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://github.com/digitalbazaar/forge/security/advisories/GHSA-cfm4-qjh2-4765">https://github.com/digitalbazaar/forge/security/advisories/GHSA-cfm4-qjh2-4765</a></li>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2022-24771">https://nvd.nist.gov/vuln/detail/CVE-2022-24771</a></li>
+<li><a href="https://github.com/digitalbazaar/forge/commit/3f0b49a0573ef1bb7af7f5673c0cfebf00424df1">https://github.com/digitalbazaar/forge/commit/3f0b49a0573ef1bb7af7f5673c0cfebf00424df1</a></li>
+<li><a href="https://github.com/digitalbazaar/forge/commit/bb822c02df0b61211836472e29b9790cc541cdb2">https://github.com/digitalbazaar/forge/commit/bb822c02df0b61211836472e29b9790cc541cdb2</a></li>
+<li><a href="https://github.com/advisories/GHSA-cfm4-qjh2-4765">https://github.com/advisories/GHSA-cfm4-qjh2-4765</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-cfm4-qjh2-4765" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1070412">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-danger">critical</span>
+                        Template injection in ejs
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/ejs" target="_blank"
+                                        rel="noopener">ejs</a>
+                                </li>
+                                <li>Published: April 26th 2022 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-74</li>
+                                <li>CVE-2022-29078</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;3.1.7</li>
+                                <li>Patched: &gt;&#x3D;3.1.7</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><p>The ejs (aka Embedded JavaScript templates) package 3.1.6 for Node.js allows server-side template injection in settings[view options][outputFunctionName]. This is parsed as an internal option, and overwrites the outputFunctionName option with an arbitrary OS command (which is executed upon template compilation).</p>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@vue/cli-service&gt;webpack-bundle-analyzer&gt;ejs </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 3.1.7 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2022-29078">https://nvd.nist.gov/vuln/detail/CVE-2022-29078</a></li>
+<li><a href="https://eslam.io/posts/ejs-server-side-template-injection-rce/">https://eslam.io/posts/ejs-server-side-template-injection-rce/</a></li>
+<li><a href="https://github.com/mde/ejs/commit/15ee698583c98dadc456639d6245580d17a24baf">https://github.com/mde/ejs/commit/15ee698583c98dadc456639d6245580d17a24baf</a></li>
+<li><a href="https://github.com/mde/ejs/releases">https://github.com/mde/ejs/releases</a></li>
+<li><a href="https://github.com/advisories/GHSA-phwq-j96m-2c2q">https://github.com/advisories/GHSA-phwq-j96m-2c2q</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-phwq-j96m-2c2q" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-1070415">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-warning">high</span>
+                        Inefficient Regular Expression Complexity in nth-check
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/nth-check" target="_blank"
+                                        rel="noopener">nth-check</a>
+                                </li>
+                                <li>Published: September 20th 2021 </li>
+                                <li>Reported by: </li>
+                                <li>CWE-1333</li>
+                                <li>CVE-2021-3803</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: &lt;2.0.1</li>
+                                <li>Patched: &gt;&#x3D;2.0.1</li>
+                                <li>Exploitability: </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text"><p>nth-check is vulnerable to Inefficient Regular Expression Complexity</p>
+</p>
+
+                    <h3>Findings</h3>
+                    <ul>
+                        <li>@vue/cli-service&gt;cssnano&gt;cssnano-preset-default&gt;postcss-svgo&gt;svgo&gt;css-select&gt;nth-check </li>
+                        <li>@vue/cli-service&gt;@intervolga/optimize-cssnano-plugin&gt;cssnano&gt;cssnano-preset-default&gt;postcss-svgo&gt;svgo&gt;css-select&gt;nth-check </li>
+                    </ul>
+
+                    <h3>Remediation</h3>
+                    <p class="card-text"><p>Upgrade to version 2.0.1 or later</p>
+</p>
+                     
+                    <h3>References</h3>
+                    <p class="card-text"><ul>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-3803">https://nvd.nist.gov/vuln/detail/CVE-2021-3803</a></li>
+<li><a href="https://github.com/fb55/nth-check/commit/9894c1d2010870c351f66c6f6efcf656e26bb726">https://github.com/fb55/nth-check/commit/9894c1d2010870c351f66c6f6efcf656e26bb726</a></li>
+<li><a href="https://huntr.dev/bounties/8cf8cc06-d2cf-4b4e-b42c-99fafb0b04d0">https://huntr.dev/bounties/8cf8cc06-d2cf-4b4e-b42c-99fafb0b04d0</a></li>
+<li><a href="https://github.com/advisories/GHSA-rp65-9cf3-cjxr">https://github.com/advisories/GHSA-rp65-9cf3-cjxr</a></li>
+</ul>
+</p>
+                     
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="https://github.com/advisories/GHSA-rp65-9cf3-cjxr" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#advisories').DataTable({
+                order: [[2, 'asc']]
+            });
+        });
+    </script>
+</body>
+
+</html>

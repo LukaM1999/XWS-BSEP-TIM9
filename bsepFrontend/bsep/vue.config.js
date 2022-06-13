@@ -1,3 +1,6 @@
+const fs = require('fs');
+
+
 module.exports = {
     configureWebpack: {
         devtool: 'source-map',
@@ -10,6 +13,11 @@ module.exports = {
 
     },
     devServer: {
-        proxy: "http://localhost:9000"
+        host: 'localhost',
+        https: {
+            key: fs.readFileSync('../../cert/server-key.pem'),
+            cert: fs.readFileSync('../../cert/server-cert.pem'),
+        },
+        //public: process.env.VUE_APP_BACKEND,
     },
 }

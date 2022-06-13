@@ -1,4 +1,6 @@
 import Vue from 'vue'
+import Vuex from 'vuex'
+import createPersistedState from 'vuex-persistedstate'
 import App from './App.vue'
 import VueRouter from "vue-router";
 import axios from 'axios'
@@ -8,10 +10,14 @@ import Vuesax from 'vuesax'
 import 'vuesax/dist/vuesax.css' //Vuesax styles
 import LandingPage from "@/components/LandingPage";
 import HomePage from "@/components/HomePage";
+import {jwtInterceptor} from "@/_helpers/jwt.interceptor";
 
 Vue.config.productionTip = false
 Vue.config.devtools
 
+jwtInterceptor()
+
+Vue.use(Vuex)
 Vue.use(VueRouter)
 Vue.use(VueAxios, axios)
 Vue.use(Toasted, {
@@ -24,6 +30,30 @@ Vue.use(Vuesax, {
 })
 
 
+export const store = new Vuex.Store({
+  plugins: [createPersistedState()],
+  state: {
+    user: null,
+    token: null,
+  },
+  mutations: {
+    setToken(state, token) {
+      state.token = token
+    },
+    setUser(state, user) {
+      state.user = user
+    },
+  },
+  getters: {
+    token(state) {
+      return state.token
+    },
+    user(state) {
+      return state.user
+    },
+  }
+})
+
 const routes = [
   {
     path: '/',
@@ -34,7 +64,7 @@ const routes = [
     ],
   },
   {
-    path: '/home/:user',
+    path: '/home',
     name: 'homePage',
     component: HomePage,
     children: [
@@ -51,4 +81,5 @@ export const router = new VueRouter({
 export var vue = new Vue({
   render: h => h(App),
   router,
+  store,
 }).$mount('#app')

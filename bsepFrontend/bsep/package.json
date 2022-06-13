@@ -15,7 +15,9 @@
     "vue-axios": "^3.4.1",
     "vue-router": "^3.5.3",
     "vue-toasted": "^1.1.28",
-    "vuesax": "^4.0.1-alpha.0"
+    "vuesax": "^4.0.1-alpha.0",
+    "vuex-persistedstate": "^4.1.0",
+    "vuex": "^3.6.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.15",

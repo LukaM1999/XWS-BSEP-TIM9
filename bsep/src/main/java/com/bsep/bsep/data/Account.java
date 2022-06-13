@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,13 +29,20 @@ public class Account implements UserDetails {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="roleName")
     private Role role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return new ArrayList<Role>(List.of(this.role));
     }
+
+    @Column(name = "last_password_reset_date")
+    private Timestamp lastPasswordResetDate;
+
+    @Column(name = "enabled")
+    private boolean enabled;
 
     @Override
     public String getPassword() {
@@ -49,25 +57,24 @@ public class Account implements UserDetails {
     @Override
     @JsonIgnore
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     @JsonIgnore
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     @JsonIgnore
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
-    @JsonIgnore
     public boolean isEnabled() {
-        return false;
+        return enabled;
     }
 
     public Account(){
@@ -94,5 +101,13 @@ public class Account implements UserDetails {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Timestamp getLastPasswordResetDate() {
+        return lastPasswordResetDate;
+    }
+
+    public void setLastPasswordResetDate(Timestamp lastPasswordResetDate) {
+        this.lastPasswordResetDate = lastPasswordResetDate;
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +37,7 @@ public class AdminController {
     private CertificateService certificateService;
 
     @PostMapping("/createCertificate")
+    @PreAuthorize("!hasAuthority('endEntity')")
     public CertificateDTO createCertificate(@RequestBody CertificateDTO certificateDTO) throws CertificateException,
             NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         X509Certificate created = certificateService.createCertificate(certificateDTO);
@@ -50,18 +52,21 @@ public class AdminController {
     }
 
     @GetMapping("/getEndCertificates")
+    @PreAuthorize("hasAuthority('endEntity')")
     public List<CertificateDTO> getAllEndUserCertificates() throws CertificateException, ParseException,
             NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return certificateService.certificateToDTO(certificateService.getAllActiveEndUserCertificates());
     }
 
     @GetMapping("/getRootCertificates")
+    @PreAuthorize("hasAuthority('admin')")
     public List<CertificateDTO> getAllRootCertificates() throws CertificateException, ParseException,
             NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return certificateService.certificateToDTO(certificateService.getAllActiveRootCertificates());
     }
 
     @GetMapping("/getCACertificates")
+    @PreAuthorize("hasAuthority('ca')")
     public List<CertificateDTO> getAllCaCertificates() throws CertificateException, ParseException,
             NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return certificateService.certificateToDTO(certificateService.getAllActiveCACertificates());
@@ -75,6 +80,7 @@ public class AdminController {
     }
 
     @PostMapping("/revokeCertificate")
+    @PreAuthorize("hasAuthority('admin')")
     public boolean revokeCertificate(@RequestBody CertificateDTO certificateDTO)
             throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException,
             NoSuchProviderException {

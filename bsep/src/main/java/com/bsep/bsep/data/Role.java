@@ -1,10 +1,5 @@
 package com.bsep.bsep.data;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
@@ -17,14 +12,9 @@ public class Role implements GrantedAuthority, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name="roleName")
-    private String roleName;
-
     @Id
-    @Column(name="id")
-    @SequenceGenerator(name = "role_id_gen", sequenceName = "role_id_seq", initialValue = 1, allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "role_id_gen")
-    Long id;
+    @Column(name="role_name")
+    private String roleName;
 
     //@JsonIgnore
     @Override
@@ -48,16 +38,6 @@ public class Role implements GrantedAuthority, Serializable {
         this.roleName = roleName;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public Role() {
     }
-
-
 }

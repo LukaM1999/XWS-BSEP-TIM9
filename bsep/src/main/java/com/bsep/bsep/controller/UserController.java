@@ -6,6 +6,7 @@ import com.bsep.bsep.service.UserCertificateService;
 import com.bsep.bsep.service.impl.CertificateService;
 import com.enzoic.client.Enzoic;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.websocket.server.PathParam;
@@ -24,8 +25,8 @@ public class UserController {
     @Autowired
     private UserCertificateService certificateService;
 
-    @GetMapping("/login/{username}")
-    public List<CertificateDTO> login(@PathVariable String username) throws CertificateException, ParseException,
+    @GetMapping("/{username}/certificate")
+    public List<CertificateDTO> getUserCertificates(@PathVariable String username) throws CertificateException, ParseException,
             NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         return certificateService.getUserCertificates(username);
     }

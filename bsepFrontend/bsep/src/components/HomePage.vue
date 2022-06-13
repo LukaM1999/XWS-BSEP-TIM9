@@ -175,6 +175,7 @@ export default {
   data() {
     return {
       authority: "endEntity",
+      user: null,
       myCertificates: [],
       issued: [],
       selectedCert: null,
@@ -204,20 +205,20 @@ export default {
       1: 'encipherOnly',
       32768: 'decipherOnly',
     };
-
-    if(this.$route.params.user === 'admin') {
-      this.authority = 'admin';
+    this.user = this.$store.getters.user;
+    this.authority = this.$store.getters.user?.role?.authority;
+    if(this.authority === 'admin') {
       const response = await axios.get(`${process.env.VUE_APP_BACKEND}/admin/getAllCertificates`);
       if(response.data) {
         this.myCertificates = response.data;
       }
       return;
     }
-    const response = await axios.get(`${process.env.VUE_APP_BACKEND}/user/login/${this.$route.params.user}`);
+    const response = await axios.get(`${process.env.VUE_APP_BACKEND}/user/${this.user?.username}/certificate`);
     if(response.data) {
       console.table(response.data);
       for(let i = 0; i < response.data.length; i++) {
-        if(response.data[i].usernameSubject !== this.$route.params.user) {
+        if(response.data[i].usernameSubject !== this.user?.username) {
           this.issued.push(response.data[i]);
         } else {
           this.myCertificates.push(response.data[i]);
@@ -256,12 +257,11 @@ export default {
 
     async issueCertificate() {
      if(this.isFormInvalid()) {
-        this.$vs.notify({
+        this.$vs.notification({
           title: 'Error',
           text: 'Please fill all the fields',
           color: 'danger',
-          iconPack: 'feather',
-          icon: 'icon-alert-circle'
+          position: 'top-right'
         });
         return;
       }
@@ -387,7 +387,7 @@ export default {
           }
           return;
         }
-        const response = await axios.get(`${process.env.VUE_APP_BACKEND}/user/login/${this.$route.params.user}`);
+        const response = await axios.get(`${process.env.VUE_APP_BACKEND}/user/${this.user?.username}/certificate`);
         if(response.data) {
           for(let i = 0; i < response.data.length; i++) {
             if(response.data[i].usernameSubject !== this.$route.params.user) {

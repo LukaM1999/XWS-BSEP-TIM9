@@ -85,6 +85,7 @@ public class Account implements UserDetails {
         this.username = username;
         this.password = password;
         this.role = new Role(role);
+        this.enabled = true;
     }
 
     public static long getSerialVersionUID() {

@@ -1,12 +1,14 @@
 package com.bsep.bsep.service.impl;
 
 import com.bsep.bsep.certificates.CertificateGenerator;
+import com.bsep.bsep.data.Account;
 import com.bsep.bsep.data.IssuerData;
 import com.bsep.bsep.data.SubjectData;
 import com.bsep.bsep.data.UserCertificate;
 import com.bsep.bsep.dto.CertificateDTO;
 import com.bsep.bsep.keystores.KeyStoreReader;
 import com.bsep.bsep.keystores.KeyStoreWriter;
+import com.bsep.bsep.repository.AccountRepository;
 import com.bsep.bsep.repository.UserCertificateRepository;
 import com.bsep.bsep.util.CertificateChainGenerator;
 import org.bouncycastle.asn1.ASN1String;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.Subject;
@@ -45,6 +48,12 @@ public class CertificateService {
     @Autowired
     private UserCertificateRepository userCertificateRepository;
 
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public X509Certificate createCertificate(CertificateDTO certificateDTO) {
         if(certificateDTO.getSerialNumberIssuer() != null && !isNewCertificateDTODateValid(certificateDTO)) return null;
         CertificateGenerator certificateGenerator = new CertificateGenerator();
@@ -55,6 +64,7 @@ public class CertificateService {
 
         UserCertificate userCertificate = userCertificateRepository.save(new UserCertificate(null, certificateDTO.getUsernameSubject(), false));
 
+        Account acc = accountRepository.save(new Account(certificateDTO.getUsernameSubject(), passwordEncoder.encode("jabuka123"), certificateDTO.getAuthoritySubject()));
         IssuerData issuerData;
         SubjectData subjectData = generateSubjectData(certificateDTO, userCertificate.getCertificateSerialNumber().toString(), keyPair.getPublic());
         if(certificateDTO.getAuthoritySubject().equals("root")) {
@@ -74,7 +84,7 @@ public class CertificateService {
             IssuerData newIssuerData = generateIssuerData(certificateDTO, keyPair.getPrivate());
             privateKeys.loadKeyStore(env.getProperty("keystore.path") + "keys.jks", password);
             CertificateGenerator certificateGeneratorCA = new CertificateGenerator();
-            CertificateDTO dtoCA = new CertificateDTO("ca", "ca", certificateDTO.getKeyUsages(), certificateDTO.getSerialNumberIssuer());
+            CertificateDTO dtoCA = new CertificateDTO("ca", "ca", certificateDTO.getKeyUsages(), certificateDTO.getSerialNumberIssuer(), certificateDTO.getCommonNameSubject());
             X509Certificate x509CertificateCA = certificateGeneratorCA.generateCertificate(subjectData, newIssuerData, dtoCA);
             privateKeys.write(userCertificate.getCertificateSerialNumber().toString(), newIssuerData.getPrivateKey(), password, x509CertificateCA);
             privateKeys.saveKeyStore(env.getProperty("keystore.path") + "keys.jks", password);

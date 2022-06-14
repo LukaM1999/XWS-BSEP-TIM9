@@ -3,21 +3,31 @@
     <div class="row mb-3">
       <div class="col-md-4"></div>
       <div class="col-md-4 d-flex justify-content-center">
-        <vs-input color="primary" placeholder="username" v-model="username"></vs-input>
+        <vs-input required
+                  :success="isSuccess($v.username)"
+                  :danger="isInvalid($v.username)"
+                  primary
+                  v-model="$v.username.$model"
+                  placeholder="username"></vs-input>
       </div>
       <div class="col-md-4"></div>
     </div>
     <div class="row mb-3">
       <div class="col-md-4"></div>
       <div class="col-md-4 d-flex justify-content-center">
-        <vs-input color="primary" type="password" v-model="password" placeholder="password"/>
+        <vs-input required
+                  :success="isSuccess($v.password)"
+                  :danger="isInvalid($v.password)"
+                  v-model="$v.password.$model"
+                  type="password"
+                  placeholder="password"/>
       </div>
       <div class="col-md-4"></div>
     </div>
     <div class="row">
       <div class="col-md-4"></div>
       <div class="col-md-4 d-flex justify-content-center">
-        <vs-button @click="login" color="primary" type="filled">Sign in</vs-button>
+        <vs-button @click="login" color="primary" :disabled="!isFormValid()" type="filled">Sign in</vs-button>
       </div>
       <div class="col-md-4"></div>
     </div>
@@ -27,6 +37,7 @@
 <script>
 
 import axios from "axios";
+import {email, required} from "vuelidate/lib/validators";
 
 export default {
   name: "LandingPage",
@@ -36,11 +47,29 @@ export default {
       password: ""
     }
   },
+  validations: {
+    username: {
+      required,
+      email
+    },
+    password: {
+      required
+    }
+  },
   mounted() {
     this.$store.commit("setUser", null)
     this.$store.commit("setToken", null)
   },
   methods: {
+    isSuccess(validation) {
+      return !validation.$invalid
+    },
+    isInvalid(validation) {
+      return validation.$invalid
+    },
+    isFormValid() {
+      return !this.$v.$invalid
+    },
     isLoginValid() {
       return this.username.length > 0 && this.password.length > 0;
     },

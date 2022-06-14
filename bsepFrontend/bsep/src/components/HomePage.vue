@@ -30,11 +30,31 @@
       <div class="con-form" style="display: inline-block">
         <div class="row">
           <div class="col">
-            <vs-input required class="mt-2" primary v-model="commonNameSubject" label-placeholder="Subject common name"/>
-            <vs-input required class="mt-4" primary v-model="nameSubject" label-placeholder="Subject first name"/>
-            <vs-input required class="mt-4" primary v-model="surnameSubject" label-placeholder="Subject last name"/>
-            <vs-input required class="mt-4" primary v-model="usernameSubject" label-placeholder="Subject username"/>
-            <vs-input required class="mt-4" primary v-model="countrySubject" label-placeholder="Subject country"/>
+            <vs-input required class="mt-2"
+                      :success="isSuccess($v.commonNameSubject)"
+                      :danger="isInvalid($v.commonNameSubject)"
+                      v-model="$v.commonNameSubject.$model"
+                      label-placeholder="Subject common name"/>
+            <vs-input required class="mt-4"
+                      :success="isSuccess($v.nameSubject)"
+                      :danger="isInvalid($v.nameSubject)"
+                      v-model="$v.nameSubject.$model"
+                      label-placeholder="Subject first name"/>
+            <vs-input required class="mt-4"
+                      :success="isSuccess($v.surnameSubject)"
+                      :danger="isInvalid($v.surnameSubject)"
+                      v-model="$v.surnameSubject.$model"
+                      label-placeholder="Subject last name"/>
+            <vs-input required class="mt-4"
+                      :success="isSuccess($v.usernameSubject)"
+                      :danger="isInvalid($v.usernameSubject)"
+                      v-model="$v.usernameSubject.$model"
+                      label-placeholder="Subject email"/>
+            <vs-input required class="mt-4"
+                      :success="isSuccess($v.countrySubject)"
+                      :danger="isInvalid($v.countrySubject)"
+                      v-model="$v.countrySubject.$model"
+                      label-placeholder="Subject country"/>
           </div>
           <div class="col">
             <vs-select required class="mt-2" v-if="selectedCert !== null"
@@ -88,7 +108,7 @@
       </div>
       <template #footer>
         <div class="footer-dialog">
-          <vs-button :disabled="isFormInvalid()" @click="issueCertificate()" block>
+          <vs-button :disabled="isFormValid()" @click="issueCertificate()" block>
             Issue certificate
           </vs-button>
         </div>
@@ -169,6 +189,9 @@
 <script>
 import axios from "axios";
 import moment from "moment"
+import {alpha, email, helpers, required} from "vuelidate/lib/validators";
+
+const name = helpers.regex('name', /^[A-Z][a-z]+$/)
 
 export default {
   name: "HomePage",
@@ -192,6 +215,28 @@ export default {
       keyUsages: [],
       keyUsageMap: {},
     };
+  },
+  validations: {
+    usernameSubject: {
+      required,
+      email
+    },
+    commonNameSubject: {
+      required,
+      alpha
+    },
+    nameSubject:{
+      required,
+      name
+    },
+    surnameSubject:{
+      required,
+      name
+    },
+    countrySubject:{
+      required,
+      alpha
+    }
   },
   async mounted() {
     this.keyUsageMap = {
@@ -230,6 +275,15 @@ export default {
     }
   },
   methods: {
+    isSuccess(validation) {
+      return !validation.$invalid
+    },
+    isInvalid(validation) {
+      return validation.$invalid
+    },
+    isFormValid() {
+      return this.$v.$invalid || this.basicConstraints === "" || this.validFrom === "" || this.validTo === ""
+    },
     resetForm(){
       this.commonNameSubject = "";
       this.nameSubject = "";
@@ -251,12 +305,8 @@ export default {
       else this.basicConstraints = 'ca';
     },
 
-    isFormInvalid(){
-      return this.commonNameSubject === "" || this.nameSubject === "" || this.surnameSubject === "" || this.countrySubject === "" || this.usernameSubject === "" || this.basicConstraints === "" || this.validFrom === "" || this.validTo === "";
-    },
-
     async issueCertificate() {
-     if(this.isFormInvalid()) {
+     if(this.isFormValid()) {
         this.$vs.notification({
           title: 'Error',
           text: 'Please fill all the fields',

@@ -11,6 +11,8 @@ import 'vuesax/dist/vuesax.css' //Vuesax styles
 import LandingPage from "@/components/LandingPage";
 import HomePage from "@/components/HomePage";
 import {jwtInterceptor} from "@/_helpers/jwt.interceptor";
+import Vuelidate from 'vuelidate'
+
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -28,6 +30,9 @@ Vue.use(Toasted, {
 Vue.use(Vuesax, {
   // options here
 })
+
+Vue.use(Vuelidate)
+
 
 
 export const store = new Vuex.Store({

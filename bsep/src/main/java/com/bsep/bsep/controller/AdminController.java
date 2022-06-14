@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,7 +39,7 @@ public class AdminController {
 
     @PostMapping("/createCertificate")
     @PreAuthorize("!hasAuthority('endEntity')")
-    public CertificateDTO createCertificate(@RequestBody CertificateDTO certificateDTO) throws CertificateException,
+    public CertificateDTO createCertificate(@Valid @RequestBody CertificateDTO certificateDTO) throws CertificateException,
             NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
         X509Certificate created = certificateService.createCertificate(certificateDTO);
         if(created == null) return null;

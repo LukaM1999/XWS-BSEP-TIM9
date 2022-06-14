@@ -1,8 +1,8 @@
 package config
 
 import (
+	"dislinkt/common/loggers"
 	"github.com/joho/godotenv"
-	"log"
 	"os"
 )
 
@@ -21,6 +21,8 @@ type Config struct {
 	PostHost       string
 	PostPort       string
 }
+
+var log = loggers.NewGatewayLogger()
 
 func NewConfig() *Config {
 	err := SetEnvironment()

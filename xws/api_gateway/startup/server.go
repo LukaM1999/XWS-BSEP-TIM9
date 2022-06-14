@@ -4,6 +4,7 @@ import (
 	"context"
 	cfg "dislinkt/api_gateway/startup/config"
 	"dislinkt/common/auth"
+	"dislinkt/common/loggers"
 	commentGw "dislinkt/common/proto/comment_service"
 	connectionGw "dislinkt/common/proto/connection_service"
 	postGw "dislinkt/common/proto/post_service"
@@ -12,12 +13,14 @@ import (
 	securityGw "dislinkt/common/proto/security_service"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"net/http"
 	"os"
 	"strings"
 )
+
+var log = loggers.NewGatewayLogger()
 
 type Server struct {
 	config *cfg.Config
@@ -40,7 +43,7 @@ func cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
 
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"method":     r.Method,
 			"url":        r.URL.String(),
 			"origin":     r.Header.Get("Origin"),

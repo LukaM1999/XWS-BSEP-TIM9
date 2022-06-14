@@ -1,10 +1,12 @@
 package config
 
 import (
+	"dislinkt/common/loggers"
 	"github.com/joho/godotenv"
-	log "github.com/sirupsen/logrus"
 	"os"
 )
+
+var log = loggers.NewSecurityLogger()
 
 type Config struct {
 	Port                      string

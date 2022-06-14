@@ -3,8 +3,9 @@ package auth
 import (
 	"context"
 	auth "dislinkt/common/domain"
+	"dislinkt/common/loggers"
 	"fmt"
-	logrus "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,7 +18,7 @@ import (
 	"os"
 )
 
-var log = logrus.New()
+var log = loggers.NewInterceptorLogger()
 
 // AuthInterceptor is a server interceptor for authentication and authorization
 type AuthInterceptor struct {

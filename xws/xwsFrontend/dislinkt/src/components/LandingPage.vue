@@ -555,7 +555,7 @@ export default {
             throw error;
           });
         this.$store.commit("setUser", user.data?.user);
-        await this.$router.push(`/${user.data?.user.role.authority}`);
+        await this.$router.push(`/${user.data?.user.role}`);
         return
       }
       const loading = this.$vs.loading();
@@ -598,7 +598,7 @@ export default {
           throw error
         });
       this.$store.commit("setUser", user.data?.user);
-      await this.$router.push(`/${this.$store.getters.user?.role}`);
+      await this.$router.push(`/${user.data?.user.role}`);
     }
   }
 }

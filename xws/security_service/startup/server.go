@@ -3,6 +3,7 @@ package startup
 import (
 	"dislinkt/common/auth"
 	"dislinkt/common/client"
+	"dislinkt/common/loggers"
 	profile "dislinkt/common/proto/profile_service"
 	security "dislinkt/common/proto/security_service"
 	"dislinkt/security_service/application"
@@ -11,13 +12,14 @@ import (
 	"dislinkt/security_service/infrastructure/persistence"
 	"dislinkt/security_service/startup/config"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
 	"time"
 )
+
+var log = loggers.NewSecurityLogger()
 
 type Server struct {
 	config *config.Config

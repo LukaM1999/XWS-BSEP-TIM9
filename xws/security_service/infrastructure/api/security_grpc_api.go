@@ -5,6 +5,7 @@ import (
 	"context"
 	"dislinkt/common/auth"
 	"dislinkt/common/domain"
+	"dislinkt/common/loggers"
 	pbProfile "dislinkt/common/proto/profile_service"
 	pb "dislinkt/common/proto/security_service"
 	"dislinkt/security_service/application"
@@ -12,6 +13,7 @@ import (
 	"fmt"
 	"github.com/go-playground/validator"
 	"github.com/pquerna/otp/totp"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/genproto/googleapis/api/httpbody"
 	"google.golang.org/grpc/codes"
@@ -20,7 +22,7 @@ import (
 	"time"
 )
 
-var log = GetLogger
+var log = loggers.NewSecurityLogger()
 
 type UserHandler struct {
 	pb.UnimplementedSecurityServiceServer
@@ -86,7 +88,7 @@ func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterReq
 		log.Errorf("Cannot register user: %v", err)
 		return nil, err
 	}
-	logger := log.WithFields(log.Fields{
+	logger := log.WithFields(logrus.Fields{
 		"userId": registeredUser.Id.Hex(),
 	})
 
@@ -154,7 +156,7 @@ func (handler *UserHandler) Update(ctx context.Context, request *pb.UpdateReques
 
 func (handler *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	//log.Info("Logging in user")
-	loggerUsername := log.WithFields(log.Fields{
+	loggerUsername := log.WithFields(logrus.Fields{
 		"username": req.Username,
 	})
 	user, err := handler.service.Get(req.GetUsername())
@@ -162,7 +164,7 @@ func (handler *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*p
 		loggerUsername.Errorf("Cannot get user: %v", err)
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
 	}
-	loggerId := log.WithFields(log.Fields{
+	loggerId := log.WithFields(logrus.Fields{
 		"userId": user.Id.Hex(),
 	})
 	isVerified, err := handler.service.IsVerified(req.GetUsername())
@@ -196,7 +198,7 @@ func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb
 	}
 
 	if !totp.Validate(req.GetOtp(), secret) {
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"username": req.GetUsername(),
 			"otp":      req.GetOtp(),
 		}).Errorf("Invalid OTP")
@@ -207,7 +209,7 @@ func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb
 		log.WithField("username", req.GetUsername()).Error("Cannot get user")
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
 	}
-	loggerId := log.WithFields(log.Fields{
+	loggerId := log.WithFields(logrus.Fields{
 		"userId": user.Id,
 	})
 	isVerified, err := handler.service.IsVerified(req.GetUsername())
@@ -230,7 +232,7 @@ func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb
 
 func (handler *UserHandler) SetupOTP(ctx context.Context, req *pb.SetupOTPRequest) (*pb.SetupOTPResponse, error) {
 	//log.Info("Setting up OTP")
-	loggerUsername := log.WithFields(log.Fields{
+	loggerUsername := log.WithFields(logrus.Fields{
 		"username": req.Username,
 	})
 	user, err := handler.service.Get(req.GetUsername())
@@ -238,7 +240,7 @@ func (handler *UserHandler) SetupOTP(ctx context.Context, req *pb.SetupOTPReques
 		loggerUsername.Errorf("Cannot get user: %v", err)
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
 	}
-	loggerId := log.WithFields(log.Fields{
+	loggerId := log.WithFields(logrus.Fields{
 		"userId": user.Id,
 	})
 
@@ -263,7 +265,7 @@ func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.Passw
 	}
 
 	if !totp.Validate(req.GetOtp(), secret) {
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"username": req.GetUsername(),
 			"otp":      req.GetOtp(),
 		}).Errorf("Invalid OTP")
@@ -274,7 +276,7 @@ func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.Passw
 		log.WithField("username", req.GetUsername()).Error("Cannot get user")
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
 	}
-	loggerId := log.WithFields(log.Fields{
+	loggerId := log.WithFields(logrus.Fields{
 		"userId": user.Id,
 	})
 	isVerified, err := handler.service.IsVerified(req.GetUsername())

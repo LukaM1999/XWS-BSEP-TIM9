@@ -87,6 +87,7 @@ const routes = [
     path: '/user',
     name: 'userHomepage',
     component: HomePage,
+    redirect: '/user/posts',
     children: [
       {
         path: 'posts',

@@ -12,17 +12,15 @@ import (
 	"fmt"
 	"github.com/go-playground/validator"
 	"github.com/pquerna/otp/totp"
-	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/genproto/googleapis/api/httpbody"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"io"
-	"os"
 	"text/template"
 	"time"
 )
+
+var log = GetLogger
 
 type UserHandler struct {
 	pb.UnimplementedSecurityServiceServer
@@ -34,16 +32,6 @@ type UserHandler struct {
 
 func NewUserHandler(service *application.SecurityService,
 	jwtManager *auth.JWTManager, profileClient pbProfile.ProfileServiceClient) *UserHandler {
-	log.SetLevel(log.InfoLevel)
-	log.SetReportCaller(true)
-	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/xws.log",
-		MaxSize:    1,
-		MaxBackups: 3,
-		MaxAge:     28,
-		Compress:   true,
-	})
-	log.SetOutput(multiWriter)
 	return &UserHandler{
 		service:       service,
 		jwtManager:    jwtManager,
@@ -191,7 +179,47 @@ func (handler *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*p
 		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
 	}
 
-	token, err := handler.jwtManager.Generate(user)
+	token, err := handler.jwtManager.Generate(user, false)
+	if err != nil {
+		loggerId.Errorf("Cannot generate token: %v", err)
+		return nil, status.Errorf(codes.Internal, "cannot generate access token")
+	}
+	loggerId.Info("User logged in")
+	return &pb.LoginResponse{AccessToken: token}, nil
+}
+
+func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb.PasswordlessLoginRequest) (*pb.LoginResponse, error) {
+	secret, err := handler.service.GetOTPSecret(req.GetUsername())
+	if err != nil || secret == "" {
+		log.WithField("username", req.GetUsername()).Error("Cannot get OTP secret")
+		return nil, status.Errorf(codes.Internal, "No passwordless login setup: %v", err)
+	}
+
+	if !totp.Validate(req.GetOtp(), secret) {
+		log.WithFields(log.Fields{
+			"username": req.GetUsername(),
+			"otp":      req.GetOtp(),
+		}).Errorf("Invalid OTP")
+		return nil, status.Errorf(codes.Internal, "OTP is invalid")
+	}
+	user, err := handler.service.Get(req.GetUsername())
+	if err != nil {
+		log.WithField("username", req.GetUsername()).Error("Cannot get user")
+		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
+	}
+	loggerId := log.WithFields(log.Fields{
+		"userId": user.Id,
+	})
+	isVerified, err := handler.service.IsVerified(req.GetUsername())
+	if err != nil {
+		loggerId.Errorf("Cannot check if user is verified: %v", err)
+		return nil, err
+	}
+	if !isVerified {
+		loggerId.Errorf("User is not verified")
+		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
+	}
+	token, err := handler.jwtManager.Generate(user, true)
 	if err != nil {
 		loggerId.Errorf("Cannot generate token: %v", err)
 		return nil, status.Errorf(codes.Internal, "cannot generate access token")
@@ -258,7 +286,7 @@ func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.Passw
 		loggerId.Errorf("User is not verified")
 		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
 	}
-	token, err := handler.jwtManager.Generate(user)
+	token, err := handler.jwtManager.Generate(user, false)
 	if err != nil {
 		loggerId.Errorf("Cannot generate token: %v", err)
 		return nil, status.Errorf(codes.Internal, "cannot generate access token")

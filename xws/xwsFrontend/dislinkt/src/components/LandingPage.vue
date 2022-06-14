@@ -258,6 +258,7 @@ export default {
       qrCode: "",
       showCaptcha: false,
       active: 'guide',
+      twoFactorReady: false,
       post: {
         id: "6210611b624b2da721f63fe3",
         createdAt: "0001-01-01T00:00:00Z",
@@ -484,12 +485,6 @@ export default {
         throw error
       });
       loading.close()
-      this.$vs.notification({
-        title: "Success",
-        text: "Logged in successfully",
-        color: "success",
-        position: "top-right"
-      });
       this.$store.commit("setToken", response.data?.accessToken);
       const user = await axios.get(`${process.env.VUE_APP_BACKEND}/security/user/${this.username}`)
         .catch(error => {
@@ -501,8 +496,20 @@ export default {
           });
           throw error;
         });
-      this.$store.commit("setUser", user.data?.user);
-      await this.$router.push(`/${this.$store.getters.user?.role}`);
+      if(!user.data?.user.twoFactor){
+        this.$vs.notification({
+          title: "Success",
+          text: "Logged in successfully",
+          color: "success",
+          position: "top-right"
+        });
+        this.$store.commit("setUser", user.data?.user);
+        await this.$router.push(`/${this.$store.getters.user?.role}`);
+        return
+      }
+      this.activeTab = "passwordless";
+      this.resetLogin();
+      this.twoFactorReady = true;
     },
 
     isPasswordlessLoginValid() {
@@ -512,6 +519,44 @@ export default {
     async passwordlessLogin() {
       if (!this.isPasswordlessLoginValid()) {
         return;
+      }
+      if(this.twoFactorReady){
+        const loading = this.$vs.loading();
+        const response = await axios.post(`${process.env.VUE_APP_BACKEND}/security/2fa`, {
+          username: this.username,
+          otp: this.totp
+        }).catch(error => {
+          this.$vs.notification({
+            title: "Error",
+            text: "Invalid username/otp",
+            color: "danger",
+            position: "top-right"
+          });
+          loading.close()
+          this.$store.commit('incrementFailedLoginAttempts');
+          if (this.isLoginDisabled()) {
+            this.dialogLogin = false;
+            this.resetLogin();
+            this.showCaptcha = true;
+            this.$refs.recaptcha.execute();
+          }
+          throw error
+        });
+        loading.close()
+        this.$store.commit("setToken", response.data?.accessToken);
+        const user = await axios.get(`${process.env.VUE_APP_BACKEND}/security/user/${this.username}`)
+          .catch(error => {
+            this.$vs.notification({
+              title: "Error",
+              text: "Failed to get user details",
+              color: "danger",
+              position: "top-right"
+            });
+            throw error;
+          });
+        this.$store.commit("setUser", user.data?.user);
+        await this.$router.push(`/${user.data?.user.role.authority}`);
+        return
       }
       const loading = this.$vs.loading();
       const response = await axios.post(`${process.env.VUE_APP_BACKEND}/security/passwordlessLogin`, {

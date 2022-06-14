@@ -9,10 +9,11 @@ import (
 )
 
 type User struct {
-	Id       primitive.ObjectID `bson:"_id"`
-	Username string             `bson:"username" validate:"username"`
-	Password string             `bson:"password" validate:"password"`
-	Role     string             `bson:"role" validate:"required"`
+	Id        primitive.ObjectID `bson:"_id"`
+	Username  string             `bson:"username" validate:"username"`
+	Password  string             `bson:"password" validate:"password"`
+	Role      string             `bson:"role" validate:"required"`
+	TwoFactor bool               `bson:"twoFactor"`
 }
 
 func (user *User) IsCorrectPassword(password string) bool {

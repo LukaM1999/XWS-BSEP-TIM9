@@ -36,6 +36,13 @@ service SecurityService{
       body : "*"
     };
   }
+
+  rpc TwoFactorAuthentication(PasswordlessLoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post : "/security/2fa"
+      body : "*"
+    };
+  }
   rpc SetupOTP(SetupOTPRequest) returns (SetupOTPResponse) {
     option (google.api.http) = {
       get : "/security/setupOtp/{username}"
@@ -97,6 +104,7 @@ message User {
   string username = 2;
   string password = 3;
   string role = 4;
+  bool twoFactor = 5;
 }
 
 message LoginRequest {

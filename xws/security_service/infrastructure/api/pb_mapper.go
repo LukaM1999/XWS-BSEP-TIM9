@@ -10,20 +10,22 @@ import (
 //Function to return a pb.User from a domain.User
 func mapUserToPb(user *domain.User) *pb.User {
 	return &pb.User{
-		Id:       user.Id.Hex(),
-		Username: user.Username,
-		Password: user.Password,
-		Role:     user.Role,
+		Id:        user.Id.Hex(),
+		Username:  user.Username,
+		Password:  user.Password,
+		Role:      user.Role,
+		TwoFactor: user.TwoFactor,
 	}
 }
 
 //Function to return a domain.User from a pb.User
 func mapPbToUser(pbUser *pb.User) *domain.User {
 	return &domain.User{
-		Id:       getObjectId(pbUser.Id),
-		Username: pbUser.Username,
-		Password: pbUser.Password,
-		Role:     pbUser.Role,
+		Id:        getObjectId(pbUser.Id),
+		Username:  pbUser.Username,
+		Password:  pbUser.Password,
+		Role:      pbUser.Role,
+		TwoFactor: pbUser.TwoFactor,
 	}
 }
 

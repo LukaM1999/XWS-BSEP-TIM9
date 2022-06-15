@@ -11,6 +11,9 @@ import com.bsep.bsep.keystores.KeyStoreWriter;
 import com.bsep.bsep.repository.AccountRepository;
 import com.bsep.bsep.repository.UserCertificateRepository;
 import com.bsep.bsep.util.CertificateChainGenerator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.StringMapMessage;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -53,6 +56,9 @@ public class CertificateService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    private static final Logger logger = LogManager.getLogger("XML_ROLLING_FILE_APPENDER");
+
 
     public X509Certificate createCertificate(CertificateDTO certificateDTO) {
         if(certificateDTO.getSerialNumberIssuer() != null && !isNewCertificateDTODateValid(certificateDTO)) return null;
@@ -99,7 +105,7 @@ public class CertificateService {
         return x509Certificate;
     }
 
-    public List<CertificateDTO> getAllCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<CertificateDTO> getAllCertificates() {
         List<X509Certificate> certificates = getAllActiveRootCertificates();
         certificates.addAll(getAllActiveCACertificates());
         certificates.addAll(getAllActiveEndUserCertificates());
@@ -160,37 +166,61 @@ public class CertificateService {
         return retList;
     }
 
-    public List<X509Certificate> getAllActiveCACertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<X509Certificate> getAllActiveCACertificates() {
         return getNotRevokedCertificates(readAllCertificate("./keystores/ca.jks", "12345"));
     }
 
-    public List<X509Certificate> getAllActiveEndUserCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<X509Certificate> getAllActiveEndUserCertificates() {
         return getNotRevokedCertificates(readAllCertificate("./keystores/endEntity.jks", "12345"));
     }
 
-    public List<X509Certificate> getAllActiveRootCertificates() throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<X509Certificate> getAllActiveRootCertificates() {
         return getNotRevokedCertificates(readAllCertificate("./keystores/root.jks", "12345"));
     }
 
-    private List<X509Certificate> getNotRevokedCertificates(List<X509Certificate> certificates) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    private List<X509Certificate> getNotRevokedCertificates(List<X509Certificate> certificates) {
         List<X509Certificate> retList = new ArrayList<>();
         List<X509Certificate> toRevoke = new ArrayList<>();
 
         for (X509Certificate certificate : certificates) {
-            if(!userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(certificate))).isRevoked()) {
-                if (!isCertificateDateValid(certificate)) {
-                    toRevoke.add(certificate);
+            try {
+                if(!userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(certificate))).isRevoked()) {
+                    try {
+                        if (!isCertificateDateValid(certificate)) {
+                            toRevoke.add(certificate);
+                        }
+                    } catch (CertificateEncodingException e) {
+                        StringMapMessage message = new StringMapMessage();
+                        message.put("msg", "Certificate is not valid: " + e.getMessage());
+                        message.put("certificate", String.valueOf(certificate.getSerialNumber()));
+                        logger.error(message);
+                        throw new RuntimeException(e);
+                    }
                 }
+            } catch (CertificateEncodingException e) {
+                StringMapMessage message = new StringMapMessage();
+                message.put("msg", "Certificate is not valid: " + e.getMessage());
+                message.put("certificate", String.valueOf(certificate.getSerialNumber()));
+                logger.error(message);
+                throw new RuntimeException(e);
             }
         }
         for(CertificateDTO cert : certificateToDTO(toRevoke)){
             revokeCertificate(cert);
         }
         for (X509Certificate certificate : certificates) {
-            if(!userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(certificate))).isRevoked()) {
-                if (isCertificateDateValid(certificate)) {
-                    retList.add(certificate);
+            try {
+                if(!userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(certificate))).isRevoked()) {
+                    if (isCertificateDateValid(certificate)) {
+                        retList.add(certificate);
+                    }
                 }
+            } catch (CertificateEncodingException e) {
+                StringMapMessage message = new StringMapMessage();
+                message.put("msg", "Certificate is not valid: " + e.getMessage());
+                message.put("certificate", String.valueOf(certificate.getSerialNumber()));
+                logger.error(message);
+                throw new RuntimeException(e);
             }
         }
         return retList;
@@ -219,7 +249,11 @@ public class CertificateService {
                 temp.add(key);
             }
         } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
-            e.printStackTrace();
+            StringMapMessage message = new StringMapMessage();
+            message.put("msg", "Error reading keystore: " + e.getMessage());
+            message.put("keyStoreFile", keyStoreFile);
+            logger.error(message);
+            throw new RuntimeException(e);
         }
         return temp;
     }
@@ -237,22 +271,48 @@ public class CertificateService {
                 return (X509Certificate)certFactory.generateCertificate(inp);
             }
         } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
-            e.printStackTrace();
+            StringMapMessage message = new StringMapMessage();
+            message.put("msg", "Error reading keystore: " + e.getMessage());
+            message.put("keyStoreFile", keyStoreFile);
+            message.put("alias", alias);
+
+            logger.error(message);
+            throw new RuntimeException(e);
         }
         return null;
     }
 
-    public List<CertificateDTO> certificateToDTO(List<X509Certificate> certificateList) throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<CertificateDTO> certificateToDTO(List<X509Certificate> certificateList) {
         List<CertificateDTO> dto = new ArrayList<>();
 
         for(X509Certificate certificate : certificateList){
             CertificateDTO certDto = new CertificateDTO();
-            JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder(certificate);
+            JcaX509CertificateHolder certHolder = null;
+            try {
+                certHolder = new JcaX509CertificateHolder(certificate);
+            } catch (CertificateEncodingException e) {
+                StringMapMessage message = new StringMapMessage();
+                message.put("msg", "Certificate encoding error: " + e.getMessage());
+                message.put("issuer", certificate.getIssuerX500Principal().getName());
+                message.put("subject", certificate.getSubjectX500Principal().getName());
+                message.put("serial", certificate.getSerialNumber().toString());
+                logger.error(message);
+                throw new RuntimeException(e);
+            }
             X500Name subject = certHolder.getSubject();
             X500Name issuer = certHolder.getIssuer();
             String authority = "ca";
-            if(isSelfSigned(certificate)) authority = "root";
-            else if(certificate.getBasicConstraints() == -1) authority = "endEntity";
+            try {
+                if(isSelfSigned(certificate)) authority = "root";
+                else if(certificate.getBasicConstraints() == -1) authority = "endEntity";
+            } catch (CertificateException | InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+                StringMapMessage message = new StringMapMessage();
+                message.put("msg", "Certificate exception: " + e.getMessage());
+                message.put("issuer", certificate.getIssuerX500Principal().getName());
+                message.put("subject", certificate.getSubjectX500Principal().getName());
+                message.put("serial", certificate.getSerialNumber().toString());
+                throw new RuntimeException(e);
+            }
             String temp;
             RDN cn;
             if(subject.getRDNs(BCStyle.CN).length > 0) {
@@ -342,7 +402,7 @@ public class CertificateService {
     public List<CertificateDTO> getCertificateChain(
             CertificateDTO chainStart
     ) throws NoSuchAlgorithmException, InvalidKeyException,
-            NoSuchProviderException, CertificateException, ParseException {
+            NoSuchProviderException, CertificateException {
 
         X509Certificate startingPoint = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + chainStart.getAuthoritySubject() + ".jks", "12345", chainStart.getSerialNumberSubject());
         List<X509Certificate> certificates = new ArrayList<>(getAllActiveRootCertificates());
@@ -385,16 +445,14 @@ public class CertificateService {
         return certificateToDTO(List.of(results));
     }
 
-    public static boolean isSelfSigned(X509Certificate cert)
+    public boolean isSelfSigned(X509Certificate cert)
             throws CertificateException, InvalidKeyException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
         return verifySignatures(cert, cert.getPublicKey());
     }
 
-    private static boolean verifySignatures(X509Certificate cert, PublicKey key)
-            throws CertificateException, InvalidKeyException,
-            NoSuchAlgorithmException, NoSuchProviderException {
+    private boolean verifySignatures(X509Certificate cert, PublicKey key) {
 
         String sigAlg = cert.getSigAlgName();
         String keyAlg = key.getAlgorithm();
@@ -404,7 +462,9 @@ public class CertificateService {
             try {
                 cert.verify(key);
                 return true;
-            } catch (SignatureException se) {
+            } catch (SignatureException | CertificateException | NoSuchAlgorithmException | InvalidKeyException |
+                     NoSuchProviderException e) {
+                logger.error("Error verifying signature: " + e.getMessage());
                 return false;
             }
         } else {
@@ -412,7 +472,7 @@ public class CertificateService {
         }
     }
 
-    public boolean revokeCertificate(CertificateDTO chainStart) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public boolean revokeCertificate(CertificateDTO chainStart) {
         if(userCertificateRepository.findBySerialNum(Long.parseLong(chainStart.getSerialNumberSubject())).isRevoked()) return false;
 
         X509Certificate startingPoint = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + chainStart.getAuthoritySubject() + ".jks", "12345", chainStart.getSerialNumberSubject());
@@ -426,19 +486,29 @@ public class CertificateService {
 
         //one kojima sam izdao
         for (X509Certificate cert: certificates) {
-            if(getSubjectSerialNum(startingPoint).equals(getIssuerSerialNum(cert))){
-                if(userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert))).isRevoked()) continue;
-                issuers.add(cert);
-                toRevoke.add(cert);
+            try {
+                if(getSubjectSerialNum(startingPoint).equals(getIssuerSerialNum(cert))){
+                    if(userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert))).isRevoked()) continue;
+                    issuers.add(cert);
+                    toRevoke.add(cert);
+                }
+            } catch (CertificateEncodingException e) {
+                logger.error("Error getting serial number: " + e.getMessage());
+                throw new RuntimeException(e);
             }
         }
         //oni kojima je izdato od strane mojih izdatih
         for (int i = 0; i < issuers.size(); i++) {
             for (X509Certificate cert: certificates) {
-                if(getSubjectSerialNum(issuers.get(i)).equals(getIssuerSerialNum(cert))){
-                    if(userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert))).isRevoked()) continue;
-                    issuers.add(cert);
-                    toRevoke.add(cert);
+                try {
+                    if(getSubjectSerialNum(issuers.get(i)).equals(getIssuerSerialNum(cert))){
+                        if(userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert))).isRevoked()) continue;
+                        issuers.add(cert);
+                        toRevoke.add(cert);
+                    }
+                } catch (CertificateEncodingException e) {
+                    logger.error("Error getting serial number: " + e.getMessage());
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -463,9 +533,21 @@ public class CertificateService {
 
     }
 
-    private void RevokeCertificateOCSP(X509Certificate[] results) throws CertificateEncodingException {
+    private void RevokeCertificateOCSP(X509Certificate[] results){
         for (X509Certificate cert: results) {
-            UserCertificate certificate = userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert)));
+            UserCertificate certificate = null;
+            try {
+                certificate = userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert)));
+            } catch (CertificateEncodingException e) {
+                StringMapMessage message = new StringMapMessage();
+                message.put("msg", "Error revoking certificate: " + e.getMessage());
+                message.put("certificate", cert.getSubjectDN().getName());
+                message.put("serial", cert.getSerialNumber().toString());
+                message.put("issuer", cert.getIssuerDN().getName());
+
+                logger.error(message);
+                throw new RuntimeException(e);
+            }
             if(certificate != null) {
                 certificate.setRevoked(true);
                 userCertificateRepository.save(certificate);
@@ -473,7 +555,7 @@ public class CertificateService {
         }
     }
 
-    public  List<CertificateDTO> getIssuedCertificates(CertificateDTO chainStart) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public  List<CertificateDTO> getIssuedCertificates(CertificateDTO chainStart) {
         if(userCertificateRepository.findBySerialNum(Long.parseLong(chainStart.getSerialNumberSubject())).isRevoked()) return null;
 
         X509Certificate startingPoint = (X509Certificate) new KeyStoreReader().readCertificate(env.getProperty("keystore.path") + chainStart.getAuthoritySubject() + ".jks", "12345", chainStart.getSerialNumberSubject());
@@ -485,9 +567,19 @@ public class CertificateService {
 
         //one kojima sam izdao
         for (X509Certificate cert: certificates) {
-            if(getSubjectSerialNum(startingPoint).equals(getIssuerSerialNum(cert))){
-                if(!userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert))).isRevoked())
-                    issued.add(cert);
+            try {
+                if(getSubjectSerialNum(startingPoint).equals(getIssuerSerialNum(cert))){
+                    if(!userCertificateRepository.findBySerialNum(Long.parseLong(getSubjectSerialNum(cert))).isRevoked())
+                        issued.add(cert);
+                }
+            } catch (CertificateEncodingException e) {
+                StringMapMessage message = new StringMapMessage();
+                message.put("msg", "Error getting issued certificates: " + e.getMessage());
+                message.put("certificate", cert.getSubjectDN().getName());
+                message.put("serial", cert.getSerialNumber().toString());
+
+                logger.error(message);
+                throw new RuntimeException(e);
             }
         }
         X509Certificate[] results = new X509Certificate[issued.size()];
@@ -528,7 +620,7 @@ public class CertificateService {
                 && issuer.getNotAfter().after(dto.getEndDate());
     }
 
-    public boolean extractCertificate(CertificateDTO certificateDto) throws CertificateException, IOException {
+    public boolean extractCertificate(CertificateDTO certificateDto) {
         String authority = "";
         if(certificateDto.getAuthoritySubject().equals("root"))
             authority = certificateDto.getAuthoritySubject();
@@ -537,19 +629,27 @@ public class CertificateService {
         if(certificateDto.getAuthoritySubject().equals("endEntity"))
             authority = certificateDto.getAuthoritySubject();
         X509Certificate certificate = readCertificate(env.getProperty("keystore.path") + authority + ".jks", "12345", certificateDto.getSerialNumberSubject());
-        FileOutputStream os = new FileOutputStream(certificateDto.getSerialNumberSubject() + ".crt");
-        os.write("-----BEGIN CERTIFICATE-----\n".getBytes(StandardCharsets.US_ASCII));
-        os.write(Base64.getEncoder().encode(certificate.getEncoded()));
-        os.write("\n-----END CERTIFICATE-----\n".getBytes(StandardCharsets.US_ASCII));
-        os.close();
-        if(!certificateDto.getAuthoritySubject().equals("ca"))
-            return true;
-        PrivateKey key = new KeyStoreReader().readPrivateKey(env.getProperty("keystore.path") + "keys.jks", "12345", certificateDto.getSerialNumberSubject(), "12345");
-        os = new FileOutputStream(certificateDto.getSerialNumberSubject() + "-key" + ".pem");
-        os.write("-----BEGIN PRIVATE KEY-----\n".getBytes(StandardCharsets.US_ASCII));
-        os.write(Base64.getEncoder().encode(key.getEncoded()));
-        os.write("\n-----END PRIVATE KEY-----\n".getBytes(StandardCharsets.US_ASCII));
-        os.close();
+        try {
+            FileOutputStream os = new FileOutputStream(certificateDto.getSerialNumberSubject() + ".crt");
+            os.write("-----BEGIN CERTIFICATE-----\n".getBytes(StandardCharsets.US_ASCII));
+            os.write(Base64.getEncoder().encode(certificate.getEncoded()));
+            os.write("\n-----END CERTIFICATE-----\n".getBytes(StandardCharsets.US_ASCII));
+            os.close();
+            if(!certificateDto.getAuthoritySubject().equals("ca"))
+                return true;
+            PrivateKey key = new KeyStoreReader().readPrivateKey(env.getProperty("keystore.path") + "keys.jks", "12345", certificateDto.getSerialNumberSubject(), "12345");
+            os = new FileOutputStream(certificateDto.getSerialNumberSubject() + "-key" + ".pem");
+            os.write("-----BEGIN PRIVATE KEY-----\n".getBytes(StandardCharsets.US_ASCII));
+            os.write(Base64.getEncoder().encode(key.getEncoded()));
+            os.write("\n-----END PRIVATE KEY-----\n".getBytes(StandardCharsets.US_ASCII));
+            os.close();
+        } catch (IOException | CertificateEncodingException e) {
+            StringMapMessage message = new StringMapMessage();
+            message.put("msg", "Error extracting certificate: " + e.getMessage());
+            message.put("serial", certificateDto.getSerialNumberSubject());
+            logger.error(message);
+            throw new RuntimeException(e);
+        }
         return true;
     }
 }

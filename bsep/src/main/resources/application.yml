@@ -1,6 +1,6 @@
 server:
   ssl:
-    key-store: keystores/root.jks
+    key-store: keystores/root2.jks
     key-store-password: 12345
     key-store-type: jks
     key-alias: 1

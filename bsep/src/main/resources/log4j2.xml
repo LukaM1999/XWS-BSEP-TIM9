@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <RollingFile name="XMLRollingfileAppender"
+                     fileName="../logs/pki/info/pki-info-log.xml"
+                     filePattern="../logs/pki/info/pki-info-log-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout
+                           pattern="time=%d{ISO8601} level=%p thread=%t logger=%logger{36} method=%class{1}.%M.%L %map{}- %msg%n"/>
+
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="1 MB"/>
+            </Policies>
+
+            <Filters>
+                <ThresholdFilter level="warn"  onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="error" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="fatal" onMatch="DENY" onMismatch="NEUTRAL"/>
+
+                <ThresholdFilter level="info"  onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+        </RollingFile>
+        <RollingFile name="XMLRollingfileAppenderError"
+                     fileName="../logs/pki/error/pki-error-log.xml"
+                     filePattern="../logs/pki/error/pki-error-log-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout
+                    pattern="time=%d{ISO8601} level=%p thread=%t logger=%logger{36} method=%class{1}.%M.%L %map{}- %msg%n"/>
+
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="1 MB"/>
+            </Policies>
+
+            <Filters>
+
+                <ThresholdFilter level="error"  onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+        </RollingFile>
+        <RollingFile name="XMLRollingfileAppenderWarn"
+                     fileName="../logs/pki/warn/pki-warn-log.xml"
+                     filePattern="../logs/pki/warn/pki-warn-log-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout
+                    pattern="time=%d{ISO8601} level=%p thread=%t logger=%logger{36} method=%class{1}.%M.%L %map{}- %msg%n"/>
+
+            <Policies>
+                <OnStartupTriggeringPolicy/>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="1 MB"/>
+            </Policies>
+
+            <Filters>
+
+                <ThresholdFilter level="error" onMatch="DENY" onMismatch="NEUTRAL"/>
+
+                <ThresholdFilter level="warn" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+        </RollingFile>
+        <Console name="Console">
+            <PatternLayout disableAnsi="false"
+                           pattern="%d{ISO8601} %highlight{-%5p} %clr{[%t]}{magneta} %clr{%logger{36} [%class{1}.%M.%L]}{cyan}%map{ } - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="DEBUG">
+            <AppenderRef ref="XMLRollingfileAppender" level="INFO"/>
+            <AppenderRef ref="XMLRollingfileAppenderError" level="ERROR"/>
+            <AppenderRef ref="XMLRollingfileAppenderWarn" level="WARN"/>
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

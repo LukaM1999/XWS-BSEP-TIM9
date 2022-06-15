@@ -5,6 +5,10 @@ import com.bsep.bsep.util.TokenUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.StringMapMessage;
+import org.apache.logging.log4j.util.StringMap;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,7 +31,7 @@ public class TokenAuthFilter extends OncePerRequestFilter {
 
     private UserDetailsService userDetailsService;
 
-    protected final Log LOGGER = LogFactory.getLog(getClass());
+    private final Logger logger = LogManager.getLogger("XML_ROLLING_FILE_APPENDER");
 
     public TokenAuthFilter(TokenUtils tokenHelper, AccountService userDetailsService) {
         this.tokenUtils = tokenHelper;
@@ -38,38 +42,73 @@ public class TokenAuthFilter extends OncePerRequestFilter {
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
+        StringMapMessage mapMessage = new StringMapMessage();
+        mapMessage.put("msg", "Authenticating request");
+        mapMessage.put("method", request.getMethod());
+        mapMessage.put("url", request.getRequestURL().toString());
+        String origin = request.getHeader("Origin");
+        if (origin != null) {
+            mapMessage.put("origin", origin);
+        }
+        String userAgent = request.getHeader("User-Agent");
+        if (userAgent != null) {
+            mapMessage.put("userAgent", userAgent);
+        }
+
+        logger.info(mapMessage);
 
         String username;
 
         // 1. Preuzimanje JWT tokena iz zahteva
         String authToken = tokenUtils.getToken(request);
 
+        if(authToken == null) {
+            mapMessage.put("msg", "No token found");
+            logger.warn(mapMessage);
+            chain.doFilter(request, response);
+            return;
+        }
+
         try {
 
-            if (authToken != null) {
+            // 2. Citanje korisnickog imena iz tokena
+            username = tokenUtils.getUsernameFromToken(authToken);
 
-                // 2. Citanje korisnickog imena iz tokena
-                username = tokenUtils.getUsernameFromToken(authToken);
-
-                if (username != null) {
-
-                    // 3. Preuzimanje korisnika na osnovu username-a
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-                    // 4. Provera da li je prosledjeni token validan
-                    if (tokenUtils.validateToken(authToken, userDetails)) {
-
-                        // 5. Kreiraj autentifikaciju
-                        TokenBasedAuth authentication = new TokenBasedAuth(userDetails);
-                        authentication.setToken(authToken);
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                    }
-                }
+            if(username == null) {
+                mapMessage.put("msg", "No username found");
+                logger.warn(mapMessage);
+                chain.doFilter(request, response);
+                return;
             }
 
-        } catch (ExpiredJwtException ex) {
-            LOGGER.debug("Token expired!");
+            // 3. Preuzimanje korisnika na osnovu username-a
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            if(userDetails == null) {
+                mapMessage.put("username", username);
+                mapMessage.put("msg", "No user found");
+                logger.warn(mapMessage);
+                chain.doFilter(request, response);
+                return;
+            }
+
+            // 4. Provera da li je prosledjeni token validan
+            if (tokenUtils.validateToken(authToken, userDetails)) {
+
+                // 5. Kreiraj autentifikaciju
+                TokenBasedAuth authentication = new TokenBasedAuth(userDetails);
+                authentication.setToken(authToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            }
+            else {
+                mapMessage.put("msg", "Invalid token");
+                logger.warn(mapMessage);
+            }
+
+        } catch (Exception e) {
+            mapMessage.put("msg", e.getMessage());
+            logger.error(mapMessage);
         }
 
         // prosledi request dalje u sledeci filter

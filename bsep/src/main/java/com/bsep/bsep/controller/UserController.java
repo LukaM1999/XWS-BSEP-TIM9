@@ -5,6 +5,9 @@ import com.bsep.bsep.dto.PasswordDTO;
 import com.bsep.bsep.service.UserCertificateService;
 import com.bsep.bsep.service.impl.CertificateService;
 import com.enzoic.client.Enzoic;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.StringMapMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +28,16 @@ public class UserController {
     @Autowired
     private UserCertificateService certificateService;
 
+    private final Logger logger = LogManager.getLogger("XML_ROLLING_FILE_APPENDER");
+
+
     @GetMapping("/{username}/certificate")
     public List<CertificateDTO> getUserCertificates(@PathVariable String username) throws CertificateException, ParseException,
             NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+        StringMapMessage mapMessage = new StringMapMessage();
+        mapMessage.put("msg", "Getting user certificates");
+        mapMessage.put("username", username);
+        logger.info(mapMessage);
         return certificateService.getUserCertificates(username);
     }
 

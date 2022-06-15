@@ -1,6 +1,8 @@
 package com.bsep.bsep.keystores;
 
 import com.bsep.bsep.data.IssuerData;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 
@@ -23,12 +25,14 @@ public class KeyStoreReader {
 	// - Privatni kljucevi
 	// - Tajni kljucevi, koji se koriste u simetricnima siframa
 	private KeyStore keyStore;
-	
+
+	private static final Logger logger = LogManager.getLogger("XML_ROLLING_FILE_APPENDER");
+
 	public KeyStoreReader() {
 		try {
 			keyStore = KeyStore.getInstance("JKS", "SUN");
 		} catch (KeyStoreException | NoSuchProviderException e) {
-			e.printStackTrace();
+			logger.error("Error while creating keystore: " + e.getMessage());
 		}
 	}
 	/**
@@ -55,9 +59,9 @@ public class KeyStoreReader {
 			X500Name issuerName = new JcaX509CertificateHolder((X509Certificate) cert).getSubject();
 			return new IssuerData(privKey, issuerName);
 		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | IOException e) {
-			e.printStackTrace();
+			logger.error("Error while reading issuer from keystore: " + e.getMessage());
+			return null;
 		}
-		return null;
 	}
 	
 	/**
@@ -75,7 +79,7 @@ public class KeyStoreReader {
 				return ks.getCertificate(alias);
 			}
 		} catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			e.printStackTrace();
+			logger.error("Error while reading certificate from keystore: " + e.getMessage());
 		}
 		return null;
 	}
@@ -100,6 +104,7 @@ public class KeyStoreReader {
 				cert.verify(key);
 				return true;
 			} catch (SignatureException se) {
+				logger.error("Error while verifying certificate: " + se.getMessage());
 				return false;
 			}
 		} else {
@@ -118,7 +123,7 @@ public class KeyStoreReader {
 				return ks.getCertificateChain(alias);
 			}
 		} catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			e.printStackTrace();
+			logger.error("Error while reading certificate chain from keystore: " + e.getMessage());
 		}
 		return null;
 	}
@@ -139,7 +144,7 @@ public class KeyStoreReader {
 				return pk;
 			}
 		} catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException | UnrecoverableKeyException e) {
-			e.printStackTrace();
+			logger.error("Error while reading private key from keystore: " + e.getMessage());
 		}
 		return null;
 	}

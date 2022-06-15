@@ -1,5 +1,8 @@
 package com.bsep.bsep.keystores;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -18,12 +21,14 @@ public class KeyStoreWriter {
 	// - Privatni kljucevi
 	// - Tajni kljucevi, koji se koriste u simetricnima siframa
 	private KeyStore keyStore;
-	
+
+	private static final Logger logger = LogManager.getLogger("XML_ROLLING_FILE_APPENDER");
+
 	public KeyStoreWriter() {
 		try {
 			keyStore = KeyStore.getInstance("JKS", "SUN");
 		} catch (KeyStoreException | NoSuchProviderException e) {
-			e.printStackTrace();
+			logger.error("Error while creating keystore: " + e.getMessage());
 		}
 	}
 	
@@ -36,7 +41,7 @@ public class KeyStoreWriter {
 				keyStore.load(null, password);
 			}
 		} catch (NoSuchAlgorithmException | CertificateException | IOException e) {
-			e.printStackTrace();
+			logger.error("Error while loading keystore: " + e.getMessage());
 		}
 	}
 	
@@ -44,7 +49,7 @@ public class KeyStoreWriter {
 		try {
 			keyStore.store(new FileOutputStream(fileName), password);
 		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			e.printStackTrace();
+			logger.error("Error while saving keystore: " + e.getMessage());
 		}
 	}
 	
@@ -52,7 +57,7 @@ public class KeyStoreWriter {
 		try {
 			keyStore.setKeyEntry(alias, privateKey, password, new Certificate[] {certificate});
 		} catch (KeyStoreException e) {
-			e.printStackTrace();
+			logger.error("Error while writing keystore: " + e.getMessage());
 		}
 	}
 }

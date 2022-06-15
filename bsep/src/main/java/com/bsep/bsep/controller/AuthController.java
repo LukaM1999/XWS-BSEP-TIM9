@@ -5,6 +5,9 @@ import com.bsep.bsep.dto.JwtDTO;
 import com.bsep.bsep.dto.LoginDTO;
 import com.bsep.bsep.service.AccountService;
 import com.bsep.bsep.util.TokenUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.StringMapMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +37,8 @@ public class AuthController {
     @Autowired
     private AccountService userService;
 
+    private final Logger logger = LogManager.getLogger("XML_ROLLING_FILE_APPENDER");
+
     // Prvi endpoint koji pogadja korisnik kada se loguje.
     // Tada zna samo svoje korisnicko ime i lozinku i to prosledjuje na backend.
     @PostMapping("/login")
@@ -42,8 +48,19 @@ public class AuthController {
         // Ukoliko kredencijali nisu ispravni, logovanje nece biti uspesno, desice se
         // AuthenticationException
 
-        Authentication authentication =
-                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
+        StringMapMessage mapMessage = new StringMapMessage();
+        mapMessage.put("msg", "Login attempt");
+
+        logger.info(mapMessage);
+
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
+        } catch (AuthenticationException e) {
+            mapMessage.put("msg", "Authentication failed: " + e.getMessage());
+            logger.error(mapMessage);
+            throw new RuntimeException(e);
+        }
 
         // Ukoliko je autentifikacija uspesna, ubaci korisnika u trenutni security
         // kontekst
@@ -56,22 +73,10 @@ public class AuthController {
 
         //user.setPassword("");
         // Vrati token kao odgovor na uspesnu autentifikaciju
+        mapMessage.put("msg", "Login successful");
+        mapMessage.put("username", loginDto.getUsername());
+        logger.info(mapMessage);
+
         return ResponseEntity.ok(new JwtDTO(user, jwt, expiresIn));
     }
-
-//    @GetMapping("/verify")
-//    public ResponseEntity<Object> addUser(@RequestParam String token) throws IllegalAccessException, URISyntaxException {
-//        Customer customer = customerService.findByToken(token);
-//        if (customer == null) throw new NullPointerException("Username with this token doesn't exist!");
-//        if (customer.isEnabled()) throw new IllegalAccessException("Account is already verified!");
-//        customerService.verifyCustomer(customer.getUsername());
-//        HttpHeaders httpHeaders = new HttpHeaders();
-//        httpHeaders.setLocation(new URI("http://localhost:7000/login"));
-//        return new ResponseEntity<>(httpHeaders, HttpStatus.SEE_OTHER);
-//    }
-//
-//    @PostMapping("/confirmPassword")
-//    public boolean confirmPassword(@RequestBody LoginDTO loginDto) {
-//        return userService.isPasswordValid(loginDto);
-//    }
 }

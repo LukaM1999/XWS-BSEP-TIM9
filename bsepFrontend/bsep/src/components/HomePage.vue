@@ -223,7 +223,6 @@ export default {
     },
     commonNameSubject: {
       required,
-      alpha
     },
     nameSubject:{
       required,
@@ -344,6 +343,7 @@ export default {
         certificate.serialNumberIssuer = this.selectedCert.serialNumberSubject;
       }
 
+      const loading = this.$vs.loading();
       const response = await axios.post(`${process.env.VUE_APP_BACKEND}/admin/createCertificate`, certificate);
       if(response.data) {
         this.resetForm();
@@ -367,6 +367,7 @@ export default {
           position: 'top-right'
         });
       }
+      loading.close();
     },
     async downloadCertificate(c){
       const response = await axios.post(`${process.env.VUE_APP_BACKEND}/admin/downloadCertificate`, {

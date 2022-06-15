@@ -5,6 +5,9 @@ import com.bsep.bsep.dto.CertificateDTO;
 import com.bsep.bsep.keystores.KeyStoreReader;
 import com.bsep.bsep.repository.UserCertificateRepository;
 import com.bsep.bsep.service.UserCertificateService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.StringMapMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties;
 import org.springframework.core.env.Environment;
@@ -30,7 +33,7 @@ public class UserCertificateServiceImpl implements UserCertificateService {
     private CertificateService certificateService;
     private final KeyStoreReader keyStoreReader = new KeyStoreReader();
 
-    public List<CertificateDTO> getUserCertificates(String username) throws CertificateException, ParseException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException {
+    public List<CertificateDTO> getUserCertificates(String username) {
         List<X509Certificate> certificates = new ArrayList<>();
         List<UserCertificate> userCertificates = userCertificateRepository.findByUsername(username);
         for(UserCertificate uc: userCertificates){
@@ -45,11 +48,14 @@ public class UserCertificateServiceImpl implements UserCertificateService {
                 certificates.add(crt);
         }
         if(certificates.size() == 0) return null;
-        List<CertificateDTO> certificateDTOs = certificateService.certificateToDTO(certificates);
+        List<CertificateDTO> certificateDTOs = null;
+        List<CertificateDTO> issuedCertificates = null;
+
+        certificateDTOs = certificateService.certificateToDTO(certificates);
         CertificateDTO certificateDTO = new CertificateDTO();
         certificateDTO.setSerialNumberSubject(certificateDTOs.get(0).getSerialNumberSubject());
         certificateDTO.setAuthoritySubject("ca");
-        List<CertificateDTO> issuedCertificates = certificateService.getIssuedCertificates(certificateDTO);
+        issuedCertificates = certificateService.getIssuedCertificates(certificateDTO);
         if(issuedCertificates.size() == 0) {
             certificateDTO.setAuthoritySubject("root");
             issuedCertificates = certificateService.getIssuedCertificates(certificateDTO);

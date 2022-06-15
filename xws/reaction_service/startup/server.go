@@ -2,6 +2,7 @@ package startup
 
 import (
 	"dislinkt/common/auth"
+	"dislinkt/common/loggers"
 	reaction "dislinkt/common/proto/reaction_service"
 	"dislinkt/reaction_service/application"
 	"dislinkt/reaction_service/domain"
@@ -12,10 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
 	"net"
 	"time"
 )
+
+var log = loggers.NewReactionLogger()
 
 type Server struct {
 	config *config.Config

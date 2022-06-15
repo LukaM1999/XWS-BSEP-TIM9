@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"dislinkt/common/loggers"
 	pbComment "dislinkt/common/proto/comment_service"
 	pbPost "dislinkt/common/proto/post_service"
 	pb "dislinkt/common/proto/profile_service"
@@ -13,6 +14,8 @@ import (
 	"google.golang.org/grpc/status"
 	"strings"
 )
+
+var log = loggers.NewProfileLogger()
 
 type ProfileHandler struct {
 	pb.UnimplementedProfileServiceServer
@@ -38,6 +41,7 @@ func (handler *ProfileHandler) Get(ctx context.Context, request *pb.GetRequest) 
 	profileId := request.Id
 	Profile, err := handler.service.Get(profileId)
 	if err != nil {
+		log.WithField("profileId", profileId).Errorf("Cannot get profile: %v", err)
 		return nil, err
 	}
 	ProfilePb := mapProfileToPb(Profile)
@@ -50,6 +54,7 @@ func (handler *ProfileHandler) Get(ctx context.Context, request *pb.GetRequest) 
 func (handler *ProfileHandler) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
 	Profiles, err := handler.service.GetAll(strings.ReplaceAll(request.Search, " ", ""))
 	if err != nil {
+		log.Errorf("Cannot get all profiles: %v", err)
 		return nil, err
 	}
 	response := &pb.GetAllResponse{
@@ -65,12 +70,15 @@ func (handler *ProfileHandler) GetAll(ctx context.Context, request *pb.GetAllReq
 func (handler ProfileHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
 	profile := mapPbToProfile(request.Profile)
 	if err := handler.validate.Struct(profile); err != nil {
+		log.Errorf("Validation failed: %v", err)
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 	err := handler.service.Create(profile)
 	if err != nil {
+		log.Errorf("Cannot create profile: %v", err)
 		return nil, err
 	}
+	log.Info("Profile created")
 	return &pb.CreateResponse{
 		Profile: mapProfileToPb(profile),
 	}, nil
@@ -79,12 +87,14 @@ func (handler ProfileHandler) Create(ctx context.Context, request *pb.CreateRequ
 func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	oldProfile, err := handler.service.Get(request.Profile.Id)
 	if err != nil {
+		log.WithField("profileId", request.Profile.Id).Errorf("Cannot get profile: %v", err)
 		return nil, err
 	}
 	profileId := request.Id
 	profile := mapPbToProfile(request.Profile)
 	err = handler.service.Update(profileId, profile)
 	if err != nil {
+		log.WithField("profileId", request.Profile.Id).Errorf("Cannot update profile: %v", err)
 		return nil, err
 	}
 	if oldProfile.FirstName != profile.FirstName || oldProfile.LastName != profile.LastName {
@@ -96,6 +106,7 @@ func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequ
 			},
 		})
 		if err != nil {
+			log.WithField("profileId", request.Profile.Id).Errorf("Cannot update profile in post service: %v", err)
 			handler.service.Update(profileId, oldProfile)
 			return nil, err
 		}
@@ -108,6 +119,7 @@ func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequ
 			},
 		})
 		if err != nil {
+			log.WithField("profileId", profileId).Errorf("Cannot update profile in comment service: %v", err)
 			handler.service.Update(profileId, oldProfile)
 			return nil, err
 		}
@@ -118,6 +130,7 @@ func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequ
 			Username: profile.Username,
 		})
 	}
+	log.WithField("profileId", profileId).Infof("Profile updated")
 	return &pb.UpdateResponse{
 		Profile: mapProfileToPb(profile),
 	}, nil
@@ -126,8 +139,10 @@ func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequ
 func (handler *ProfileHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
 	err := handler.service.Delete(request.Id)
 	if err != nil {
+		log.Errorf("Cannot delete profile: %v", err)
 		return nil, err
 	}
+	log.Info("Profile deleted")
 	return &pb.DeleteResponse{}, nil
 }
 
@@ -137,8 +152,10 @@ func (handler *ProfileHandler) GenerateToken(ctx context.Context, request *pb.Ge
 	}
 	token, err := handler.service.GenerateToken(request.Id)
 	if err != nil {
+		log.Errorf("Cannot generate token: %v", err)
 		return nil, err
 	}
+	log.Info("Token generated")
 	return &pb.GenerateTokenResponse{
 		Token: token,
 	}, nil

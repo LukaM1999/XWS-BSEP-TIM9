@@ -3,6 +3,7 @@ package startup
 import (
 	"dislinkt/common/auth"
 	"dislinkt/common/client"
+	"dislinkt/common/loggers"
 	pbComment "dislinkt/common/proto/comment_service"
 	post "dislinkt/common/proto/post_service"
 	pbReaction "dislinkt/common/proto/reaction_service"
@@ -15,10 +16,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
 	"net"
 	"time"
 )
+
+var log = loggers.NewPostLogger()
 
 type Server struct {
 	config *config.Config

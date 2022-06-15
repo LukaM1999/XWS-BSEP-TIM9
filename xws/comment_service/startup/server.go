@@ -7,14 +7,16 @@ import (
 	"dislinkt/comment_service/infrastructure/persistence"
 	"dislinkt/comment_service/startup/config"
 	"dislinkt/common/auth"
+	"dislinkt/common/loggers"
 	comment "dislinkt/common/proto/comment_service"
 	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 	"time"
 )
+
+var log = loggers.NewCommentLogger()
 
 type Server struct {
 	config *config.Config

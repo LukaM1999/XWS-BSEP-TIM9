@@ -1,10 +1,12 @@
 package config
 
 import (
+	"dislinkt/common/loggers"
 	"github.com/joho/godotenv"
-	"log"
 	"os"
 )
+
+var log = loggers.NewProfileLogger()
 
 type Config struct {
 	Port          string

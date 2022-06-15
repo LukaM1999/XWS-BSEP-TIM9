@@ -3,6 +3,7 @@ package startup
 import (
 	"dislinkt/common/auth"
 	"dislinkt/common/client"
+	"dislinkt/common/loggers"
 	connection "dislinkt/common/proto/connection_service"
 	pbPost "dislinkt/common/proto/post_service"
 	"dislinkt/connection_service/application"
@@ -14,10 +15,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
 	"net"
 	"time"
 )
+
+var log = loggers.NewConnectionLogger()
 
 type Server struct {
 	config *config.Config

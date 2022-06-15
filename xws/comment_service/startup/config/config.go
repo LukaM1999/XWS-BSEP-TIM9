@@ -1,10 +1,12 @@
 package config
 
 import (
+	"dislinkt/common/loggers"
 	"github.com/joho/godotenv"
-	"log"
 	"os"
 )
+
+var log = loggers.NewCommentLogger()
 
 type Config struct {
 	Port          string

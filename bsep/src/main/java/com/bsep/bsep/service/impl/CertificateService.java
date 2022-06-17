@@ -464,7 +464,6 @@ public class CertificateService {
                 return true;
             } catch (SignatureException | CertificateException | NoSuchAlgorithmException | InvalidKeyException |
                      NoSuchProviderException e) {
-                logger.error("Error verifying signature: " + e.getMessage());
                 return false;
             }
         } else {

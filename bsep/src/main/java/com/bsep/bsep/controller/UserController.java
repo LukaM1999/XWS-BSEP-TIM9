@@ -4,7 +4,6 @@ import com.bsep.bsep.dto.CertificateDTO;
 import com.bsep.bsep.dto.PasswordDTO;
 import com.bsep.bsep.service.UserCertificateService;
 import com.bsep.bsep.service.impl.CertificateService;
-import com.enzoic.client.Enzoic;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.StringMapMessage;
@@ -39,11 +38,5 @@ public class UserController {
         mapMessage.put("username", username);
         logger.info(mapMessage);
         return certificateService.getUserCertificates(username);
-    }
-
-    @PostMapping("/isPasswordCompromised")
-    public boolean isPasswordCompromised(@RequestBody PasswordDTO passwordDTO) throws IOException {
-        Enzoic enzoic = new Enzoic("a1e69f4971a943ea832249204668ad36", "+7!QCvGc69$Sz#@n2w@egxZufxadszs?");
-        return enzoic.CheckPassword(passwordDTO.getPassword());
     }
 }

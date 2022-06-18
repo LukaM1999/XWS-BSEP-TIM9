@@ -5,4 +5,4 @@ server:
     key-store-type: jks
     key-alias: 1
     key-password: 12345
-  port: 9001
+  port: 9009

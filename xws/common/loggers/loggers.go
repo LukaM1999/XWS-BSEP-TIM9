@@ -23,7 +23,7 @@ func NewReactionLogger() *logrus.Logger {
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/security_service/security.log",
+		Filename:   "../../logs/reaction_service/reaction.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -40,7 +40,7 @@ func NewConnectionLogger() *logrus.Logger {
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/security_service/security.log",
+		Filename:   "../../logs/connection_service/connection.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -57,7 +57,7 @@ func NewCommentLogger() *logrus.Logger {
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/security_service/security.log",
+		Filename:   "../../logs/comment_service/comment.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -74,7 +74,7 @@ func NewPostLogger() *logrus.Logger {
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/security_service/security.log",
+		Filename:   "../../logs/post_service/post.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -91,7 +91,7 @@ func NewProfileLogger() *logrus.Logger {
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/security_service/security.log",
+		Filename:   "../../logs/profile_service/profile.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,

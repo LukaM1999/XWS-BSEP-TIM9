@@ -45,7 +45,7 @@ func NewConfig() *Config {
 func SetEnvironment() error {
 	if os.Getenv("OS_ENV") != "docker" {
 		if err := godotenv.Load("../.env.dev"); err != nil {
-			log.Fatal("Error loading .env file")
+			log.Fatal("ENVF")
 		}
 	}
 	return nil

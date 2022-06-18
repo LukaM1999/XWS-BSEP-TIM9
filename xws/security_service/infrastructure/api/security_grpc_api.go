@@ -46,7 +46,7 @@ func (handler *UserHandler) Get(ctx context.Context, request *pb.GetRequest) (*p
 	username := request.Username
 	User, err := handler.service.Get(username)
 	if err != nil {
-		log.WithField("username", username).Errorf("Cannot get user: %v", err)
+		log.WithField("username", username).Errorf("GUF: %v", err)
 		return nil, err
 	}
 	UserPb := mapUserToPb(User)
@@ -60,7 +60,7 @@ func (handler *UserHandler) Get(ctx context.Context, request *pb.GetRequest) (*p
 func (handler *UserHandler) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
 	Users, err := handler.service.GetAll()
 	if err != nil {
-		log.Errorf("Cannot get all users: %v", err)
+		log.Errorf("AUF: %v", err)
 		return nil, err
 	}
 	response := &pb.GetAllResponse{
@@ -79,13 +79,13 @@ func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterReq
 	request.User.Role = "user"
 	mappedUser := mapPbToUser(request.User)
 	if err := handler.validate.Struct(mappedUser); err != nil {
-		log.Errorf("Invalid user: %v", err)
+		log.Errorf("IUF: %v", err)
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 	mappedUser.Password = HashPassword(mappedUser.Password)
 	registeredUser, err := handler.service.Register(mappedUser)
 	if err != nil {
-		log.Errorf("Cannot register user: %v", err)
+		log.Errorf("RUF: %v", err)
 		return nil, err
 	}
 	logger := log.WithFields(logrus.Fields{
@@ -103,13 +103,13 @@ func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterReq
 		},
 	})
 	if err != nil {
-		logger.Errorf("Cannot create profile: %v", err)
+		logger.Errorf("CPRF: %v", err)
 		handler.service.Delete(registeredUser.Id)
 		return nil, err
 	}
 	token, err := handler.service.GenerateVerificationToken()
 	if err != nil {
-		logger.Errorf("Cannot generate verification token: %v", err)
+		logger.Errorf("CVTF: %v", err)
 		return nil, err
 	}
 	userVerification, err := handler.service.CreateUserVerification(&securityDomain.UserVerification{
@@ -120,17 +120,17 @@ func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterReq
 		IsVerified:  false,
 	})
 	if err != nil {
-		logger.Errorf("Cannot create user verification: %v", err)
+		logger.Errorf("CUVF: %v", err)
 		return nil, err
 	}
 	err = handler.service.SendVerificationEmail(request.GetUser().GetUsername(), request.GetEmail(), userVerification.Token)
 	if err != nil {
-		logger.Errorf("Cannot send verification email: %v", err)
+		logger.Errorf("SVEF: %v", err)
 		handler.service.Delete(registeredUser.Id)
 		handler.profileClient.Delete(ctx, &pbProfile.DeleteRequest{Id: registeredUser.Id.Hex()})
 		return nil, err
 	}
-	logger.Info("User registered")
+	logger.Info("RUS")
 	return &pb.RegisterResponse{
 		User: &pb.User{
 			Id:       registeredUser.Id.Hex(),
@@ -142,12 +142,12 @@ func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterReq
 func (handler *UserHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	id, err := primitive.ObjectIDFromHex(request.Id)
 	if err != nil {
-		log.Errorf("Cannot parse id: %v", err)
+		log.Errorf("PIDF: %v", err)
 		return nil, err
 	}
 	username, err := handler.service.Update(id, request.Username)
 	if err != nil {
-		log.WithField("id", id).Errorf("Cannot update user: %v", err)
+		log.WithField("id", id).Errorf("UUF: %v", err)
 		return nil, err
 	}
 	log.WithField("id", id).Infof("User updated")
@@ -161,7 +161,7 @@ func (handler *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*p
 	})
 	user, err := handler.service.Get(req.GetUsername())
 	if err != nil {
-		loggerUsername.Errorf("Cannot get user: %v", err)
+		loggerUsername.Errorf("GUF: %v", err)
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
 	}
 	loggerId := log.WithFields(logrus.Fields{
@@ -169,31 +169,31 @@ func (handler *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*p
 	})
 	isVerified, err := handler.service.IsVerified(req.GetUsername())
 	if err != nil {
-		loggerId.Errorf("Cannot check if user is verified: %v", err)
+		loggerId.Errorf("IUVF: %v", err)
 		return nil, err
 	}
 	if !isVerified {
-		loggerId.Errorf("User is not verified")
+		loggerId.Errorf("NUVF")
 		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
 	}
 	if user == nil || !user.IsCorrectPassword(req.GetPassword()) {
-		loggerId.Errorf("Incorrect username/password")
+		loggerId.Errorf("UPF")
 		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
 	}
 
 	token, err := handler.jwtManager.Generate(user, false)
 	if err != nil {
-		loggerId.Errorf("Cannot generate token: %v", err)
+		loggerId.Errorf("GJWTF: %v", err)
 		return nil, status.Errorf(codes.Internal, "cannot generate access token")
 	}
-	loggerId.Info("User logged in")
+	loggerId.Info("ULGD")
 	return &pb.LoginResponse{AccessToken: token}, nil
 }
 
 func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb.PasswordlessLoginRequest) (*pb.LoginResponse, error) {
 	secret, err := handler.service.GetOTPSecret(req.GetUsername())
 	if err != nil || secret == "" {
-		log.WithField("username", req.GetUsername()).Error("Cannot get OTP secret")
+		log.WithField("username", req.GetUsername()).Error("GOSF")
 		return nil, status.Errorf(codes.Internal, "No passwordless login setup: %v", err)
 	}
 
@@ -201,12 +201,12 @@ func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb
 		log.WithFields(logrus.Fields{
 			"username": req.GetUsername(),
 			"otp":      req.GetOtp(),
-		}).Errorf("Invalid OTP")
+		}).Errorf("OTPF")
 		return nil, status.Errorf(codes.Internal, "OTP is invalid")
 	}
 	user, err := handler.service.Get(req.GetUsername())
 	if err != nil {
-		log.WithField("username", req.GetUsername()).Error("Cannot get user")
+		log.WithField("username", req.GetUsername()).Error("GUF")
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
 	}
 	loggerId := log.WithFields(logrus.Fields{
@@ -214,19 +214,19 @@ func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb
 	})
 	isVerified, err := handler.service.IsVerified(req.GetUsername())
 	if err != nil {
-		loggerId.Errorf("Cannot check if user is verified: %v", err)
+		loggerId.Errorf("IUVF")
 		return nil, err
 	}
 	if !isVerified {
-		loggerId.Errorf("User is not verified")
+		loggerId.Errorf("NUVF")
 		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
 	}
 	token, err := handler.jwtManager.Generate(user, true)
 	if err != nil {
-		loggerId.Errorf("Cannot generate token: %v", err)
+		loggerId.Errorf("GJWTF")
 		return nil, status.Errorf(codes.Internal, "cannot generate access token")
 	}
-	loggerId.Info("User logged in")
+	loggerId.Info("ULGD")
 	return &pb.LoginResponse{AccessToken: token}, nil
 }
 
@@ -237,7 +237,7 @@ func (handler *UserHandler) SetupOTP(ctx context.Context, req *pb.SetupOTPReques
 	})
 	user, err := handler.service.Get(req.GetUsername())
 	if err != nil {
-		loggerUsername.Errorf("Cannot get user: %v", err)
+		loggerUsername.Errorf("GUF")
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
 	}
 	loggerId := log.WithFields(logrus.Fields{
@@ -246,11 +246,11 @@ func (handler *UserHandler) SetupOTP(ctx context.Context, req *pb.SetupOTPReques
 
 	secret, qrCode, err := handler.service.SetupOTP(req.GetUsername())
 	if err != nil {
-		loggerUsername.Errorf("Cannot setup OTP: %v", err)
+		loggerUsername.Errorf("SOTPF")
 		return nil, status.Errorf(codes.Internal, "cannot setup OTP: %v", err)
 	}
 
-	loggerId.Info("OTP setup")
+	loggerId.Info("OTPS")
 	return &pb.SetupOTPResponse{
 		Secret: secret,
 		QrCode: qrCode,
@@ -260,7 +260,7 @@ func (handler *UserHandler) SetupOTP(ctx context.Context, req *pb.SetupOTPReques
 func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.PasswordlessLoginRequest) (*pb.LoginResponse, error) {
 	secret, err := handler.service.GetOTPSecret(req.GetUsername())
 	if err != nil || secret == "" {
-		log.WithField("username", req.GetUsername()).Error("Cannot get OTP secret")
+		log.WithField("username", req.GetUsername()).Error("GOSF")
 		return nil, status.Errorf(codes.Internal, "No passwordless login setup: %v", err)
 	}
 
@@ -268,12 +268,12 @@ func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.Passw
 		log.WithFields(logrus.Fields{
 			"username": req.GetUsername(),
 			"otp":      req.GetOtp(),
-		}).Errorf("Invalid OTP")
+		}).Errorf("OTPF")
 		return nil, status.Errorf(codes.Internal, "OTP is invalid")
 	}
 	user, err := handler.service.Get(req.GetUsername())
 	if err != nil {
-		log.WithField("username", req.GetUsername()).Error("Cannot get user")
+		log.WithField("username", req.GetUsername()).Error("GUF")
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
 	}
 	loggerId := log.WithFields(logrus.Fields{
@@ -281,31 +281,31 @@ func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.Passw
 	})
 	isVerified, err := handler.service.IsVerified(req.GetUsername())
 	if err != nil {
-		loggerId.Errorf("Cannot check if user is verified: %v", err)
+		loggerId.Errorf("IUVF")
 		return nil, err
 	}
 	if !isVerified {
-		loggerId.Errorf("User is not verified")
+		loggerId.Errorf("NUVF")
 		return nil, status.Errorf(codes.NotFound, "incorrect username/password")
 	}
 	token, err := handler.jwtManager.Generate(user, false)
 	if err != nil {
-		loggerId.Errorf("Cannot generate token: %v", err)
+		loggerId.Errorf("GJWTF")
 		return nil, status.Errorf(codes.Internal, "cannot generate access token")
 	}
-	loggerId.Info("User logged in")
+	loggerId.Info("ULGD")
 	return &pb.LoginResponse{AccessToken: token}, nil
 }
 
 func (handler *UserHandler) VerifyUser(ctx context.Context, req *pb.VerifyUserRequest) (*httpbody.HttpBody, error) {
 	message, err := handler.service.VerifyUser(req.GetToken())
 	if err != nil {
-		log.WithField("token", req.GetToken()).Errorf("Cannot verify user: %v", err)
+		log.WithField("token", req.GetToken()).Errorf("IUVF")
 		return nil, err
 	}
 	t, err := template.ParseFiles("./application/verified.html")
 	if err != nil {
-		log.Errorf("Cannot parse template: %v", err)
+		log.Errorf("PTF")
 		fmt.Println(err)
 		return nil, err
 	}
@@ -326,7 +326,7 @@ func (handler *UserHandler) VerifyUser(ctx context.Context, req *pb.VerifyUserRe
 func (handler *UserHandler) RecoverPassword(ctx context.Context, req *pb.RecoverPasswordRequest) (*pb.RecoverPasswordResponse, error) {
 	token, err := handler.service.GenerateVerificationToken()
 	if err != nil {
-		log.Errorf("Cannot generate token: %v", err)
+		log.Errorf("CVTF")
 		return nil, err
 	}
 	err = handler.service.CreatePasswordRecovery(&securityDomain.PasswordRecovery{
@@ -337,22 +337,22 @@ func (handler *UserHandler) RecoverPassword(ctx context.Context, req *pb.Recover
 		IsRecovered: false,
 	})
 	if err != nil {
-		log.Errorf("Cannot create password recovery: %v", err)
+		log.Errorf("CPWRF")
 		return nil, err
 	}
 	err = handler.service.SendRecoverPasswordEmail(req.GetEmail(), req.GetUsername(), token)
 	if err != nil {
-		log.WithField("email", req.GetEmail()).Errorf("Cannot send email: %v", err)
+		log.WithField("email", req.GetEmail()).Errorf("SREF")
 		return nil, err
 	}
-	log.WithField("email", req.GetEmail()).Info("Password recovrty email sent")
+	log.WithField("email", req.GetEmail()).Info("RES")
 	return &pb.RecoverPasswordResponse{}, nil
 }
 
 func (handler *UserHandler) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordRequest) (*pb.UpdatePasswordResponse, error) {
 	err := handler.service.UpdatePassword(req.GetToken(), req.GetPassword())
 	if err != nil {
-		log.WithField("token", req.GetToken()).Errorf("Cannot update password: %v", err)
+		log.WithField("token", req.GetToken()).Errorf("UUPF")
 		return nil, err
 	}
 	return &pb.UpdatePasswordResponse{}, nil

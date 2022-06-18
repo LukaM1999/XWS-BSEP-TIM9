@@ -13,9 +13,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"io"
-	"os"
 )
 
 var log = loggers.NewInterceptorLogger()
@@ -28,16 +25,6 @@ type AuthInterceptor struct {
 
 // NewAuthInterceptor returns a new auth interceptor
 func NewAuthInterceptor(jwtManager *JWTManager, accessibleRoles map[string]string) *AuthInterceptor {
-	log.SetLevel(logrus.InfoLevel)
-	log.SetReportCaller(true)
-	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/auth_interceptor/auth_interceptor.log",
-		MaxSize:    1,
-		MaxBackups: 3,
-		MaxAge:     28,
-		Compress:   true,
-	})
-	log.SetOutput(multiWriter)
 	return &AuthInterceptor{jwtManager, accessibleRoles}
 }
 
@@ -49,7 +36,7 @@ func (interceptor *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-		log.Println("--> unary interceptor: ", info.FullMethod)
+		log.Info("UII: ", info.FullMethod)
 
 		err, userId, username := interceptor.authorize(ctx, info.FullMethod)
 		if err != nil {
@@ -99,26 +86,26 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 
 	securityClient, err := getSecurityDatabaseClient("localhost", "27017")
 	if err != nil {
-		logger.Error("Error getting security database client")
+		logger.Error("GMGF")
 		return status.Errorf(codes.Internal, "could not connect to security database: %v", err), "", ""
 	}
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		logger.Error("Error getting metadata from incoming context")
+		logger.Error("GMDF")
 		return status.Errorf(codes.Unauthenticated, "metadata is not provided"), "", ""
 	}
 
 	values := md["authorization"]
 	if len(values) == 0 {
-		logger.Error("Error getting authorization from metadata")
+		logger.Error("GAF")
 		return status.Errorf(codes.Unauthenticated, "authorization token is not provided"), "", ""
 	}
 
 	accessToken := values[0]
 	claims, err := interceptor.jwtManager.Verify(accessToken)
 	if err != nil {
-		logger.Error("Error verifying access token")
+		logger.Error("VATF")
 		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err), "", ""
 	}
 
@@ -126,25 +113,25 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 	rolePermission := &auth.RolePermission{}
 	err = securityClient.Database("security_service").Collection("rolePermission").FindOne(context.TODO(), filter).Decode(rolePermission)
 	if err != nil {
-		logger.WithField("role", claims.Role).Error("Error getting role permissions")
+		logger.WithField("role", claims.Role).Error("GRPF")
 		return status.Errorf(codes.Internal, "could not find role permissions: %v", err), "", ""
 	}
 	user := &auth.User{}
 	err = securityClient.Database("security_service").Collection("user").FindOne(context.TODO(), bson.M{"username": claims.Username}).Decode(user)
 	if err != nil {
-		logger.WithField("username", claims.Username).Error("Error getting user")
+		logger.WithField("username", claims.Username).Error("GUF")
 		return status.Errorf(codes.Internal, "could not find user: %v", err), "", ""
 	}
 	if user.TwoFactor && !claims.TwoFactorAuthenticated && method != "/security.SecurityService/TwoFactorAuthentication" {
-		logger.WithField("username", claims.Username).Error("User is not two factor authenticated")
+		logger.WithField("username", claims.Username).Error("NTFA")
 		return status.Errorf(codes.Unauthenticated, "user is not two factor authenticated"), "", ""
 	}
 	for _, p := range rolePermission.Permissions {
 		if p == permission || p == "*" {
-			logger.Info("Authorized")
+			logger.Info("UAS")
 			return nil, claims.UserId, claims.Username
 		}
 	}
-	logger.WithField("role", claims.Role).Error("Error authorizing")
+	logger.WithField("role", claims.Role).Error("UAF")
 	return status.Error(codes.PermissionDenied, "no permission to access this RPC"), "", ""
 }

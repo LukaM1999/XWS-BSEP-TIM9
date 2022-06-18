@@ -53,7 +53,7 @@ func (server *Server) Start() {
 
 	profileClient, err := client.NewProfileClient(fmt.Sprintf("%s:%s", server.config.ProfileHost, server.config.ProfilePort))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("PCF: %v", err)
 	}
 
 	userHandler := server.initUserHandler(securityService, jwtManager, profileClient)
@@ -64,7 +64,7 @@ func (server *Server) Start() {
 func (server *Server) initMongoClient() *mongo.Client {
 	client, err := persistence.GetClient(server.config.SecurityDBHost, server.config.SecurityDBPort)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("MGF: %v", err)
 	}
 	return client
 }
@@ -78,13 +78,13 @@ func (server *Server) initUserStore(client *mongo.Client) domain.UserStore {
 	for _, User := range users {
 		_, err := store.Register(User)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("RUF: %v", err)
 		}
 	}
 	for _, rolePermission := range rolePermissions {
 		_, err := store.CreateRolePermission(rolePermission)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("CRF: %v", err)
 		}
 	}
 	return store
@@ -103,7 +103,7 @@ func (server *Server) startGrpcServer(userHandler *api.UserHandler, jwtManager *
 	interceptor := auth.NewAuthInterceptor(jwtManager, accessibleRoles())
 	tlsCredentials, err := auth.LoadTLSServerCredentials()
 	if err != nil {
-		log.Fatalf("failed to load TLS credentials: %v", err)
+		log.Fatalf("TLSF: %v", err)
 	}
 	serverOptions := []grpc.ServerOption{
 		grpc.Creds(tlsCredentials),

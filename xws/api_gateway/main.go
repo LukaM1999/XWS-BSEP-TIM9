@@ -19,13 +19,13 @@ func main() {
 
 	go func() {
 		<-sigs
-		log.Info("Security service stopped")
+		log.Info("API Gateway stopped")
 		done <- true
 		os.Exit(0)
 	}()
 	config := cfg.NewConfig()
 	server := startup.NewServer(config)
-	log.Info("Security service started")
+	log.Info("API Gateway started")
 	server.Start()
 	<-done
 }

@@ -19,13 +19,13 @@ func main() {
 
 	go func() {
 		<-sigs
-		log.Info("Security service stopped")
+		log.Info("SDN")
 		done <- true
 		os.Exit(0)
 	}()
 	config := cfg.NewConfig()
 	server := startup.NewServer(config)
-	log.Info("Security service started")
+	log.Info("SUP")
 	server.Start()
 	<-done
 }

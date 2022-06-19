@@ -8,7 +8,7 @@ public interface RegisteredUserRepository extends JpaRepository<RegisteredUser, 
 
     RegisteredUser findByUsername(String username);
 
-    @Query("UPDATE RegisteredUser u SET u.firstName = ?1, u.lastName = ?2, u.email = ?3, u.phone = ?4, u.address = ?5, u.city = ?6, u.country = ?7, u.dislinktToken = ?8 WHERE u.username = ?9")
+    @Query("UPDATE RegisteredUser u SET u.firstName = ?1, u.lastName = ?2, u.email = ?3, u.phone = ?4, u.address = ?5, u.city = ?6, u.country = ?7, u.dislinktUsername = ?8, u.dislinktToken = ?9 WHERE u.username = ?10")
     RegisteredUser updateUser(String firstName, String lastName, String email, String phoneNumber, String address,
-                              String city, String country, String dislinktToken, String username);
+                              String city, String country, String dislinktUsername, String dislinktToken, String username);
 }

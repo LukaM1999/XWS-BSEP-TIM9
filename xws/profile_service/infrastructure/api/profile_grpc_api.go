@@ -160,3 +160,16 @@ func (handler *ProfileHandler) GenerateToken(ctx context.Context, request *pb.Ge
 		Token: token,
 	}, nil
 }
+
+func (handler *ProfileHandler) GetByToken(ctx context.Context, request *pb.GetByTokenRequest) (*pb.GetByTokenResponse, error) {
+	Profile, err := handler.service.GetByToken(request.Token)
+	if err != nil {
+		log.WithField("token", request.Token).Errorf("Cannot get profile: %v", err)
+		return nil, err
+	}
+	ProfilePb := mapProfileToPb(Profile)
+	response := &pb.GetByTokenResponse{
+		Profile: ProfilePb,
+	}
+	return response, nil
+}

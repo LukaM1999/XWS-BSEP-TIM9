@@ -76,6 +76,16 @@
         <div class="col">
           <vs-input
             warn
+            v-model="dislinktUsername"
+            label-placeholder="Dislinkt username"
+            class="mb-3">
+          </vs-input>
+        </div>
+      </div>
+      <div v-if="role === 'COMPANY_OWNER'" class="row mt-3">
+        <div class="col">
+          <vs-input
+            warn
             v-model="dislinktToken"
             label-placeholder="Dislinkt API token"
             class="mb-3">
@@ -108,6 +118,7 @@ export default {
       phone: "",
       role: "",
       positions: [],
+      dislinktUsername: "",
       dislinktToken: "",
     }
   },
@@ -127,6 +138,7 @@ export default {
     this.city = this.user.city;
     this.country = this.user.country;
     this.phone = this.user.phone;
+    this.dislinktUsername = this.user.dislinktUsername;
     this.dislinktToken = this.user.dislinktToken;
     this.role = this.$store.getters.user?.role?.authority;
     this.$parent.active = 'profile';
@@ -147,6 +159,7 @@ export default {
         city: this.city,
         country: this.country,
         phone: this.phone,
+        dislinktUsername: this.dislinktUsername,
         dislinktToken: this.dislinktToken,
       }
       await axios.patch(`${process.env.VUE_APP_BACKEND}/user`, user).then(response => {

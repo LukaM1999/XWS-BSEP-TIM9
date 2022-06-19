@@ -6,6 +6,7 @@ import (
 	"dislinkt/common/loggers"
 	pbComment "dislinkt/common/proto/comment_service"
 	post "dislinkt/common/proto/post_service"
+	pbProfile "dislinkt/common/proto/profile_service"
 	pbReaction "dislinkt/common/proto/reaction_service"
 	"dislinkt/post_service/application"
 	"dislinkt/post_service/domain"
@@ -51,7 +52,12 @@ func (server *Server) Start() {
 
 	jwtManager := auth.NewJWTManager("secretKey", 30*time.Minute)
 
-	postService := server.initPostService(postStore)
+	profileClient, err := client.NewProfileClient(fmt.Sprintf("%s:%s", server.config.ProfileHost, server.config.ProfilePort))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	postService := server.initPostService(postStore, profileClient)
 
 	commentClient, err := client.NewCommentClient(fmt.Sprintf("%s:%s", server.config.CommentHost, server.config.CommentPort))
 	if err != nil {
@@ -94,12 +100,16 @@ func (server *Server) initPostStore(client *mongo.Client) domain.PostStore {
 			log.Fatal(err)
 		}
 	}
+	//for _, job := range jobs {
+	//	err := store.CreateJob(job)
+	//	if err != nil {
+	//}
 
 	return store
 }
 
-func (server *Server) initPostService(store domain.PostStore) *application.PostService {
-	return application.NewPostService(store)
+func (server *Server) initPostService(store domain.PostStore, profileClient pbProfile.ProfileServiceClient) *application.PostService {
+	return application.NewPostService(store, profileClient)
 }
 
 func (server *Server) initPostHandler(service *application.PostService, commentClient pbComment.CommentServiceClient,

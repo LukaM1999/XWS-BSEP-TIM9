@@ -23,6 +23,7 @@ type ProfileServiceClient interface {
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 	GenerateToken(ctx context.Context, in *GenerateTokenRequest, opts ...grpc.CallOption) (*GenerateTokenResponse, error)
+	GetByToken(ctx context.Context, in *GetByTokenRequest, opts ...grpc.CallOption) (*GetByTokenResponse, error)
 }
 
 type profileServiceClient struct {
@@ -87,6 +88,15 @@ func (c *profileServiceClient) GenerateToken(ctx context.Context, in *GenerateTo
 	return out, nil
 }
 
+func (c *profileServiceClient) GetByToken(ctx context.Context, in *GetByTokenRequest, opts ...grpc.CallOption) (*GetByTokenResponse, error) {
+	out := new(GetByTokenResponse)
+	err := c.cc.Invoke(ctx, "/profile.ProfileService/GetByToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProfileServiceServer is the server API for ProfileService service.
 // All implementations must embed UnimplementedProfileServiceServer
 // for forward compatibility
@@ -97,6 +107,7 @@ type ProfileServiceServer interface {
 	Update(context.Context, *UpdateRequest) (*UpdateResponse, error)
 	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error)
+	GetByToken(context.Context, *GetByTokenRequest) (*GetByTokenResponse, error)
 	mustEmbedUnimplementedProfileServiceServer()
 }
 
@@ -121,6 +132,9 @@ func (*UnimplementedProfileServiceServer) Delete(context.Context, *DeleteRequest
 }
 func (*UnimplementedProfileServiceServer) GenerateToken(context.Context, *GenerateTokenRequest) (*GenerateTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateToken not implemented")
+}
+func (*UnimplementedProfileServiceServer) GetByToken(context.Context, *GetByTokenRequest) (*GetByTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetByToken not implemented")
 }
 func (*UnimplementedProfileServiceServer) mustEmbedUnimplementedProfileServiceServer() {}
 
@@ -236,6 +250,24 @@ func _ProfileService_GenerateToken_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProfileService_GetByToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServiceServer).GetByToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/profile.ProfileService/GetByToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServiceServer).GetByToken(ctx, req.(*GetByTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _ProfileService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "profile.ProfileService",
 	HandlerType: (*ProfileServiceServer)(nil),
@@ -263,6 +295,10 @@ var _ProfileService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GenerateToken",
 			Handler:    _ProfileService_GenerateToken_Handler,
+		},
+		{
+			MethodName: "GetByToken",
+			Handler:    _ProfileService_GetByToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

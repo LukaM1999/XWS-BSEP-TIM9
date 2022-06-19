@@ -1,5 +1,5 @@
 <template>
- <div style="overflow-x: hidden">
+ <div style="overflow: hidden;">
    <vs-navbar :color="'guide'" fixed shadow center-collapsed v-model="active">
      <template #left>
        <div class="row">
@@ -30,6 +30,10 @@
        <vs-navbar-item :to="`/company-profile/${companyName}/interviews`"
                        :active="active === 'interviews'" id="interviews">
          Interviews
+       </vs-navbar-item>
+       <vs-navbar-item :to="`/company-profile/${companyName}/job-offers`"
+                       :active="active === 'jobOffers'" id="jobOffers">
+         Job offers
        </vs-navbar-item>
      </template>
    </vs-navbar>

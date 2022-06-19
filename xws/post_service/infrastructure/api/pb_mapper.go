@@ -89,19 +89,23 @@ func mapJobToPb(job *domain.JobOffer) *pb.JobOffer {
 }
 
 func mapPbToJob(pbJob *pb.JobOffer) *domain.JobOffer {
-	return &domain.JobOffer{
-		Id: getObjectId(pbJob.Id),
-		Profile: domain.Profile{
-			Id:        getObjectId(pbJob.Profile.Id),
-			FirstName: pbJob.Profile.FirstName,
-			LastName:  pbJob.Profile.LastName,
-		},
+	jobOffer := &domain.JobOffer{
+		Profile:     domain.Profile{},
 		Company:     pbJob.Company,
 		Position:    pbJob.Position,
 		Description: pbJob.Description,
 		Criteria:    pbJob.Criteria,
 		CreatedAt:   pbJob.CreatedAt.AsTime(),
 	}
+	if pbJob.Id != "" {
+		jobOffer.Id = getObjectId(pbJob.Id)
+	}
+	if pbJob.Profile != nil {
+		jobOffer.Profile.Id = getObjectId(pbJob.Profile.Id)
+		jobOffer.Profile.FirstName = pbJob.Profile.FirstName
+		jobOffer.Profile.LastName = pbJob.Profile.LastName
+	}
+	return jobOffer
 }
 
 func getObjectId(id string) primitive.ObjectID {

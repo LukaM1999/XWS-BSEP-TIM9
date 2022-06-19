@@ -33,6 +33,9 @@ public class CompanyController {
     private InterviewService interviewService;
 
     @Autowired
+    private JobOfferService jobOfferService;
+
+    @Autowired
     private RegisteredUserService registeredUserService;
 
     @Autowired
@@ -160,5 +163,29 @@ public class CompanyController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         Company updatedCompany = companyDTOMapper.updateWithNullAsNoChange(companyDTO, company);
         return ResponseEntity.ok(companyService.updateCompany(updatedCompany));
+    }
+
+    @PostMapping("/jobOffer")
+    @PreAuthorize("hasAuthority('COMPANY_OWNER')")
+    public ResponseEntity<JobOffer> addJobOffer(@RequestBody JobOffer jobOffer) {
+        JobOffer createdJobOffer = jobOfferService.addJobOffer(jobOffer);
+        if(createdJobOffer == null)
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(createdJobOffer, HttpStatus.OK);
+    }
+
+    @GetMapping("/{companyName}/jobOffer")
+    public ResponseEntity<List<JobOffer>> getCompanyJobOffers(@PathVariable String companyName) {
+        List<JobOffer> jobOffers = jobOfferService.getCompanyJobOffers(companyName);
+        if(jobOffers.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(jobOffers, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{companyName}/jobOffer/{jobOfferId}")
+    @PreAuthorize("hasAuthority('COMPANY_OWNER')")
+    public ResponseEntity promoteJobOffer(@PathVariable String companyName, @PathVariable Long jobOfferId) {
+        jobOfferService.promoteJobOffer(jobOfferId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

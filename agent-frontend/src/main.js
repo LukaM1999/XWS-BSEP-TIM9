@@ -22,6 +22,7 @@ import Companies from "@/components/Companies";
 import Profile from "@/components/Profile";
 import OwnerCompanies from "@/components/OwnerCompanies";
 import Requests from "@/components/Requests";
+import JobOffers from "@/components/JobOffers";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -61,6 +62,7 @@ export const store = new Vuex.Store({
       state.user.city = user.city
       state.user.country = user.country
       state.user.phone = user.phone
+      state.user.dislinktUsername = user.dislinktUsername
       state.user.dislinktToken = user.dislinktToken
     }
 
@@ -107,6 +109,11 @@ const routes = [
         path: 'interviews',
         name: 'company-interviews',
         component: Interviews
+      },
+      {
+        path: 'job-offers',
+        name: 'company-job-offers',
+        component: JobOffers
       }
     ]
   },

@@ -243,6 +243,7 @@ func decodeConnections(cursor *mongo.Cursor) (connections []*domain.Connection, 
 }
 
 func (store *PostMongoDBStore) CreateJob(job *domain.JobOffer) (*domain.JobOffer, error) {
+	job.Id = primitive.NewObjectID()
 	result, err := store.jobs.InsertOne(context.TODO(), job)
 	if err != nil {
 		return nil, err

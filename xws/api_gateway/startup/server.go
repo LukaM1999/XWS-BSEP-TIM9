@@ -50,7 +50,10 @@ func cors(next http.Handler) http.Handler {
 			"user-agent": r.Header.Get("User-Agent"),
 		}).Info("CORS filter")
 
-		h.Set("Access-Control-Allow-Origin", "https://localhost:7777")
+		if r.Header.Get("Origin") != "" {
+			h.Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+		}
+		//h.Set("Access-Control-Allow-Origin", "https://localhost:7777")
 
 		if r.Method == http.MethodOptions {
 			h.Set("Access-Control-Allow-Methods", strings.Join(

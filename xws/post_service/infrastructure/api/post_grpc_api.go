@@ -175,7 +175,7 @@ func (handler *PostHandler) CreateJob(ctx context.Context, request *pb.CreateJob
 }
 
 func (handler *PostHandler) PromoteJob(ctx context.Context, request *pb.PromoteJobRequest) (*pb.PromoteJobResponse, error) {
-	job, err := handler.service.PromoteJob(mapPbToJob(request.JobOffer), request.Token)
+	job, err := handler.service.PromoteJob(mapPbToJob(request.JobOffer), request.Token, request.Username)
 	if err != nil {
 		log.Errorf("Cannot promote job: %v", err)
 		return nil, err

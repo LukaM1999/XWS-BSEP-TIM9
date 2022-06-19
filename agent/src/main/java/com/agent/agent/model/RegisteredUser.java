@@ -28,6 +28,10 @@ public class RegisteredUser implements UserDetails {
     @Column(name = "username")
     private String username;
     @Column
+    @Getter
+    @Setter
+    private String dislinktUsername;
+    @Column
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     @Column

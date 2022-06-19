@@ -43,5 +43,8 @@ public class ProfileDTO {
     private String phone;
     @Getter
     @Setter
+    private String dislinktUsername;
+    @Getter
+    @Setter
     private String dislinktToken;
 }

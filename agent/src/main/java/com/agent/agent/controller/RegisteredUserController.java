@@ -34,6 +34,7 @@ public class RegisteredUserController {
         if(user == null || !user.getUsername().equals(loggedIn.getUsername())){
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
+        user.setDislinktUsername(profileDTO.getDislinktUsername());
         user = profileDTOMapper.updateWithNullAsNoChange(profileDTO, user);
         return ResponseEntity.ok(registeredUserService.updateUser(user));
     }

@@ -3,7 +3,7 @@
     <vs-dialog v-model="showModal" ref="interview" width="600px">
       <template #header>
         <h4 class="not-margin">
-          <b>Add comment</b>
+          <b>Add interview</b>
         </h4>
       </template>
       <div class="con-form">

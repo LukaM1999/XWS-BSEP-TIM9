@@ -1,5 +1,5 @@
 <template>
-  <div style="padding: 6rem">
+  <div style="padding: 6rem;">
     <vs-dialog v-model="showModal" ref="comment" width="600px">
       <template #header>
         <h4 class="not-margin">

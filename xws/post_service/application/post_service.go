@@ -1,19 +1,22 @@
 package application
 
 import (
+	"context"
+	pbProfile "dislinkt/common/proto/profile_service"
 	"dislinkt/post_service/domain"
-	app "dislinkt/profile_service/application"
+	"errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type PostService struct {
-	store          domain.PostStore
-	profileService app.ProfileService
+	store         domain.PostStore
+	profileClient pbProfile.ProfileServiceClient
 }
 
-func NewPostService(store domain.PostStore) *PostService {
+func NewPostService(store domain.PostStore, profileClient pbProfile.ProfileServiceClient) *PostService {
 	return &PostService{
-		store: store,
+		store:         store,
+		profileClient: profileClient,
 	}
 }
 
@@ -57,10 +60,13 @@ func (service *PostService) CreateJob(job *domain.JobOffer) (*domain.JobOffer, e
 	return service.store.CreateJob(job)
 }
 
-func (service *PostService) PromoteJob(job *domain.JobOffer, token string) (*domain.JobOffer, error) {
-	_, err := service.profileService.GetByToken(token)
+func (service *PostService) PromoteJob(job *domain.JobOffer, token string, username string) (*domain.JobOffer, error) {
+	profile, err := service.profileClient.GetByToken(context.TODO(), &pbProfile.GetByTokenRequest{Token: token})
 	if err != nil {
 		return nil, err
+	}
+	if profile.Profile.Username != username {
+		return nil, errors.New("invalid username or token")
 	}
 	return service.store.CreateJob(job)
 }

@@ -144,7 +144,8 @@ message CreateJobResponse {
 
 message PromoteJobRequest {
   string token = 1;
-  JobOffer jobOffer = 2;
+  string username = 2;
+  JobOffer jobOffer = 3;
 }
 
 message PromoteJobResponse {

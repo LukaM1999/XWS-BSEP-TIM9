@@ -9,6 +9,8 @@ import (
 	"dislinkt/common/auth"
 	"dislinkt/common/loggers"
 	comment "dislinkt/common/proto/comment_service"
+	saga "dislinkt/common/saga/messaging"
+	"dislinkt/common/saga/messaging/nats"
 	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
@@ -50,6 +52,14 @@ func (server *Server) Start() {
 
 	jwtManager := auth.NewJWTManager("secretKey", 30*time.Minute)
 
+	commandSubscriber := server.initSubscriber(server.config.UpdateProfileCommandSubject, QueueGroup)
+	replyPublisher := server.initPublisher(server.config.UpdateProfileReplySubject)
+	server.initUpdateProfileHandler(commentService, replyPublisher, commandSubscriber)
+
+	commandSubscriber = server.initSubscriber(server.config.DeletePostCommandSubject, QueueGroup)
+	replyPublisher = server.initPublisher(server.config.DeletePostReplySubject)
+	server.initDeletePostHandler(commentService, replyPublisher, commandSubscriber)
+
 	commentHandler := server.initCommentHandler(commentService)
 
 	server.startGrpcServer(commentHandler, jwtManager)
@@ -78,8 +88,42 @@ func (server *Server) initCommentStore(client *mongo.Client) domain.CommentStore
 	return store
 }
 
+func (server *Server) initPublisher(subject string) saga.Publisher {
+	publisher, err := nats.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) saga.Subscriber {
+	subscriber, err := nats.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
+}
+
 func (server *Server) initCommentService(store domain.CommentStore) *application.CommentService {
 	return application.NewCommentService(store)
+}
+
+func (server *Server) initUpdateProfileHandler(service *application.CommentService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewUpdateProfileCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (server *Server) initDeletePostHandler(service *application.CommentService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewDeletePostCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (server *Server) initCommentHandler(service *application.CommentService) *api.CommentHandler {

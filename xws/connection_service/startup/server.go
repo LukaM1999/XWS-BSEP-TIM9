@@ -6,6 +6,8 @@ import (
 	"dislinkt/common/loggers"
 	connection "dislinkt/common/proto/connection_service"
 	pbPost "dislinkt/common/proto/post_service"
+	saga "dislinkt/common/saga/messaging"
+	"dislinkt/common/saga/messaging/nats"
 	"dislinkt/connection_service/application"
 	"dislinkt/connection_service/domain"
 	"dislinkt/connection_service/infrastructure/api"
@@ -54,6 +56,14 @@ func (server *Server) Start() {
 
 	connectionService := server.initConnectionService(connectionStore)
 
+	commandSubscriber := server.initSubscriber(server.config.CreateProfileCommandSubject, QueueGroup)
+	replyPublisher := server.initPublisher(server.config.CreateProfileReplySubject)
+	server.initCreateProfileHandler(connectionService, replyPublisher, commandSubscriber)
+
+	commandSubscriber = server.initSubscriber(server.config.UpdateProfileCommandSubject, QueueGroup)
+	replyPublisher = server.initPublisher(server.config.UpdateProfileReplySubject)
+	server.initUpdateProfileHandler(connectionService, replyPublisher, commandSubscriber)
+
 	postClient, err := client.NewPostClient(fmt.Sprintf("%s:%s", server.config.PostHost, server.config.PostPort))
 	if err != nil {
 		log.Fatal(err)
@@ -92,8 +102,42 @@ func (server *Server) initConnectionStore(client *mongo.Client) domain.Connectio
 	return store
 }
 
+func (server *Server) initPublisher(subject string) saga.Publisher {
+	publisher, err := nats.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) saga.Subscriber {
+	subscriber, err := nats.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
+}
+
 func (server *Server) initConnectionService(store domain.ConnectionStore) *application.ConnectionService {
 	return application.NewConnectionService(store)
+}
+
+func (server *Server) initCreateProfileHandler(service *application.ConnectionService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewCreateProfileCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (server *Server) initUpdateProfileHandler(service *application.ConnectionService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewUpdateProfileCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (server *Server) initConnectionHandler(service *application.ConnectionService, postClient pbPost.PostServiceClient) *api.ConnectionHandler {

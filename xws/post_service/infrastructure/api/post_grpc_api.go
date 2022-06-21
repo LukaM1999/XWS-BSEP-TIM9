@@ -107,8 +107,6 @@ func (handler *PostHandler) Delete(ctx context.Context, request *pb.DeleteReques
 		log.WithField("postId", request.Id).Errorf("Cannot delete post: %v", err)
 		return nil, err
 	}
-	handler.commentClient.DeletePostComments(context.TODO(), &pbComment.DeletePostCommentsRequest{PostId: request.Id})
-	handler.reactionClient.DeletePostReactions(context.TODO(), &pbReaction.DeletePostReactionsRequest{PostId: request.Id})
 	log.WithField("postId", request.Id).Infof("Post deleted")
 	return &pb.DeleteResponse{}, nil
 }

@@ -120,6 +120,7 @@ message Profile {
   repeated WorkExperience workExperience = 12;
   repeated string skills = 13;
   repeated string interests = 14;
+  string agentToken = 15;
 }
 
 message Education{

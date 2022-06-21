@@ -9,13 +9,15 @@ import (
 var log = loggers.NewReactionLogger()
 
 type Config struct {
-	Port           string
-	ReactionDBHost string
-	ReactionDBPort string
-	NatsHost       string
-	NatsPort       string
-	NatsUser       string
-	NatsPass       string
+	Port                     string
+	ReactionDBHost           string
+	ReactionDBPort           string
+	NatsHost                 string
+	NatsPort                 string
+	NatsUser                 string
+	NatsPass                 string
+	DeletePostCommandSubject string
+	DeletePostReplySubject   string
 }
 
 func NewConfig() *Config {
@@ -24,13 +26,15 @@ func NewConfig() *Config {
 		return nil
 	}
 	return &Config{
-		Port:           os.Getenv("REACTION_SERVICE_PORT"),
-		ReactionDBHost: os.Getenv("REACTION_DB_HOST"),
-		ReactionDBPort: os.Getenv("REACTION_DB_PORT"),
-		NatsHost:       os.Getenv("NATS_HOST"),
-		NatsPort:       os.Getenv("NATS_PORT"),
-		NatsUser:       os.Getenv("NATS_USER"),
-		NatsPass:       os.Getenv("NATS_PASS"),
+		Port:                     os.Getenv("REACTION_SERVICE_PORT"),
+		ReactionDBHost:           os.Getenv("REACTION_DB_HOST"),
+		ReactionDBPort:           os.Getenv("REACTION_DB_PORT"),
+		NatsHost:                 os.Getenv("NATS_HOST"),
+		NatsPort:                 os.Getenv("NATS_PORT"),
+		NatsUser:                 os.Getenv("NATS_USER"),
+		NatsPass:                 os.Getenv("NATS_PASS"),
+		DeletePostCommandSubject: os.Getenv("DELETE_POST_COMMAND_SUBJECT"),
+		DeletePostReplySubject:   os.Getenv("DELETE_POST_REPLY_SUBJECT"),
 	}
 }
 

@@ -83,54 +83,12 @@ func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterReq
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 	mappedUser.Password = HashPassword(mappedUser.Password)
-	registeredUser, err := handler.service.Register(mappedUser)
+	registeredUser, err := handler.service.Register(mappedUser, request.FirstName, request.LastName, request.Email)
 	if err != nil {
 		log.Errorf("RUF: %v", err)
 		return nil, err
 	}
-	logger := log.WithFields(logrus.Fields{
-		"userId": registeredUser.Id.Hex(),
-	})
-
 	registeredUser.Password = ""
-	_, err = handler.profileClient.Create(ctx, &pbProfile.CreateRequest{
-		Profile: &pbProfile.Profile{
-			Id:        registeredUser.Id.Hex(),
-			Username:  registeredUser.Username,
-			FirstName: request.FirstName,
-			LastName:  request.LastName,
-			Email:     request.Email,
-		},
-	})
-	if err != nil {
-		logger.Errorf("CPRF: %v", err)
-		handler.service.Delete(registeredUser.Id)
-		return nil, err
-	}
-	token, err := handler.service.GenerateVerificationToken()
-	if err != nil {
-		logger.Errorf("CVTF: %v", err)
-		return nil, err
-	}
-	userVerification, err := handler.service.CreateUserVerification(&securityDomain.UserVerification{
-		Id:          primitive.NewObjectID(),
-		Username:    registeredUser.Username,
-		Token:       token,
-		TimeCreated: time.Now(),
-		IsVerified:  false,
-	})
-	if err != nil {
-		logger.Errorf("CUVF: %v", err)
-		return nil, err
-	}
-	err = handler.service.SendVerificationEmail(request.GetUser().GetUsername(), request.GetEmail(), userVerification.Token)
-	if err != nil {
-		logger.Errorf("SVEF: %v", err)
-		handler.service.Delete(registeredUser.Id)
-		handler.profileClient.Delete(ctx, &pbProfile.DeleteRequest{Id: registeredUser.Id.Hex()})
-		return nil, err
-	}
-	logger.Info("RUS")
 	return &pb.RegisterResponse{
 		User: &pb.User{
 			Id:       registeredUser.Id.Hex(),
@@ -303,7 +261,7 @@ func (handler *UserHandler) VerifyUser(ctx context.Context, req *pb.VerifyUserRe
 		log.WithField("token", req.GetToken()).Errorf("IUVF")
 		return nil, err
 	}
-	t, err := template.ParseFiles("./application/verified.html")
+	t, err := template.ParseFiles("./templates/verified.html")
 	if err != nil {
 		log.Errorf("PTF")
 		fmt.Println(err)

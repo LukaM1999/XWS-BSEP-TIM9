@@ -4,6 +4,8 @@ import (
 	"dislinkt/common/auth"
 	"dislinkt/common/loggers"
 	reaction "dislinkt/common/proto/reaction_service"
+	saga "dislinkt/common/saga/messaging"
+	"dislinkt/common/saga/messaging/nats"
 	"dislinkt/reaction_service/application"
 	"dislinkt/reaction_service/domain"
 	"dislinkt/reaction_service/infrastructure/api"
@@ -49,6 +51,10 @@ func (server *Server) Start() {
 
 	reactionService := server.initReactionService(reactionStore)
 
+	commandSubscriber := server.initSubscriber(server.config.DeletePostCommandSubject, QueueGroup)
+	replyPublisher := server.initPublisher(server.config.DeletePostReplySubject)
+	server.initDeletePostHandler(reactionService, replyPublisher, commandSubscriber)
+
 	reactionHandler := server.initReactionHandler(reactionService)
 
 	server.startGrpcServer(reactionHandler, jwtManager)
@@ -77,8 +83,35 @@ func (server *Server) initReactionStore(client *mongo.Client) domain.ReactionSto
 	return store
 }
 
+func (server *Server) initPublisher(subject string) saga.Publisher {
+	publisher, err := nats.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) saga.Subscriber {
+	subscriber, err := nats.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
+}
+
 func (server *Server) initReactionService(store domain.ReactionStore) *application.ReactionService {
 	return application.NewReactionService(store)
+}
+
+func (server *Server) initDeletePostHandler(service *application.ReactionService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewDeletePostCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (server *Server) initReactionHandler(service *application.ReactionService) *api.ReactionHandler {

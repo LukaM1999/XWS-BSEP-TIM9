@@ -105,6 +105,38 @@ func (store *ConnectionMongoDBStore) Update(id string) (*domain.Connection, erro
 	return connection, nil
 }
 
+func (store *ConnectionMongoDBStore) UpdatePrivacy(id primitive.ObjectID) error {
+	filter := bson.M{"userId": id}
+	privacy, err := store.filterOnePrivacy(filter)
+	if err != nil {
+		return err
+	}
+	privacy.IsPrivate = !privacy.IsPrivate
+	_, err = store.profilesPrivacy.UpdateOne(context.TODO(), filter, bson.D{{"$set", bson.M{"isPrivate": privacy.IsPrivate}}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (store *ConnectionMongoDBStore) CreateProfilePrivacy(privacy *domain.ProfilePrivacy) (*domain.ProfilePrivacy, error) {
+	result, err := store.profilesPrivacy.InsertOne(context.TODO(), privacy)
+	if err != nil {
+		return nil, err
+	}
+	privacy.Id = result.InsertedID.(primitive.ObjectID)
+	return privacy, nil
+}
+
+func (store *ConnectionMongoDBStore) DeleteProfilePrivacy(id primitive.ObjectID) error {
+	filter := bson.M{"userId": id}
+	_, err := store.profilesPrivacy.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (store *ConnectionMongoDBStore) filter(filter interface{}) ([]*domain.Connection, error) {
 	cursor, err := store.connections.Find(context.TODO(), filter)
 	defer func(cursor *mongo.Cursor, ctx context.Context) {

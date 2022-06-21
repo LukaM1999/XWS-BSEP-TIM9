@@ -11,12 +11,14 @@ import (
 type PostService struct {
 	store         domain.PostStore
 	profileClient pbProfile.ProfileServiceClient
+	orchestrator  *DeletePostOrchestrator
 }
 
-func NewPostService(store domain.PostStore, profileClient pbProfile.ProfileServiceClient) *PostService {
+func NewPostService(store domain.PostStore, profileClient pbProfile.ProfileServiceClient, orchestrator *DeletePostOrchestrator) *PostService {
 	return &PostService{
 		store:         store,
 		profileClient: profileClient,
+		orchestrator:  orchestrator,
 	}
 }
 
@@ -45,7 +47,15 @@ func (service *PostService) UpdateProfile(id primitive.ObjectID, profile *domain
 }
 
 func (service *PostService) Delete(id string) error {
-	return service.store.Delete(id)
+	err := service.store.Delete(id)
+	if err != nil {
+		return err
+	}
+	err = service.orchestrator.Start(id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (service *PostService) CreateConnection(connection *domain.Connection) error {

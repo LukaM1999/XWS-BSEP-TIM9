@@ -12,15 +12,18 @@ import (
 	"net/smtp"
 	"strings"
 	"text/template"
+	"time"
 )
 
 type SecurityService struct {
-	store domain.UserStore
+	store        domain.UserStore
+	orchestrator *CreateProfileOrchestrator
 }
 
-func NewSecurityService(store domain.UserStore) *SecurityService {
+func NewSecurityService(store domain.UserStore, orchestrator *CreateProfileOrchestrator) *SecurityService {
 	return &SecurityService{
-		store: store,
+		store:        store,
+		orchestrator: orchestrator,
 	}
 }
 
@@ -32,8 +35,35 @@ func (service *SecurityService) GetAll() ([]*auth.User, error) {
 	return service.store.GetAll()
 }
 
-func (service *SecurityService) Register(user *auth.User) (*auth.User, error) {
-	return service.store.Register(user)
+func (service *SecurityService) Register(user *auth.User, firstName string, lastName string, email string) (*auth.User, error) {
+	registeredUser, err := service.store.Register(user)
+	if err != nil {
+		return nil, err
+	}
+	profile := &auth.Profile{
+		Id:             registeredUser.Id,
+		Username:       registeredUser.Username,
+		FirstName:      firstName,
+		LastName:       lastName,
+		FullName:       firstName + " " + lastName,
+		DateOfBirth:    time.Time{},
+		PhoneNumber:    "",
+		Email:          email,
+		Gender:         "",
+		IsPrivate:      false,
+		Biography:      "",
+		Education:      nil,
+		WorkExperience: nil,
+		Skills:         nil,
+		Interests:      nil,
+		AgentToken:     "",
+	}
+	err = service.orchestrator.Start(profile)
+	if err != nil {
+		service.store.Delete(registeredUser.Id)
+		return nil, err
+	}
+	return registeredUser, nil
 }
 
 func (service *SecurityService) CreateUserVerification(userVerification *domain.UserVerification) (*domain.UserVerification, error) {
@@ -93,7 +123,7 @@ func (service *SecurityService) SendVerificationEmail(username string, email str
 	// Authentication.
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	t, err := template.ParseFiles("./application/template.html")
+	t, err := template.ParseFiles("./templates/template.html")
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -167,7 +197,7 @@ func (service *SecurityService) SendRecoverPasswordEmail(email string, username 
 	// Authentication.
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	t, err := template.ParseFiles("./application/recoverPassword.html")
+	t, err := template.ParseFiles("./templates/recoverPassword.html")
 	if err != nil {
 		fmt.Println(err)
 		return err

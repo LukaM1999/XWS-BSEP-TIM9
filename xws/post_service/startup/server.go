@@ -8,6 +8,8 @@ import (
 	post "dislinkt/common/proto/post_service"
 	pbProfile "dislinkt/common/proto/profile_service"
 	pbReaction "dislinkt/common/proto/reaction_service"
+	saga "dislinkt/common/saga/messaging"
+	"dislinkt/common/saga/messaging/nats"
 	"dislinkt/post_service/application"
 	"dislinkt/post_service/domain"
 	"dislinkt/post_service/infrastructure/api"
@@ -57,7 +59,19 @@ func (server *Server) Start() {
 		log.Fatal(err)
 	}
 
-	postService := server.initPostService(postStore, profileClient)
+	commandPublisher := server.initPublisher(server.config.DeletePostCommandSubject)
+	replySubscriber := server.initSubscriber(server.config.DeletePostReplySubject, QueueGroup)
+	deletePostOrchestrator := server.initDeletePostOrchestrator(commandPublisher, replySubscriber)
+
+	postService := server.initPostService(postStore, profileClient, deletePostOrchestrator)
+
+	commandSubscriber := server.initSubscriber(server.config.DeletePostCommandSubject, QueueGroup)
+	replyPublisher := server.initPublisher(server.config.DeletePostReplySubject)
+	server.initDeletePostHandler(postService, replyPublisher, commandSubscriber)
+
+	commandSubscriber = server.initSubscriber(server.config.UpdateProfileCommandSubject, QueueGroup)
+	replyPublisher = server.initPublisher(server.config.UpdateProfileReplySubject)
+	server.initUpdateProfileHandler(postService, replyPublisher, commandSubscriber)
 
 	commentClient, err := client.NewCommentClient(fmt.Sprintf("%s:%s", server.config.CommentHost, server.config.CommentPort))
 	if err != nil {
@@ -108,8 +122,50 @@ func (server *Server) initPostStore(client *mongo.Client) domain.PostStore {
 	return store
 }
 
-func (server *Server) initPostService(store domain.PostStore, profileClient pbProfile.ProfileServiceClient) *application.PostService {
-	return application.NewPostService(store, profileClient)
+func (server *Server) initPublisher(subject string) saga.Publisher {
+	publisher, err := nats.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) saga.Subscriber {
+	subscriber, err := nats.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
+}
+
+func (server *Server) initDeletePostOrchestrator(publisher saga.Publisher, subscriber saga.Subscriber) *application.DeletePostOrchestrator {
+	orchestrator, err := application.NewDeletePostOrchestrator(publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return orchestrator
+}
+
+func (server *Server) initPostService(store domain.PostStore, profileClient pbProfile.ProfileServiceClient, orchestrator *application.DeletePostOrchestrator) *application.PostService {
+	return application.NewPostService(store, profileClient, orchestrator)
+}
+
+func (server *Server) initDeletePostHandler(service *application.PostService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewDeletePostCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (server *Server) initUpdateProfileHandler(service *application.PostService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewUpdateProfileCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (server *Server) initPostHandler(service *application.PostService, commentClient pbComment.CommentServiceClient,

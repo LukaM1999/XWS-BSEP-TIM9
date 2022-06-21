@@ -85,52 +85,13 @@ func (handler ProfileHandler) Create(ctx context.Context, request *pb.CreateRequ
 }
 
 func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
-	oldProfile, err := handler.service.Get(request.Profile.Id)
-	if err != nil {
-		log.WithField("profileId", request.Profile.Id).Errorf("Cannot get profile: %v", err)
-		return nil, err
-	}
-	profileId := request.Id
 	profile := mapPbToProfile(request.Profile)
-	err = handler.service.Update(profileId, profile)
+	err := handler.service.Update(request.Id, profile)
 	if err != nil {
-		log.WithField("profileId", request.Profile.Id).Errorf("Cannot update profile: %v", err)
+		log.Errorf("Cannot update profile: %v", err)
 		return nil, err
 	}
-	if oldProfile.FirstName != profile.FirstName || oldProfile.LastName != profile.LastName {
-		_, err = handler.postClient.UpdateProfile(context.Background(), &pbPost.UpdateProfileRequest{
-			Profile: &pbPost.Profile{
-				Id:        request.Profile.Id,
-				FirstName: profile.FirstName,
-				LastName:  profile.LastName,
-			},
-		})
-		if err != nil {
-			log.WithField("profileId", request.Profile.Id).Errorf("Cannot update profile in post service: %v", err)
-			handler.service.Update(profileId, oldProfile)
-			return nil, err
-		}
-		_, err = handler.commentClient.UpdateCommentCreator(context.Background(), &pbComment.UpdateCommentCreatorRequest{
-			Id: profileId,
-			CommentCreator: &pbComment.CommentCreator{
-				Id:        profileId,
-				FirstName: profile.FirstName,
-				LastName:  profile.LastName,
-			},
-		})
-		if err != nil {
-			log.WithField("profileId", profileId).Errorf("Cannot update profile in comment service: %v", err)
-			handler.service.Update(profileId, oldProfile)
-			return nil, err
-		}
-	}
-	if oldProfile.Username != profile.Username {
-		handler.securityClient.Update(context.Background(), &pbSecurity.UpdateRequest{
-			Id:       profileId,
-			Username: profile.Username,
-		})
-	}
-	log.WithField("profileId", profileId).Infof("Profile updated")
+	log.WithField("profileId", profile.Id.Hex()).Infof("Profile updated")
 	return &pb.UpdateResponse{
 		Profile: mapProfileToPb(profile),
 	}, nil

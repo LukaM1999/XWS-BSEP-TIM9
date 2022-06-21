@@ -8,6 +8,8 @@ import (
 	pbPost "dislinkt/common/proto/post_service"
 	profile "dislinkt/common/proto/profile_service"
 	pbSecurity "dislinkt/common/proto/security_service"
+	saga "dislinkt/common/saga/messaging"
+	"dislinkt/common/saga/messaging/nats"
 	"dislinkt/profile_service/application"
 	"dislinkt/profile_service/domain"
 	"dislinkt/profile_service/infrastructure/api"
@@ -55,7 +57,19 @@ func (server *Server) Start() {
 
 	jwtManager := auth.NewJWTManager("secretKey", 30*time.Minute)
 
-	profileService := server.initProfileService(profileStore)
+	commandPublisher := server.initPublisher(server.config.UpdateProfileCommandSubject)
+	replySubscriber := server.initSubscriber(server.config.UpdateProfileReplySubject, QueueGroup)
+	updateProfileOrchestrator := server.initUpdateProfileOrchestrator(commandPublisher, replySubscriber)
+
+	profileService := server.initProfileService(profileStore, updateProfileOrchestrator)
+
+	commandSubscriber := server.initSubscriber(server.config.UpdateProfileCommandSubject, QueueGroup)
+	replyPublisher := server.initPublisher(server.config.UpdateProfileReplySubject)
+	server.initUpdateProfileHandler(profileService, replyPublisher, commandSubscriber)
+
+	commandSubscriber = server.initSubscriber(server.config.CreateProfileCommandSubject, QueueGroup)
+	replyPublisher = server.initPublisher(server.config.CreateProfileReplySubject)
+	server.initCreateProfileHandler(profileService, replyPublisher, commandSubscriber)
 
 	postClient, err := client.NewPostClient(fmt.Sprintf("%s:%s", server.config.PostHost, server.config.PostPort))
 	if err != nil {
@@ -100,8 +114,50 @@ func (server *Server) initProfileStore(client *mongo.Client) domain.ProfileStore
 	return store
 }
 
-func (server *Server) initProfileService(store domain.ProfileStore) *application.ProfileService {
-	return application.NewProfileService(store)
+func (server *Server) initPublisher(subject string) saga.Publisher {
+	publisher, err := nats.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) saga.Subscriber {
+	subscriber, err := nats.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
+}
+
+func (server *Server) initUpdateProfileOrchestrator(publisher saga.Publisher, subscriber saga.Subscriber) *application.UpdateProfileOrchestrator {
+	orchestrator, err := application.NewUpdateProfileOrchestrator(publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return orchestrator
+}
+
+func (server *Server) initProfileService(store domain.ProfileStore, orchestrator *application.UpdateProfileOrchestrator) *application.ProfileService {
+	return application.NewProfileService(store, orchestrator)
+}
+
+func (server *Server) initCreateProfileHandler(service *application.ProfileService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewCreateProfileCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (server *Server) initUpdateProfileHandler(service *application.ProfileService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewUpdateProfileCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (server *Server) initProfileHandler(service *application.ProfileService, postClient pbPost.PostServiceClient,

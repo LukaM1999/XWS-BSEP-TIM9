@@ -9,19 +9,23 @@ import (
 var log = loggers.NewProfileLogger()
 
 type Config struct {
-	Port          string
-	ProfileDBHost string
-	ProfileDBPort string
-	PostHost      string
-	PostPort      string
-	CommentHost   string
-	CommentPort   string
-	SecurityHost  string
-	SecurityPort  string
-	NatsHost      string
-	NatsPort      string
-	NatsUser      string
-	NatsPass      string
+	Port                        string
+	ProfileDBHost               string
+	ProfileDBPort               string
+	PostHost                    string
+	PostPort                    string
+	CommentHost                 string
+	CommentPort                 string
+	SecurityHost                string
+	SecurityPort                string
+	NatsHost                    string
+	NatsPort                    string
+	NatsUser                    string
+	NatsPass                    string
+	CreateProfileCommandSubject string
+	CreateProfileReplySubject   string
+	UpdateProfileCommandSubject string
+	UpdateProfileReplySubject   string
 }
 
 func NewConfig() *Config {
@@ -30,19 +34,23 @@ func NewConfig() *Config {
 		return nil
 	}
 	return &Config{
-		Port:          os.Getenv("PROFILE_SERVICE_PORT"),
-		ProfileDBHost: os.Getenv("PROFILE_DB_HOST"),
-		ProfileDBPort: os.Getenv("PROFILE_DB_PORT"),
-		PostHost:      os.Getenv("POST_SERVICE_HOST"),
-		PostPort:      os.Getenv("POST_SERVICE_PORT"),
-		CommentHost:   os.Getenv("COMMENT_SERVICE_HOST"),
-		CommentPort:   os.Getenv("COMMENT_SERVICE_PORT"),
-		SecurityHost:  os.Getenv("SECURITY_SERVICE_HOST"),
-		SecurityPort:  os.Getenv("SECURITY_SERVICE_PORT"),
-		NatsHost:      os.Getenv("NATS_HOST"),
-		NatsPort:      os.Getenv("NATS_PORT"),
-		NatsUser:      os.Getenv("NATS_USER"),
-		NatsPass:      os.Getenv("NATS_PASS"),
+		Port:                        os.Getenv("PROFILE_SERVICE_PORT"),
+		ProfileDBHost:               os.Getenv("PROFILE_DB_HOST"),
+		ProfileDBPort:               os.Getenv("PROFILE_DB_PORT"),
+		PostHost:                    os.Getenv("POST_SERVICE_HOST"),
+		PostPort:                    os.Getenv("POST_SERVICE_PORT"),
+		CommentHost:                 os.Getenv("COMMENT_SERVICE_HOST"),
+		CommentPort:                 os.Getenv("COMMENT_SERVICE_PORT"),
+		SecurityHost:                os.Getenv("SECURITY_SERVICE_HOST"),
+		SecurityPort:                os.Getenv("SECURITY_SERVICE_PORT"),
+		NatsHost:                    os.Getenv("NATS_HOST"),
+		NatsPort:                    os.Getenv("NATS_PORT"),
+		NatsUser:                    os.Getenv("NATS_USER"),
+		NatsPass:                    os.Getenv("NATS_PASS"),
+		CreateProfileCommandSubject: os.Getenv("CREATE_PROFILE_COMMAND_SUBJECT"),
+		CreateProfileReplySubject:   os.Getenv("CREATE_PROFILE_REPLY_SUBJECT"),
+		UpdateProfileCommandSubject: os.Getenv("UPDATE_PROFILE_COMMAND_SUBJECT"),
+		UpdateProfileReplySubject:   os.Getenv("UPDATE_PROFILE_REPLY_SUBJECT"),
 	}
 }
 

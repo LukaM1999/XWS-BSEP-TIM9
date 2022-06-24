@@ -16,6 +16,10 @@ import PasswordReset from "@/components/PasswordReset";
 import Post from "@/components/Post";
 import ConnectionsPosts from "@/components/ConnectionsPosts";
 import Messages from "@/components/Messages";
+import Profile from "@/components/Profile";
+import { BootstrapVue, IconsPlugin } from 'bootstrap-vue';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -42,6 +46,9 @@ Vue.use(Vuesax, {
 })
 
 Vue.use(Vuelidate)
+
+Vue.use(BootstrapVue)
+Vue.use(IconsPlugin)
 
 export const store = new Vuex.Store({
   plugins: [createPersistedState()],
@@ -99,6 +106,11 @@ const routes = [
         path: 'messages',
         name: 'messages',
         component: Messages
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: Profile
       }
     ]
   },

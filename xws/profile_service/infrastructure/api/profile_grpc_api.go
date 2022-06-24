@@ -9,10 +9,13 @@ import (
 	pbSecurity "dislinkt/common/proto/security_service"
 	"dislinkt/profile_service/application"
 	"dislinkt/profile_service/domain"
+	"strings"
+	"time"
+
 	"github.com/go-playground/validator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strings"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var log = loggers.NewProfileLogger()
@@ -39,7 +42,7 @@ func NewProfileHandler(service *application.ProfileService, postClient pbPost.Po
 
 func (handler *ProfileHandler) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
 	profileId := request.Id
-	Profile, err := handler.service.Get(profileId)
+	Profile, err := handler.service.Get(*profileId)
 	if err != nil {
 		log.WithField("profileId", profileId).Errorf("Cannot get profile: %v", err)
 		return nil, err
@@ -52,7 +55,7 @@ func (handler *ProfileHandler) Get(ctx context.Context, request *pb.GetRequest) 
 }
 
 func (handler *ProfileHandler) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	Profiles, err := handler.service.GetAll(strings.ReplaceAll(request.Search, " ", ""))
+	Profiles, err := handler.service.GetAll(strings.ReplaceAll(*request.Search, " ", ""))
 	if err != nil {
 		log.Errorf("Cannot get all profiles: %v", err)
 		return nil, err
@@ -68,6 +71,17 @@ func (handler *ProfileHandler) GetAll(ctx context.Context, request *pb.GetAllReq
 }
 
 func (handler ProfileHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
+	empty := ""
+	emptyBool := false
+	value := &empty
+	valueBool := &emptyBool
+	request.Profile.PhoneNumber = value
+	request.Profile.DateOfBirth = timestamppb.New(time.Now())
+	request.Profile.Gender = value
+	request.Profile.IsPrivate = valueBool
+	request.Profile.Biography = value
+	request.Profile.AgentToken = value
+
 	profile := mapPbToProfile(request.Profile)
 	if err := handler.validate.Struct(profile); err != nil {
 		log.Errorf("Validation failed: %v", err)
@@ -98,7 +112,7 @@ func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequ
 }
 
 func (handler *ProfileHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
-	err := handler.service.Delete(request.Id)
+	err := handler.service.Delete(*request.Id)
 	if err != nil {
 		log.Errorf("Cannot delete profile: %v", err)
 		return nil, err
@@ -111,14 +125,14 @@ func (handler *ProfileHandler) GenerateToken(ctx context.Context, request *pb.Ge
 	if ctx.Value("userId") != request.Id {
 		return nil, status.Errorf(codes.Unauthenticated, "user not authenticated")
 	}
-	token, err := handler.service.GenerateToken(request.Id)
+	token, err := handler.service.GenerateToken(*request.Id)
 	if err != nil {
 		log.Errorf("Cannot generate token: %v", err)
 		return nil, err
 	}
 	log.Info("Token generated")
 	return &pb.GenerateTokenResponse{
-		Token: token,
+		Token: &token,
 	}, nil
 }
 

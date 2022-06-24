@@ -29,7 +29,7 @@
             <vs-navbar-item :active="active === 'messages'" id="messages" to="/user/messages">
               Messages
             </vs-navbar-item>
-            <vs-navbar-item :active="active == 'license'" id="license">
+            <vs-navbar-item :active="active == 'license'" id="license" to="/user/profile">
               Profile
             </vs-navbar-item>
           </div>

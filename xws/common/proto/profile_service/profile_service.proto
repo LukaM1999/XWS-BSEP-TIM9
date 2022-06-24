@@ -1,4 +1,4 @@
-syntax = "proto3";
+syntax = "proto2";
 
 option go_package = "dislinkt/common/profile";
 
@@ -50,15 +50,15 @@ service ProfileService{
 }
 
 message GetRequest {
-  string id = 1;
+  required string id = 1;
 }
 
 message GetResponse {
-  Profile profile = 1;
+  required Profile profile = 1;
 }
 
 message GetAllRequest {
-  string search = 1;
+  required string search = 1;
 }
 
 message GetAllResponse {
@@ -66,35 +66,35 @@ message GetAllResponse {
 }
 
 message CreateRequest {
-  Profile profile = 1;
+  required Profile profile = 1;
 }
 
 message CreateResponse {
-  Profile profile = 1;
+  required Profile profile = 1;
 }
 
 message UpdateRequest {
-  string id = 1;
-  Profile profile = 2;
+  required string id = 1;
+  required Profile profile = 2;
 }
 
 message UpdateResponse {
-  Profile profile = 1;
+  required Profile profile = 1;
 }
 
 message DeleteRequest {
-  string id = 1;
+  required string id = 1;
 }
 
 message DeleteResponse {
 }
 
 message GenerateTokenRequest {
-  string id = 1;
+  required string id = 1;
 }
 
 message GenerateTokenResponse {
-  string token = 1;
+  required string token = 1;
 }
 
 message GetByTokenRequest {
@@ -106,36 +106,36 @@ message GetByTokenResponse {
 }
 
 message Profile {
-  string id = 1;
-  string username = 2;
-  string firstName = 3;
-  string lastName = 4;
-  google.protobuf.Timestamp dateOfBirth = 5;
-  string phoneNumber = 6;
-  string email = 7;
-  string gender = 8;
-  bool isPrivate = 9;
-  string biography = 10;
+  required string id = 1 [default = ""];
+  optional string username = 2 [default = ""];
+  optional string firstName = 3 [default = ""];
+  optional string lastName = 4 [default = ""];
+  optional google.protobuf.Timestamp dateOfBirth = 5;
+  optional string phoneNumber = 6 [default = ""];
+  optional string email = 7 [default = ""];
+  optional string gender = 8 [default = ""];
+  optional bool isPrivate = 9 [default = false];
+  optional string biography = 10 [default = ""];
   repeated Education education = 11;
   repeated WorkExperience workExperience = 12;
   repeated string skills = 13;
   repeated string interests = 14;
-  string agentToken = 15;
+  optional string agentToken = 15 [default = ""];
 }
 
 message Education{
-  string school = 1;
-  string degree = 2;
-  string fieldOfStudy = 3;
-  google.protobuf.Timestamp startDate = 4;
-  google.protobuf.Timestamp  endDate = 5;
-  string grade = 6;
-  string  description = 7;
+  optional string school = 1 [default = ""];
+  optional string degree = 2 [default = ""];
+  optional string fieldOfStudy = 3 [default = ""];
+  required google.protobuf.Timestamp startDate = 4;
+  required google.protobuf.Timestamp  endDate = 5;
+  optional string grade = 6 [default = ""];
+  optional string  description = 7 [default = ""];
 }
 
 message WorkExperience{
-  string title = 1;
-  string company = 2;
+  optional string title = 1 [default = ""];
+  optional string company = 2 [default = ""];
   enum EmploymentType {
     FULL_TIME = 0;
     PART_TIME = 1;
@@ -146,12 +146,12 @@ message WorkExperience{
     APPRENTICESHIP = 6;
     SEASONAL = 7;
   };
-  EmploymentType employmentType = 3;
-  string location = 4;
-  google.protobuf.Timestamp startDate = 5;
-  google.protobuf.Timestamp endDate = 6;
+  required EmploymentType employmentType = 3 [default = FULL_TIME];
+  optional string location = 4 [default = ""];
+  required google.protobuf.Timestamp startDate = 5;
+  required google.protobuf.Timestamp endDate = 6;
 }
 
 message Search {
-  string search = 1;
+  required string search = 1;
 }

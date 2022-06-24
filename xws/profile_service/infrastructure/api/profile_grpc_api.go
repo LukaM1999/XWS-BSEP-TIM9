@@ -100,7 +100,7 @@ func (handler ProfileHandler) Create(ctx context.Context, request *pb.CreateRequ
 
 func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	profile := mapPbToProfile(request.Profile)
-	err := handler.service.Update(request.Id, profile)
+	err := handler.service.Update(*request.Id, profile)
 	if err != nil {
 		log.Errorf("Cannot update profile: %v", err)
 		return nil, err
@@ -137,7 +137,7 @@ func (handler *ProfileHandler) GenerateToken(ctx context.Context, request *pb.Ge
 }
 
 func (handler *ProfileHandler) GetByToken(ctx context.Context, request *pb.GetByTokenRequest) (*pb.GetByTokenResponse, error) {
-	Profile, err := handler.service.GetByToken(request.Token)
+	Profile, err := handler.service.GetByToken(*request.Token)
 	if err != nil {
 		log.WithField("token", request.Token).Errorf("Cannot get profile: %v", err)
 		return nil, err

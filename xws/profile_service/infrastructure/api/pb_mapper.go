@@ -27,8 +27,8 @@ func mapProfileToPb(profile *domain.Profile) *pb.Profile {
 		WorkExperience: make([]*pb.WorkExperience, 0),
 		Skills:         make([]string, 0),
 		Interests:      make([]string, 0),
-		IsPrivate:      profile.IsPrivate,
-		AgentToken:     profile.AgentToken,
+		IsPrivate:      &profile.IsPrivate,
+		AgentToken:     &profile.AgentToken,
 	}
 
 	for _, education := range profile.Education {
@@ -83,8 +83,8 @@ func mapPbToProfile(pbProfile *pb.Profile) *domain.Profile {
 		WorkExperience: make([]domain.WorkExperience, 0),
 		Skills:         make([]string, 0),
 		Interests:      make([]string, 0),
-		IsPrivate:      pbProfile.IsPrivate,
-		AgentToken:     pbProfile.AgentToken,
+		IsPrivate:      *pbProfile.IsPrivate,
+		AgentToken:     *pbProfile.AgentToken,
 	}
 	for _, education := range pbProfile.Education {
 		education := &domain.Education{

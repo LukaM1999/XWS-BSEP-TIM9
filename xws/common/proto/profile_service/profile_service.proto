@@ -98,11 +98,11 @@ message GenerateTokenResponse {
 }
 
 message GetByTokenRequest {
-  string token = 1;
+  required string token = 1;
 }
 
 message GetByTokenResponse {
-  Profile profile = 1;
+  required Profile profile = 1;
 }
 
 message Profile {

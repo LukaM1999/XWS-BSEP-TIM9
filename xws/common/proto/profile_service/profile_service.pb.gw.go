@@ -341,7 +341,7 @@ func request_ProfileService_GetByToken_0(ctx context.Context, marshaler runtime.
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "token")
 	}
 
-	protoReq.Token, err = runtime.String(val)
+	protoReq.Token, err = runtime.StringP(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "token", err)
 	}
@@ -367,7 +367,7 @@ func local_request_ProfileService_GetByToken_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "token")
 	}
 
-	protoReq.Token, err = runtime.String(val)
+	protoReq.Token, err = runtime.StringP(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "token", err)
 	}

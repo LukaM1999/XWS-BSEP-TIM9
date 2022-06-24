@@ -71,11 +71,11 @@ func (service *PostService) CreateJob(job *domain.JobOffer) (*domain.JobOffer, e
 }
 
 func (service *PostService) PromoteJob(job *domain.JobOffer, token string, username string) (*domain.JobOffer, error) {
-	profile, err := service.profileClient.GetByToken(context.TODO(), &pbProfile.GetByTokenRequest{Token: token})
+	profile, err := service.profileClient.GetByToken(context.TODO(), &pbProfile.GetByTokenRequest{Token: &token})
 	if err != nil {
 		return nil, err
 	}
-	if profile.Profile.Username != username {
+	if *profile.Profile.Username != username {
 		return nil, errors.New("invalid username or token")
 	}
 	return service.store.CreateJob(job)

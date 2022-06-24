@@ -14,6 +14,13 @@ var connections = []*domain.Connection{
 		IsApproved: true,
 		Date:       time.Now(),
 	},
+	{
+		Id:         getObjectId("62706c1b624b3da748f63fe2"),
+		IssuerId:   getObjectId("55306d1b623b3da748f63fa1"),
+		SubjectId:  getObjectId("62706d1b623b3da748f63fa1"),
+		IsApproved: true,
+		Date:       time.Now(),
+	},
 }
 
 var profilesPrivacy = []*domain.ProfilePrivacy{
@@ -25,6 +32,16 @@ var profilesPrivacy = []*domain.ProfilePrivacy{
 	{
 		Id:        primitive.NewObjectID(),
 		UserId:    getObjectId("62706d1b624b3da748f63fe5"),
+		IsPrivate: false,
+	},
+	{
+		Id:        primitive.NewObjectID(),
+		UserId:    getObjectId("55306d1b623b3da748f63fa1"),
+		IsPrivate: false,
+	},
+	{
+		Id:        primitive.NewObjectID(),
+		UserId:    getObjectId("62706d1b623b3da748f63fa1"),
 		IsPrivate: false,
 	},
 }

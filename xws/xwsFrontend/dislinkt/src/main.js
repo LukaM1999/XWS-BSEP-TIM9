@@ -15,6 +15,7 @@ import HomePage from "@/components/HomePage";
 import PasswordReset from "@/components/PasswordReset";
 import Post from "@/components/Post";
 import ConnectionsPosts from "@/components/ConnectionsPosts";
+import Messages from "@/components/Messages";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -93,9 +94,13 @@ const routes = [
         path: 'posts',
         name: 'posts',
         component: ConnectionsPosts
+      },
+      {
+        path: 'messages',
+        name: 'messages',
+        component: Messages
       }
-
-      ]
+    ]
   },
   {
     path: '/admin',

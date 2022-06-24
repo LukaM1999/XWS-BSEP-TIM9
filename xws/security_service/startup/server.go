@@ -101,6 +101,13 @@ func (server *Server) initUserStore(client *mongo.Client) domain.UserStore {
 			log.Fatal("CRF: %v", err)
 		}
 	}
+	for _, userVerification := range userVerifications {
+		_, err := store.CreateUserVerification(userVerification)
+		if err != nil {
+			log.Fatal("CUVF: %v", err)
+		}
+	}
+
 	return store
 }
 

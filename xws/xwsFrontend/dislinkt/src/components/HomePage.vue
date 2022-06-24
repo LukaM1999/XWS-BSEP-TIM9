@@ -26,7 +26,7 @@
             <vs-navbar-item :active="active == 'components'" id="components">
               Job offers
             </vs-navbar-item>
-            <vs-navbar-item :active="active == 'message'" id="message">
+            <vs-navbar-item :active="active === 'messages'" id="messages" to="/user/messages">
               Messages
             </vs-navbar-item>
             <vs-navbar-item :active="active == 'license'" id="license">
@@ -40,14 +40,6 @@
           <vs-button @click="logOut()">Log out</vs-button>
         </template>
       </vs-navbar>
-    </div>
-    <div class="row" style="margin-top: 10rem;">
-      <div class="col">
-        <vs-button primary @click="getAllUsers()">Get all users</vs-button>
-        <vs-button primary @click="getProfile()">Get profile</vs-button>
-        <vs-button primary @click="searchProfile()">Search profile</vs-button>
-        <vs-button primary @click="logOut()">Log out</vs-button>
-      </div>
     </div>
     <div class="row">
       <div class="col">

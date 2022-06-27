@@ -107,7 +107,7 @@ export default {
   data() {
     return {
       currentUserId: this.$store.getters.user?.id,
-      theme: 'light',
+      theme: 'dark',
       isDevice: false,
       roomsPerPage: 15,
       rooms: [],
@@ -187,14 +187,14 @@ export default {
       .then(res => {
         this.connections = res.data?.connections?.flatMap(c => {
           if(c.issuerId === this.currentUserId){
-            for(let user of this.rooms.flatMap(r => r.users)){
-              if(user.id === c.subjectId) return
-            }
+            // for(let user of this.rooms.flatMap(r => r.users)){
+            //   if(user.id === c.issuerId) return
+            // }
             return c.subjectId
           }
-          for(let user of this.rooms.flatMap(r => r.users)){
-            if(user.id === c.issuerId) return
-          }
+          // for(let user of this.rooms.flatMap(r => r.users)){
+          //   if(user.id === c.subjectId) return
+          // }
           return c.issuerId
         })
       })
@@ -529,7 +529,26 @@ export default {
         }
       }
 
-      firestoreService.updateRoom(roomId, { lastUpdated: new Date() })
+      await firestoreService.updateRoom(roomId, { lastUpdated: new Date() })
+
+      await this.sendNotification(message.content, roomId)
+
+    },
+
+    async sendNotification(content, roomId) {
+      const room = this.rooms.find(room => room.roomId === roomId)
+      const recipient = room.users.find(user => user._id !== this.currentUserId)
+      const sender = room.users.find(user => user._id === this.currentUserId)
+      const notification = {
+        app_id: process.env.VUE_APP_ONESIGNAL_APP_ID,
+        contents: { en: `New message from ${sender.fullName}\n\n${content}` },
+        url: 'https://localhost:7777/user/messages',
+        filters: [
+          {field: "tag", key: "messages", relation: "=", value: 1},
+          {field: "tag", key: "user_id", relation: "=", value: recipient._id}
+        ]
+      }
+      await axios.post('https://onesignal.com/api/v1/notifications', notification)
     },
 
     async editMessage({ messageId, newContent, roomId, files }) {
@@ -803,6 +822,7 @@ export default {
     async createRoom() {
       this.disableForm = true
 
+      console.log(this.connectionNames.get(this.newChatUser)?.fullName)
       await firestoreService.addIdentifiedUser(this.newChatUser, {
         _id: this.newChatUser,
         username: this.connectionNames.get(this.newChatUser)?.username,
@@ -814,6 +834,7 @@ export default {
         username: this.$store.getters.user?.username,
         fullName: this.$store.getters.user?.fullName,
       })
+
 
       await firestoreService.addRoom({
         users: [this.newChatUser, this.currentUserId],

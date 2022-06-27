@@ -225,6 +225,7 @@ import {email, helpers, minLength, required, sameAs} from "vuelidate/lib/validat
 import {VueRecaptcha} from 'vue-recaptcha';
 import isPasswordCompromised from '@mathiscode/password-leak'
 import Post from "@/components/Post";
+import OneSignalVue from "onesignal-vue";
 
 const isPasswordStrong = (value, vm) => zxcvbn(value, [vm.username, vm.email, vm.firstName, vm.lastName])?.score >= 3
 const name = helpers.regex('name', /^[A-Z][a-z]+$/)
@@ -301,6 +302,15 @@ export default {
     }
   },
   mounted() {
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.getRegistrations().then(function (registrations) {
+    //     for (let registration of registrations) {
+    //       if(registration.active.scriptURL.includes('OneSignal')) {
+    //         registration.unregister()
+    //       }
+    //     }
+    //   })
+    // }
     this.$store.commit('setUser', null);
     this.$store.commit('setToken', null);
     if (this.isLoginDisabled()) {

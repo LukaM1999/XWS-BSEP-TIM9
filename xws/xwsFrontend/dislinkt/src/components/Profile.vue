@@ -355,6 +355,13 @@
           </div>
         </div>
       </div>
+      <div class="row justify-content-end align-content-end">
+        <div class="col justify-content-end d-flex align-self-end">
+          <vs-button primary icon size="xl" @click="openNotificationPrompt">
+            <span class='bx bx-bell bx-lg'></span>
+          </vs-button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -401,7 +408,13 @@ export default {
       location: "",
     }
   },
+  beforeMount() {
+  },
   methods: {
+    openNotificationPrompt(){
+      this.$OneSignal.showCategorySlidedown({
+      })
+    },
     deleteWorkExperience(w){
       for(let i=0; i<this.workExperience.length; i++){
         if(this.workExperience[i] == w){

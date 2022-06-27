@@ -53,13 +53,72 @@
 <script>
 
 import axios from 'axios';
+import OneSignalVue from "onesignal-vue";
 
 export default {
   name: "HomePage",
   data() {
     return {
       active: 'guide',
+      currentUserId: null,
+      profile: null,
     }
+  },
+  async beforeMount(){
+    await this.getProfile()
+  },
+  async mounted() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/OneSignalSDKWorker.js').then(function(registration) {
+      }).catch(function(e) {
+        console.log('SW registration failed with error:', e);
+      });
+    }
+    await this.$OneSignal.init({
+      appId: process.env.VUE_APP_ONESIGNAL_APP_ID,
+      autoResubscribe: true,
+      promptOptions: {
+        slidedown: {
+          prompts: [
+            {
+              type: "category",
+              autoPrompt: true,
+              text: {
+                actionMessage: "Would you like to receive notifications?",
+                acceptButton: "Allow",
+                cancelButton: "Cancel",
+
+                /* CATEGORY SLIDEDOWN SPECIFIC TEXT */
+                negativeUpdateButton:"Cancel",
+                positiveUpdateButton:"Save Preferences",
+                updateMessage: "Update your push notification subscription preferences.",
+              },
+              delay: {
+                timeDelay: 5
+              },
+              categories: [
+                {
+                  tag: "connections",
+                  label: "New connection"
+                },
+                {
+                  tag: "messages",
+                  label: "New messages"
+                },
+                {
+                  tag: "posts",
+                  label: "New posts",
+                },
+              ]
+            }
+          ]
+        }
+      }
+    });
+    this.$store.commit('setOneSignalToken', process.env.VUE_APP_ONESIGNAL_TOKEN)
+    await this.$OneSignal.setExternalUserId(this.profile.id)
+    await this.$OneSignal.sendTag('user_id', this.profile.id);
+    await this.$OneSignal.sendTag('full_name', this.profile.firstName + ' ' + this.profile.lastName);
   },
   methods: {
     logOut() {
@@ -89,25 +148,11 @@ export default {
       });
     },
     async getProfile() {
-      const loading = this.$vs.loading();
-      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile/${this.$store.getters.user?.id}`).catch(error => {
-        this.$vs.notification({
-          title: 'Error',
-          text: 'Error getting user',
-          color: 'danger',
-          position: 'top-right'
-        });
-        loading.close();
-        throw error;
-      });
-      loading.close();
-      this.$vs.notification({
-        title: 'Success',
-        text: JSON.stringify(response.data),
-        color: 'success',
-        position: 'top-right',
-        duration: 10000
-      });
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile/${this.$store.getters.user?.id}`)
+      if(response.data){
+        this.profile = response.data.profile
+      }
+
     },
     async searchProfile() {
       const loading = this.$vs.loading();

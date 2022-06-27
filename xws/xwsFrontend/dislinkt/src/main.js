@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
+import OneSignalVue from "onesignal-vue";
 import App from './App.vue'
 import VueRouter from "vue-router";
 import axios from 'axios'
@@ -20,6 +21,7 @@ import Profile from "@/components/Profile";
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
+import './registerServiceWorker'
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -28,6 +30,7 @@ jwtInterceptor()
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
+Vue.use(OneSignalVue)
 Vue.use(VueAxios, axios)
 Vue.use(Toasted, {
   position: 'top-right',
@@ -56,6 +59,7 @@ export const store = new Vuex.Store({
     user: null,
     token: null,
     failedLoginAttempts: 0,
+    firebaseToken: null,
   },
   mutations: {
     setToken(state, token) {
@@ -69,6 +73,12 @@ export const store = new Vuex.Store({
     },
     resetFailedLoginAttempts(state) {
       state.failedLoginAttempts = 0
+    },
+    setFirebaseToken(state, token) {
+      state.firebaseToken = token
+    },
+    setOneSignalToken(state, token) {
+      state.oneSignalToken = token
     }
   },
   getters: {
@@ -80,6 +90,12 @@ export const store = new Vuex.Store({
     },
     failedLoginAttempts(state) {
       return state.failedLoginAttempts
+    },
+    firebaseToken(state) {
+      return state.firebaseToken
+    },
+    oneSignalToken(state) {
+      return state.oneSignalToken
     }
   }
 })

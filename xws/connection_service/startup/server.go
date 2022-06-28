@@ -14,7 +14,6 @@ import (
 	"dislinkt/connection_service/infrastructure/persistence"
 	"dislinkt/connection_service/startup/config"
 	"fmt"
-	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
@@ -41,16 +40,16 @@ func accessibleRoles() map[string]string {
 	const connectionServicePath = "/connection.ConnectionService/"
 
 	return map[string]string{
-		//connectionServicePath + "Get":    {"user"},
-		//connectionServicePath + "Create": {"user"},
+		connectionServicePath + "BlockUser":   "write:block",
+		connectionServicePath + "UnblockUser": "write:unblock",
 		//connectionServicePath + "Update": {"user"},
 		//connectionServicePath + "Delete": {"user"},
 	}
 }
 
 func (server *Server) Start() {
-	mongoClient := server.initMongoClient()
-	connectionStore := server.initConnectionStore(mongoClient)
+
+	connectionStore := server.initConnectionStore()
 
 	jwtManager := auth.NewJWTManager("secretKey", 30*time.Minute)
 
@@ -73,28 +72,26 @@ func (server *Server) Start() {
 	server.startGrpcServer(connectionHandler, jwtManager)
 }
 
-func (server *Server) initMongoClient() *mongo.Client {
-	client, err := persistence.GetClient(server.config.ConnectionDBHost, server.config.ConnectionDBPort)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return client
-}
-
-func (server *Server) initConnectionStore(client *mongo.Client) domain.ConnectionStore {
-	store := persistence.NewConnectionMongoDBStore(client)
+func (server *Server) initConnectionStore() domain.ConnectionStore {
+	store := persistence.NewConnectionPostgresStore(server.config.ConnectionDBHost, server.config.ConnectionDBPort)
 	err := store.DeleteAll()
 	if err != nil {
 		return nil
 	}
-	for _, privacy := range profilesPrivacy {
-		_, err := store.CreatePrivacy(privacy)
+	for _, user := range users {
+		err := store.CreateUser(user)
+		if err != nil {
+			return nil
+		}
+	}
+	for _, Connection := range connections {
+		_, err := store.CreateConnection(Connection.IssuerId, Connection.SubjectId)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	for _, Connection := range connections {
-		_, err := store.Create(Connection)
+	for _, BlockedUser := range blockedUsers {
+		_, err := store.BlockUser(BlockedUser.IssuerPrimaryKey, BlockedUser.SubjectPrimaryKey)
 		if err != nil {
 			log.Fatal(err)
 		}

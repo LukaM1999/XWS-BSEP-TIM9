@@ -194,5 +194,5 @@ var _ReactionService_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "common/proto/reaction_service/reaction_service.proto",
+	Metadata: "proto/reaction_service/reaction_service.proto",
 }

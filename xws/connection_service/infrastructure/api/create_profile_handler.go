@@ -4,8 +4,6 @@ import (
 	events "dislinkt/common/saga/create_profile"
 	saga "dislinkt/common/saga/messaging"
 	"dislinkt/connection_service/application"
-	"dislinkt/connection_service/domain"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type CreateProfileCommandHandler struct {
@@ -34,23 +32,14 @@ func (handler *CreateProfileCommandHandler) handle(command *events.CreateProfile
 	}
 	switch command.Type {
 	case events.CreateProfile:
-		profilePrivacy := &domain.ProfilePrivacy{
-			Id:        primitive.NewObjectID(),
-			UserId:    command.Profile.Id,
-			IsPrivate: false,
-		}
-		_, err := handler.connectionService.CreateProfilePrivacy(profilePrivacy)
+		err := handler.connectionService.CreateUser(command.Profile.Id.Hex())
 		if err != nil {
 			reply.Type = events.ProfileNotCreated
 			break
 		}
-		//reply.Type = events.ProfileCreated
 		break
 	case events.RollbackCreatedProfile:
-		err := handler.connectionService.DeleteProfilePrivacy(command.Profile.Id)
-		if err != nil {
-			return
-		}
+		handler.connectionService.DeleteUser(command.Profile.Id.Hex())
 		reply.Type = events.ProfileCreationRolledBack
 	default:
 		reply.Type = events.UnknownReply

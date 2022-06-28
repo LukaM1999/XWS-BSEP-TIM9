@@ -39,9 +39,10 @@ func (handler *UpdateProfileCommandHandler) handle(command *events.UpdateProfile
 		if command.Profile.IsPrivate == command.OldIsPrivate {
 			return
 		}
-		err := handler.connectionService.UpdatePrivacy(command.Profile.Id)
+		err := handler.connectionService.UpdatePrivacy(command.Profile.Id.Hex())
 		if err != nil {
-			return
+			reply.Type = events.ProfileNotUpdated
+			break
 		}
 		reply.Type = events.ProfileUpdated
 		break
@@ -49,7 +50,7 @@ func (handler *UpdateProfileCommandHandler) handle(command *events.UpdateProfile
 		if command.Profile.IsPrivate == command.OldIsPrivate {
 			return
 		}
-		err := handler.connectionService.UpdatePrivacy(command.Profile.Id)
+		err := handler.connectionService.UpdatePrivacy(command.Profile.Id.Hex())
 		if err != nil {
 			return
 		}

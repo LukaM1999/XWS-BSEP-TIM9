@@ -6,13 +6,14 @@ import (
 	"dislinkt/connection_service/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"strconv"
 )
 
 func mapConnectionToPb(connection *domain.Connection) *pb.Connection {
 	return &pb.Connection{
-		Id:         connection.Id.Hex(),
-		IssuerId:   connection.IssuerId.Hex(),
-		SubjectId:  connection.SubjectId.Hex(),
+		Id:         strconv.Itoa(connection.Id),
+		IssuerId:   connection.IssuerId,
+		SubjectId:  connection.SubjectId,
 		Date:       timestamppb.New(connection.Date),
 		IsApproved: connection.IsApproved,
 	}
@@ -20,17 +21,21 @@ func mapConnectionToPb(connection *domain.Connection) *pb.Connection {
 
 func mapConnectionToPostConnectionPb(connection *domain.Connection) *pbPost.Connection {
 	return &pbPost.Connection{
-		Id:        connection.Id.Hex(),
-		IssuerId:  connection.IssuerId.Hex(),
-		SubjectId: connection.SubjectId.Hex(),
+		Id:        strconv.Itoa(connection.Id),
+		IssuerId:  connection.IssuerId,
+		SubjectId: connection.SubjectId,
 	}
 }
 
 func mapPbToConnection(pbConnection *pb.Connection) *domain.Connection {
+	id, err := strconv.Atoi(pbConnection.Id)
+	if err != nil {
+		id = 0
+	}
 	return &domain.Connection{
-		Id:         getObjectId(pbConnection.Id),
-		IssuerId:   getObjectId(pbConnection.IssuerId),
-		SubjectId:  getObjectId(pbConnection.SubjectId),
+		Id:         id,
+		IssuerId:   pbConnection.IssuerId,
+		SubjectId:  pbConnection.SubjectId,
 		Date:       pbConnection.Date.AsTime(),
 		IsApproved: pbConnection.IsApproved,
 	}

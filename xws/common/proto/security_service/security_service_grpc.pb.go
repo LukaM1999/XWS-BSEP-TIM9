@@ -447,5 +447,5 @@ var _SecurityService_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "common/proto/security_service/security_service.proto",
+	Metadata: "proto/security_service/security_service.proto",
 }

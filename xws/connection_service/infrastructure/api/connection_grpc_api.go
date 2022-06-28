@@ -6,6 +6,7 @@ import (
 	pb "dislinkt/common/proto/connection_service"
 	pbPost "dislinkt/common/proto/post_service"
 	"dislinkt/connection_service/application"
+	"strconv"
 )
 
 var log = loggers.NewConnectionLogger()
@@ -40,21 +41,26 @@ func (handler *ConnectionHandler) Get(ctx context.Context, request *pb.GetReques
 }
 
 func (handler *ConnectionHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
-	connection := mapPbToConnection(request.Connection)
-	newConnection, err := handler.service.Create(connection)
+	//connection := mapPbToConnection(request.Connection)
+	//newConnection, err := handler.service.Create(connection)
+	//if err != nil {
+	//	log.Errorf("Cannot create connection: %v", err)
+	//	return nil, err
+	//}
+	//if newConnection.IsApproved {
+	//	_, err = handler.postClient.CreateConnection(context.TODO(), &pbPost.CreateConnectionRequest{
+	//		Connection: mapConnectionToPostConnectionPb(newConnection),
+	//	})
+	//	if err != nil {
+	//		log.Errorf("Cannot create connection: %v", err)
+	//		handler.service.Delete(newConnection.Id.Hex())
+	//		return nil, err
+	//	}
+	//}
+	newConnection, err := handler.service.Create(request.Connection.IssuerId, request.Connection.SubjectId)
 	if err != nil {
 		log.Errorf("Cannot create connection: %v", err)
 		return nil, err
-	}
-	if newConnection.IsApproved {
-		_, err = handler.postClient.CreateConnection(context.TODO(), &pbPost.CreateConnectionRequest{
-			Connection: mapConnectionToPostConnectionPb(newConnection),
-		})
-		if err != nil {
-			log.Errorf("Cannot create connection: %v", err)
-			handler.service.Delete(newConnection.Id.Hex())
-			return nil, err
-		}
 	}
 	log.Info("Connection created")
 	return &pb.CreateResponse{
@@ -63,7 +69,12 @@ func (handler *ConnectionHandler) Create(ctx context.Context, request *pb.Create
 }
 
 func (handler *ConnectionHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
-	err := handler.service.Delete(request.Id)
+	id, err := strconv.Atoi(request.Id)
+	if err != nil {
+		log.WithField("connectionId", request.Id).Errorf("Cannot convert connection id to int: %v", err)
+		return nil, err
+	}
+	err = handler.service.Delete(id)
 	if err != nil {
 		log.Errorf("Cannot delete connection: %v", err)
 		return nil, err
@@ -74,7 +85,12 @@ func (handler *ConnectionHandler) Delete(ctx context.Context, request *pb.Delete
 }
 
 func (handler *ConnectionHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
-	connection, err := handler.service.Update(request.Id)
+	id, err := strconv.Atoi(request.Id)
+	if err != nil {
+		log.WithField("connectionId", request.Id).Errorf("Cannot convert connection id to int: %v", err)
+		return nil, err
+	}
+	connection, err := handler.service.UpdateConnection(id)
 	if err != nil {
 		log.WithField("connectionId", request.Id).Errorf("Cannot update connection: %v", err)
 		return nil, err
@@ -91,5 +107,72 @@ func (handler *ConnectionHandler) Update(ctx context.Context, request *pb.Update
 	log.WithField("connectionId", request.Id).Infof("Connection updated")
 	return &pb.UpdateResponse{
 		Connection: mapConnectionToPb(connection),
+	}, nil
+}
+
+func (handler *ConnectionHandler) GetRecommendations(ctx context.Context, request *pb.GetRecommendationsRequest) (*pb.GetRecommendationsResponse, error) {
+	Connections, err := handler.service.GetRecommendations(request.UserId)
+	if err != nil {
+		log.WithField("userId", request.UserId).Errorf("Cannot get connections: %v", err)
+		return nil, err
+	}
+	response := &pb.GetRecommendationsResponse{
+		Recommendations: make([]string, 0),
+	}
+	for _, Connection := range Connections {
+		response.Recommendations = append(response.Recommendations, Connection)
+	}
+	return response, nil
+}
+
+func (handler *ConnectionHandler) BlockUser(ctx context.Context, request *pb.BlockUserRequest) (*pb.BlockUserResponse, error) {
+	success, err := handler.service.BlockUser(ctx.Value("userId").(string), request.UserId)
+	if err != nil {
+		log.WithField("userId", request.UserId).Errorf("Cannot block user: %v", err)
+		return nil, err
+	}
+	log.WithField("userId", request.UserId).Infof("User blocked")
+	return &pb.BlockUserResponse{Success: success}, nil
+}
+
+func (handler *ConnectionHandler) GetBlockedUsers(ctx context.Context, request *pb.GetBlockedUsersRequest) (*pb.GetBlockedUsersResponse, error) {
+	users, err := handler.service.GetBlockedUsers(request.UserId)
+	if err != nil {
+		log.WithField("userId", request.UserId).Errorf("Cannot get blocked users: %v", err)
+		return nil, err
+	}
+	response := &pb.GetBlockedUsersResponse{
+		BlockedUsers: make([]string, 0),
+	}
+	for _, user := range users {
+		response.BlockedUsers = append(response.BlockedUsers, user)
+	}
+	return response, nil
+}
+
+func (handler *ConnectionHandler) GetBlockers(ctx context.Context, request *pb.GetBlockersRequest) (*pb.GetBlockersResponse, error) {
+	users, err := handler.service.GetBlockers(request.UserId)
+	if err != nil {
+		log.WithField("userId", request.UserId).Errorf("Cannot get blockers: %v", err)
+		return nil, err
+	}
+	response := &pb.GetBlockersResponse{
+		Blockers: make([]string, 0),
+	}
+	for _, user := range users {
+		response.Blockers = append(response.Blockers, user)
+	}
+	return response, nil
+}
+
+func (handler *ConnectionHandler) UnblockUser(ctx context.Context, request *pb.UnblockUserRequest) (*pb.UnblockUserResponse, error) {
+	success, err := handler.service.UnblockUser(ctx.Value("userId").(string), request.UserId)
+	if err != nil {
+		log.WithField("userId", request.UserId).Errorf("Cannot unblock user: %v", err)
+		return nil, err
+	}
+	log.WithField("userId", request.UserId).Infof("User unblocked")
+	return &pb.UnblockUserResponse{
+		Success: success,
 	}, nil
 }

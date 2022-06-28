@@ -15,7 +15,7 @@ var users = []*auth.User{
 		Role:     "admin",
 	},
 	{
-		Id:       primitive.NewObjectID(),
+		Id:       getObjectId("62706d1b624b4da648f53fe3"),
 		Username: "user",
 		Password: "$2a$10$UVn74F/yEiUzKWBSGVyzHe2UfpVJ95zY50Q8bz1RFyrAYVfwFAj4i",
 		Role:     "user",
@@ -47,6 +47,8 @@ var rolePermissions = []*auth.RolePermission{
 		Permissions: []string{
 			"read:profile",
 			"search:all-profiles",
+			"write:block",
+			"write:unblock",
 		},
 	},
 }

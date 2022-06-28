@@ -1,15 +1,17 @@
 package domain
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
 type ConnectionStore interface {
 	Get(userId string) ([]*Connection, error)
-	Create(connection *Connection) (*Connection, error)
-	CreatePrivacy(privacy *ProfilePrivacy) (*ProfilePrivacy, error)
-	Delete(id string) error
+	CreateUser(primaryKey string) error
+	CreateConnection(issuerKey string, subjectKey string) (*Connection, error)
+	Delete(id int) error
+	DeleteUser(userId string) error
 	DeleteAll() error
-	Update(id string) (*Connection, error)
-	CreateProfilePrivacy(privacy *ProfilePrivacy) (*ProfilePrivacy, error)
-	DeleteProfilePrivacy(id primitive.ObjectID) error
-	UpdatePrivacy(id primitive.ObjectID) error
+	UpdateConnection(id int) (*Connection, error)
+	UpdatePrivacy(userKey string) error
+	GetRecommendations(userId string) ([]string, error)
+	BlockUser(issuerId string, subjectId string) (bool, error)
+	GetBlockedUsers(userId string) ([]string, error)
+	GetBlockers(userId string) ([]string, error)
+	UnblockUser(issuerId string, subjectId string) (bool, error)
 }

@@ -2,7 +2,6 @@ package application
 
 import (
 	"dislinkt/connection_service/domain"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ConnectionService struct {
@@ -19,26 +18,46 @@ func (service *ConnectionService) Get(userId string) ([]*domain.Connection, erro
 	return service.store.Get(userId)
 }
 
-func (service *ConnectionService) Create(connection *domain.Connection) (*domain.Connection, error) {
-	return service.store.Create(connection)
+func (service *ConnectionService) Create(issuerKey string, subjectKey string) (*domain.Connection, error) {
+	return service.store.CreateConnection(issuerKey, subjectKey)
 }
 
-func (service *ConnectionService) Delete(id string) error {
+func (service *ConnectionService) CreateUser(userId string) error {
+	return service.store.CreateUser(userId)
+}
+
+func (service *ConnectionService) Delete(id int) error {
 	return service.store.Delete(id)
 }
 
-func (service *ConnectionService) Update(id string) (*domain.Connection, error) {
-	return service.store.Update(id)
+func (service *ConnectionService) DeleteUser(id string) error {
+	return service.store.DeleteUser(id)
 }
 
-func (service *ConnectionService) UpdatePrivacy(id primitive.ObjectID) error {
+func (service *ConnectionService) UpdateConnection(id int) (*domain.Connection, error) {
+	return service.store.UpdateConnection(id)
+}
+
+func (service *ConnectionService) UpdatePrivacy(id string) error {
 	return service.store.UpdatePrivacy(id)
 }
 
-func (service *ConnectionService) CreateProfilePrivacy(privacy *domain.ProfilePrivacy) (*domain.ProfilePrivacy, error) {
-	return service.store.CreateProfilePrivacy(privacy)
+func (service *ConnectionService) GetRecommendations(userId string) ([]string, error) {
+	return service.store.GetRecommendations(userId)
 }
 
-func (service *ConnectionService) DeleteProfilePrivacy(id primitive.ObjectID) error {
-	return service.store.DeleteProfilePrivacy(id)
+func (service *ConnectionService) BlockUser(issuerId string, subjectId string) (bool, error) {
+	return service.store.BlockUser(issuerId, subjectId)
+}
+
+func (service *ConnectionService) GetBlockedUsers(userId string) ([]string, error) {
+	return service.store.GetBlockedUsers(userId)
+}
+
+func (service *ConnectionService) GetBlockers(userId string) ([]string, error) {
+	return service.store.GetBlockers(userId)
+}
+
+func (service *ConnectionService) UnblockUser(issuerId, subjectId string) (bool, error) {
+	return service.store.UnblockUser(issuerId, subjectId)
 }

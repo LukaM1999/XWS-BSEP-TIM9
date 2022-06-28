@@ -30,6 +30,31 @@ service ConnectionService{
       patch: "/connection/{id}"
     };
   }
+  rpc GetRecommendations(GetRecommendationsRequest) returns(GetRecommendationsResponse) {
+    option (google.api.http) = {
+      get: "/connection/user/{userId}/recommendation"
+    };
+  }
+  rpc BlockUser(BlockUserRequest) returns(BlockUserResponse) {
+    option (google.api.http) = {
+      post: "/connection/user/{userId}/block"
+    };
+  }
+  rpc GetBlockedUsers(GetBlockedUsersRequest) returns(GetBlockedUsersResponse) {
+    option (google.api.http) = {
+      get: "/connection/user/{userId}/block"
+    };
+  }
+  rpc GetBlockers(GetBlockersRequest) returns(GetBlockersResponse) {
+    option (google.api.http) = {
+      get: "/connection/user/{userId}/blocker"
+    };
+  }
+  rpc UnblockUser(UnblockUserRequest) returns(UnblockUserResponse) {
+    option (google.api.http) = {
+      delete: "/connection/user/{userId}/block"
+    };
+  }
 }
 
 message GetRequest {
@@ -61,6 +86,46 @@ message UpdateRequest {
 
 message UpdateResponse {
   Connection connection = 1;
+}
+
+message GetRecommendationsRequest {
+  string userId = 1;
+}
+
+message GetRecommendationsResponse {
+  repeated string recommendations = 1;
+}
+
+message BlockUserRequest {
+  string userId = 1;
+}
+
+message BlockUserResponse {
+  bool success = 1;
+}
+
+message GetBlockedUsersRequest {
+  string userId = 1;
+}
+
+message GetBlockedUsersResponse {
+  repeated string blockedUsers = 1;
+}
+
+message GetBlockersRequest {
+  string userId = 1;
+}
+
+message GetBlockersResponse {
+  repeated string blockers = 1;
+}
+
+message UnblockUserRequest {
+  string userId = 1;
+}
+
+message UnblockUserResponse {
+  bool success = 1;
 }
 
 message Connection {

@@ -230,5 +230,5 @@ var _CommentService_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "common/proto/comment_service/comment_service.proto",
+	Metadata: "proto/comment_service/comment_service.proto",
 }

@@ -302,5 +302,5 @@ var _ProfileService_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "common/proto/profile_service/profile_service.proto",
+	Metadata: "proto/profile_service/profile_service.proto",
 }

@@ -2,47 +2,38 @@ package startup
 
 import (
 	"dislinkt/connection_service/domain"
+	"dislinkt/connection_service/ent"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
+var users = []string{
+	"62706d1b624b3da748f63fe3",
+	"62706d1b624b4da648f53fe3",
+	"62706d1b623b3da748f63fa1",
+	"55306d1b623b3da748f63fa1",
+}
+
 var connections = []*domain.Connection{
 	{
-		Id:         getObjectId("62706d1b624b3da748f63fe1"),
-		IssuerId:   getObjectId("62706d1b624b3da748f63fe3"),
-		SubjectId:  getObjectId("62706d1b624b3da748f63fe5"),
+		IssuerId:   "62706d1b624b4da648f53fe3",
+		SubjectId:  "62706d1b623b3da748f63fa1",
 		IsApproved: true,
 		Date:       time.Now(),
 	},
 	{
-		Id:         getObjectId("62706c1b624b3da748f63fe2"),
-		IssuerId:   getObjectId("55306d1b623b3da748f63fa1"),
-		SubjectId:  getObjectId("62706d1b623b3da748f63fa1"),
+		IssuerId:   "55306d1b623b3da748f63fa1",
+		SubjectId:  "62706d1b623b3da748f63fa1",
 		IsApproved: true,
 		Date:       time.Now(),
 	},
 }
 
-var profilesPrivacy = []*domain.ProfilePrivacy{
+var blockedUsers = []*ent.BlockedUser{
 	{
-		Id:        primitive.NewObjectID(),
-		UserId:    getObjectId("62706d1b624b3da748f63fe3"),
-		IsPrivate: false,
-	},
-	{
-		Id:        primitive.NewObjectID(),
-		UserId:    getObjectId("62706d1b624b3da748f63fe5"),
-		IsPrivate: false,
-	},
-	{
-		Id:        primitive.NewObjectID(),
-		UserId:    getObjectId("55306d1b623b3da748f63fa1"),
-		IsPrivate: false,
-	},
-	{
-		Id:        primitive.NewObjectID(),
-		UserId:    getObjectId("62706d1b623b3da748f63fa1"),
-		IsPrivate: false,
+		CreatedAt:         time.Now(),
+		IssuerPrimaryKey:  "62706d1b623b3da748f63fa1",
+		SubjectPrimaryKey: "55306d1b623b3da748f63fa1",
 	},
 }
 

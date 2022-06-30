@@ -14,7 +14,7 @@
       <div class="row">
         <div class="col">
           <div class="centerx">
-            <vs-input label-placeholder="Username" v-model="username"/>
+            <vs-input disabled label-placeholder="Username" v-model="username"/>
           </div>
         </div>
       </div>
@@ -173,6 +173,28 @@
           </div>
         </div>
       </div>
+      <div class="row">
+        <div class="col">
+          <div class="centerx">
+            <vs-input disabled type="password" label-placeholder="Agent token" v-model="agentToken"/>
+          </div>
+          <vs-button block @click="generateAgentToken()" style="margin-top: 1em">
+            Generate agent token
+          </vs-button>
+          <vs-dialog v-model="activeToken">
+            <template #header>
+              <h4 class="not-margin">
+                New agent token
+              </h4>
+            </template>
+            <div class="con-form">
+              <div class="centerx" style="margin-bottom: 2em">
+                <vs-input disabled label-placeholder="Token" v-model="agentToken"/>
+              </div>
+            </div>
+          </vs-dialog>
+        </div>
+      </div>
     </div>
     <div class="col-3">
       <div class="row">
@@ -295,7 +317,32 @@
                 <vs-input label-placeholder="Company" v-model="company"/>
               </div>
               <div class="centerx">
-                <vs-input label-placeholder="Employment type" v-model="employmentType"/>
+                <vs-select  v-model="employmentType">
+                  <vs-option label="FULL_TIME" value="0">
+                    FULL_TIME
+                  </vs-option>
+                  <vs-option label="PART_TIME" value="1">
+                    PART_TIME
+                  </vs-option>
+                  <vs-option label="SELF_EMPLOYED" value="2">
+                    SELF_EMPLOYED
+                  </vs-option>
+                  <vs-option disabled label="FREELANCE" value="3">
+                    FREELANCE
+                  </vs-option>
+                  <vs-option label="CONTRACT" value="4">
+                    CONTRACT
+                  </vs-option>
+                  <vs-option label="INTERNSHIP" value="5">
+                    INTERNSHIP
+                  </vs-option>
+                  <vs-option label="APPRENTICESHIP" value="6">
+                    APPRENTICESHIP
+                  </vs-option>
+                  <vs-option label="SEASONAL" value="6">
+                    SEASONAL
+                  </vs-option>
+                </vs-select>
               </div>
               <div style="margin-bottom: 1em; margin-top: 1em">
                 <label for="example-datepicker1">When schooling began?</label>
@@ -333,8 +380,29 @@
                     <p>
                       Title: {{ work.title }}
                     </p>
-                    <p>
-                      Employment type: {{ work.employmentType }}
+                    <p v-if="work.employmentType == 0">
+                      Employment type: FULL_TIME
+                    </p>
+                    <p v-if="work.employmentType == 1">
+                      Employment type: PART_TIME
+                    </p>
+                    <p v-if="work.employmentType == 2">
+                      Employment type: SELF_EMPLOYED
+                    </p>
+                    <p v-if="work.employmentType == 3">
+                      Employment type: FREELANCE
+                    </p>
+                    <p v-if="work.employmentType == 4">
+                      Employment type: CONTRACT
+                    </p>
+                    <p v-if="work.employmentType == 5">
+                      Employment type: INTERNSHIP
+                    </p>
+                    <p v-if="work.employmentType == 6">
+                      Employment type: APPRENTICESHIP
+                    </p>
+                    <p v-if="work.employmentType == 7">
+                      Employment type: SEASONAL
                     </p>
                     <p>
                       Started: {{ work.startDate }}
@@ -378,6 +446,7 @@ export default {
       activeWorkExperience: false,
       activeSkill: false,
       activeInterest: false,
+      activeToken: false,
       maxDate: new Date(),
       user: {},
       username: "",
@@ -393,6 +462,7 @@ export default {
       interests: [],
       isPrivate: true,
       phoneNumber: "",
+      agentToken: "",
       workExperience: [],
       education: [],
       school: "",
@@ -404,7 +474,7 @@ export default {
       description: "",
       title: "",
       company: "",
-      employmentType: "",
+      employmentType: 0,
       location: "",
     }
   },
@@ -483,11 +553,27 @@ export default {
       })
       this.title = "";
       this.company = "";
-      this.employmentType = "";
+      this.employmentType = 0;
       this.startDate = Date();
       this.endDate = Date();
       this.location = "";
       this.activeWorkExperience = false;
+    },
+    async generateAgentToken(){
+      const loading = this.$vs.loading();
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile/${this.$store.getters.user?.id}/token`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error generating token',
+          color: 'danger',
+          position: 'top-right'
+        });
+        loading.close();
+        throw error;
+      });
+      this.activeToken = true;
+      this.agentToken = response.data?.token;
+      loading.close();
     },
     async updateProfile(){
       const loading = this.$vs.loading();
@@ -506,7 +592,8 @@ export default {
           education: this.education,
           workExperience: this.workExperience,
           skills: this.skills,
-          interests: this.interests
+          interests: this.interests,
+          agentToken: this.agentToken
         }
       ).catch(error => {
         this.$vs.notification({
@@ -547,6 +634,7 @@ export default {
       this.email = this.user.email;
       this.gender = this.user.gender;
       this.biography = this.user.biography;
+      this.agentToken = this.user.agentToken;
       if (this.user?.skills?.length > 0)
         this.skills = this.user.skills;
       if (this.user?.interests?.length > 0)

@@ -18,22 +18,22 @@
         </template>
         <div class="row d-flex justify-content-center">
           <div class="col">
-            <vs-navbar-item :active="active == 'guide'" id="guide" to="/user/posts">
+            <vs-navbar-item :active="active == 'guide'" @click="resetSearch()" id="guide" to="/user/posts">
               For you
             </vs-navbar-item>
-            <vs-navbar-item :active="active == 'myPosts'" id="myPosts" to="/user/my-posts">
+            <vs-navbar-item :active="active == 'myPosts'" @click="resetSearch()" id="myPosts" to="/user/my-posts">
               My posts
             </vs-navbar-item>
-            <vs-navbar-item :active="active == 'docs'" id="docs" to="/user/connections">
+            <vs-navbar-item :active="active == 'docs'" @click="resetSearch()" id="docs" to="/user/connections">
               Connections
             </vs-navbar-item>
-            <vs-navbar-item :active="active == 'components'" id="components">
+            <vs-navbar-item :active="active == 'components'" @click="resetSearch()" id="components">
               Job offers
             </vs-navbar-item>
-            <vs-navbar-item :active="active === 'messages'" id="messages" to="/user/messages">
+            <vs-navbar-item :active="active === 'messages'" @click="resetSearch()" id="messages" to="/user/messages">
               Messages
             </vs-navbar-item>
-            <vs-navbar-item :active="active == 'license'" id="license" to="/user/profile">
+            <vs-navbar-item :active="active == 'license'" @click="resetSearch()" id="license" to="/user/profile">
               Profile
             </vs-navbar-item>
           </div>
@@ -119,7 +119,7 @@
                       <vs-navbar-item style="font-size: large; cursor: default">{{ tr.firstName }} {{ tr.lastName }}</vs-navbar-item>
                     </div>
                     <div class="col d-flex justify-content-center">
-                      <vs-button dark>Profile</vs-button>
+                      <vs-button @click="viewProfile(tr.id)" dark>Profile</vs-button>
                     </div>
                   </div>
                 </div>
@@ -317,7 +317,16 @@ export default {
       this.text = ''
       this.image = ''
       this.link = ''
-    }
+    },
+    viewProfile(id){
+      this.search = "";
+      this.searchEmpty = true;
+      this.$router.push({name: 'profileInfo', params: { id: id }})
+    },
+    resetSearch(){
+      this.search = "";
+      this.searchEmpty = true;
+    },
   }
 }
 </script>

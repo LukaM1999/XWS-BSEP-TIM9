@@ -122,7 +122,7 @@ func (handler *ProfileHandler) Delete(ctx context.Context, request *pb.DeleteReq
 }
 
 func (handler *ProfileHandler) GenerateToken(ctx context.Context, request *pb.GenerateTokenRequest) (*pb.GenerateTokenResponse, error) {
-	if ctx.Value("userId") != request.Id {
+	if ctx.Value("userId").(string) != *request.Id {
 		return nil, status.Errorf(codes.Unauthenticated, "user not authenticated")
 	}
 	token, err := handler.service.GenerateToken(*request.Id)

@@ -51,7 +51,7 @@ func (store *ProfileMongoDBStore) Get(profileId string) (*domain.Profile, error)
 }
 
 func (store *ProfileMongoDBStore) GetAll(search string) ([]*domain.Profile, error) {
-	filter := bson.D{{"fullName", bson.M{"$regex": "^.*" + search + ".*$"}}, {"isPrivate", false}}
+	filter := bson.D{{"fullName", bson.M{"$regex": "^.*" + search + ".*$"}}}
 	return store.filter(filter, search)
 }
 

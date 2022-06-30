@@ -24,6 +24,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css';
 import './registerServiceWorker'
 import MyPosts from "@/components/MyPosts";
 import MyConnections from "@/components/MyConnections";
+import ProfileInfo from "@/components/ProfileInfo";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -139,6 +140,12 @@ const routes = [
         path: 'connections',
         name: 'connections',
         component: MyConnections
+      },
+      {
+        path: 'profile-info',
+        name: 'profileInfo',
+        props: true,
+        component: ProfileInfo
       },
     ]
   },

@@ -49,6 +49,7 @@ var rolePermissions = []*auth.RolePermission{
 			"search:all-profiles",
 			"write:block",
 			"write:unblock",
+			"write:profile-token",
 		},
 	},
 }

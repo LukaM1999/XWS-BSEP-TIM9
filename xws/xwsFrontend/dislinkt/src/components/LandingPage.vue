@@ -17,6 +17,7 @@
             </div>
           </template>
           <template #right>
+            <vs-input type="search" @input="searchProfile()" v-model="search"></vs-input>
             <vs-button flat :disabled="isLoginDisabled()" @click="openLoginDialog()" color="#be1d7b">Login</vs-button>
             <vs-button @click="openRegisterDialog()" color="#be1d7b" gradient>Get Started</vs-button>
           </template>
@@ -241,6 +242,7 @@ export default {
   },
   data() {
     return {
+      search: "",
       dialogRegister: false,
       dialogLogin: false,
       dialogEmail: false,
@@ -318,6 +320,21 @@ export default {
     }
   },
   methods: {
+    async searchProfile(){
+      const loading = this.$vs.loading();
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile?search=${this.search}`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error generating token',
+          color: 'danger',
+          position: 'top-right'
+        });
+        loading.close();
+        throw error;
+      });
+      console.log(response.data);
+      loading.close();
+    },
     isPasswordStrong() {
       return zxcvbn(this.password, [this.username, this.email, this.firstName, this.lastName])?.score >= 3
     },

@@ -1,7 +1,11 @@
 <template>
   <div>
-    <div v-for="post in posts" :key="post.id">
-      <Post :post="post" />
+    <div class="row" style="margin-top: 7%">
+      <div class="col d-flex justify-content-center">
+        <div v-for="post in posts" :key="post.id">
+          <Post :post="post" class="mb-4" />
+        </div>
+      </div>
     </div>
   </div>
 </template>

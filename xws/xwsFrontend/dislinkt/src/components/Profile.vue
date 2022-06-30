@@ -4,11 +4,11 @@
     font-size: 15pt;
 }
 .row{
-    padding-bottom: 25px;
+    margin-bottom: 25px;
 }
 </style>
 <template >
-  <div class="row" style="margin-left: 10%; margin-right: 10%">
+  <div class="row" style="margin-left: 10%; margin-top: 7%; margin-right: 10%">
     <h2 style="margin-bottom: 2%">PROFILE</h2>
     <div class="col-3">
       <div class="row">
@@ -51,7 +51,7 @@
           <div class="centerx">
             <vs-input label-placeholder="Gender" v-model="gender"/>
           </div>
-          <vs-button block @click="updateProfile()" style="padding-top: 1em">
+          <vs-button block @click="updateProfile()" style="margin-top: 1em">
             Save
           </vs-button>
         </div>
@@ -68,9 +68,9 @@
       <div class="row">
         <div class="col">
           <div class="centerx">
-            <table style="padding-left: 3em">
+            <table style="margin-left: 3em">
               <th>
-                <h4 style="padding-top: 5pt">Skills</h4>
+                <h4 style="margin-top: 5pt">Skills</h4>
               </th>
               <tr v-for="item in skills" v-bind:key="item">
                 <td>
@@ -97,7 +97,7 @@
               </h4>
             </template>
             <div class="con-form">
-              <div class="centerx" style="padding-bottom: 2em">
+              <div class="centerx" style="margin-bottom: 2em">
                 <vs-input label-placeholder="Skill" v-model="skill"/>
               </div>
             </div>
@@ -114,9 +114,9 @@
       <div class="row">
         <div class="col">
           <div class="centerx">
-            <table style="padding-left: 3em">
+            <table style="margin-left: 3em">
               <th>
-                <h4 style="padding-top: 5pt">Interests</h4>
+                <h4 style="margin-top: 5pt">Interests</h4>
               </th>
               <tr v-for="item in interests" v-bind:key="item">
                 <td>
@@ -143,7 +143,7 @@
               </h4>
             </template>
             <div class="con-form">
-              <div class="centerx" style="padding-bottom: 2em">
+              <div class="centerx" style="margin-bottom: 2em">
                 <vs-input label-placeholder="Interest" v-model="interest"/>
               </div>
             </div>
@@ -177,7 +177,7 @@
     <div class="col-3">
       <div class="row">
         <div class="col">
-          <h3 style="padding-top: 3pt">Education</h3>
+          <h3 style="margin-top: 3pt">Education</h3>
         </div>
         <div class="col">
           <vs-button
@@ -194,27 +194,27 @@
               </h4>
             </template>
             <div class="con-form">
-              <div class="centerx" style="padding-bottom: 2em">
+              <div class="centerx" style="margin-bottom: 2em">
                 <vs-input label-placeholder="School" v-model="school"/>
               </div>
-              <div class="centerx" style="padding-bottom: 2em">
+              <div class="centerx" style="margin-bottom: 2em">
                 <vs-input label-placeholder="Degree" v-model="degree"/>
               </div>
               <div class="centerx">
                 <vs-input label-placeholder="Field of study" v-model="fieldOfStudy"/>
               </div>
-              <div style="padding-bottom: 1em; padding-top: 1em">
+              <div style="margin-bottom: 1em; margin-top: 1em">
                 <label for="example-datepicker1">When schooling began?</label>
                 <b-form-datepicker id="example-datepicker1" :max="maxDate" v-model="startDate" class="mb-2"></b-form-datepicker>
               </div>
-              <div style="padding-bottom: 1em">
+              <div style="margin-bottom: 1em">
                 <label for="example-datepicker2">When schooling ended?</label>
                 <b-form-datepicker id="example-datepicker2" :max="maxDate" v-model="endDate" class="mb-2"></b-form-datepicker>
               </div>
-              <div class="centerx" style="padding-bottom: 2em">
+              <div class="centerx" style="margin-bottom: 2em">
                 <vs-input label-placeholder="Grade" v-model="grade"/>
               </div>
-              <div class="centerx" style="padding-bottom: 2em">
+              <div class="centerx" style="margin-bottom: 2em">
                 <vs-input label-placeholder="Description" v-model="description"/>
               </div>
             </div>
@@ -271,7 +271,7 @@
     <div class="col-3">
       <div class="row">
         <div class="col">
-          <h3 style="padding-top: 3pt">Work experience</h3>
+          <h3 style="margin-top: 3pt">Work experience</h3>
         </div>
         <div class="col">
           <vs-button
@@ -288,24 +288,24 @@
               </h4>
             </template>
             <div class="con-form">
-              <div class="centerx" style="padding-bottom: 2em">
+              <div class="centerx" style="margin-bottom: 2em">
                 <vs-input label-placeholder="Title" v-model="title"/>
               </div>
-              <div class="centerx" style="padding-bottom: 2em">
+              <div class="centerx" style="margin-bottom: 2em">
                 <vs-input label-placeholder="Company" v-model="company"/>
               </div>
               <div class="centerx">
                 <vs-input label-placeholder="Employment type" v-model="employmentType"/>
               </div>
-              <div style="padding-bottom: 1em; padding-top: 1em">
+              <div style="margin-bottom: 1em; margin-top: 1em">
                 <label for="example-datepicker1">When schooling began?</label>
                 <b-form-datepicker id="example-datepicker1" :max="maxDate" v-model="startDate" class="mb-2"></b-form-datepicker>
               </div>
-              <div style="padding-bottom: 1em">
+              <div style="margin-bottom: 1em">
                 <label for="example-datepicker2">When schooling ended?</label>
                 <b-form-datepicker id="example-datepicker2" :max="maxDate" v-model="endDate" class="mb-2"></b-form-datepicker>
               </div>
-              <div class="centerx" style="padding-bottom: 2em">
+              <div class="centerx" style="margin-bottom: 2em">
                 <vs-input label-placeholder="Location" v-model="location"/>
               </div>
             </div>

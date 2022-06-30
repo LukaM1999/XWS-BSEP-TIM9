@@ -1,5 +1,5 @@
 <template>
-  <div class="window-container" style="padding-top: 5rem" :class="{ 'window-mobile': isDevice }">
+  <div class="window-container" style="margin-top: 5.7%" :class="{ 'window-mobile': isDevice }">
 
     <vs-dialog v-if="connectionNames.size > 0" :prevent-close="true" @close="addNewRoom = false" v-model="addNewRoom">
       <template #header>

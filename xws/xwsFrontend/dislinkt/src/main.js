@@ -22,6 +22,7 @@ import { BootstrapVue, IconsPlugin } from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import './registerServiceWorker'
+import MyPosts from "@/components/MyPosts";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -126,7 +127,12 @@ const routes = [
       {
         path: 'profile',
         name: 'profile',
-        component: Profile
+        component: Profile,
+      },
+      {
+        path: 'my-posts',
+        name: 'myPosts',
+        component: MyPosts
       }
     ]
   },

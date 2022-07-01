@@ -2,8 +2,8 @@
   <div>
     <div class="center examplex">
       <vs-navbar target-scroll="#padding-scroll-content" style="background-color: lavenderblush;" padding-scroll
-                 center-collapsed v-model="active"
-                  not-line>
+                 center-collapsed v-model="active" height="fixed"
+                 not-line>
         <template #left>
           <div class="row">
             <div class="col">
@@ -37,9 +37,7 @@
               Profile
             </vs-navbar-item>
           </div>
-
         </div>
-
         <template #right>
           <vs-tooltip>
             <vs-button icon flat @click="openCreatePostDialog">
@@ -49,6 +47,14 @@
               Create new post
             </template>
           </vs-tooltip>
+          <div class="center content-inputs">
+            <vs-input state="primary" primary v-model="search" @input="searchProfile"
+                      placeholder="Search users" :loading="isSearching">
+              <template #icon>
+                <i class='bx bx-search'></i>
+              </template>
+            </vs-input>
+          </div>
           <vs-button @click="logOut()">Log out</vs-button>
         </template>
       </vs-navbar>
@@ -60,24 +66,26 @@
         </h4>
       </template>
       <div class="con-form" style="display: inline-block;">
-          <div class="form-group">
-            <div class="d-flex align-items-left">
-              <label for="text">Add text</label>
-            </div>
-            <textarea class="mb-4 form-control vs-input" v-model="text" style="border-radius: 15px" id="text" name="text"></textarea>
+        <div class="form-group">
+          <div class="d-flex align-items-left">
+            <label for="text">Add text</label>
           </div>
-          <div class="form-group">
-            <div class="d-flex align-items-left">
-              <label for="img">Add image</label>
-            </div>
-            <input class="mb-4 form-control" style="border-radius: 15px" type="file" id="img" name="img"/>
+          <textarea class="mb-4 form-control vs-input" v-model="text" style="border-radius: 15px" id="text"
+                    name="text"></textarea>
+        </div>
+        <div class="form-group">
+          <div class="d-flex align-items-left">
+            <label for="img">Add image</label>
           </div>
-          <div class="form-group">
-            <div class="d-flex align-items-left">
-              <label for="link">Add link</label>
-            </div>
-            <input class="mb-4 form-control" v-model="link" style="border-radius: 15px" type="text" id="link" name="link"/>
+          <input class="mb-4 form-control" style="border-radius: 15px" type="file" id="img" name="img"/>
+        </div>
+        <div class="form-group">
+          <div class="d-flex align-items-left">
+            <label for="link">Add link</label>
           </div>
+          <input class="mb-4 form-control" v-model="link" style="border-radius: 15px" type="text" id="link"
+                 name="link"/>
+        </div>
       </div>
       <template #footer>
         <div class="footer-dialog">
@@ -89,7 +97,38 @@
     </vs-dialog>
     <div class="row">
       <div class="col">
-        <router-view></router-view>
+        <router-view v-if="searchEmpty"></router-view>
+        <div v-if="!searchEmpty" style="margin-top: 10%" class="row">
+          <div class="col"></div>
+          <div class="col" style="border-radius: 15px; background-color: lavenderblush">
+            <div :key="i" v-for="(tr, i) in usersFound">
+              <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+                <div class="col"></div>
+                <div class="col-10">
+                  <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+                    <div class="col d-flex justify-content-center align-self-center">
+                      <div class="center con-avatars">
+                        <vs-avatar circle primary size="35">
+                          <template #text>
+                            {{ tr.firstName }} {{ tr.lastName }}
+                          </template>
+                        </vs-avatar>
+                      </div>
+                    </div>
+                    <div class="col d-flex justify-content-center align-self-end" style="color: black">
+                      <vs-navbar-item style="font-size: large; cursor: default">{{ tr.firstName }} {{ tr.lastName }}</vs-navbar-item>
+                    </div>
+                    <div class="col d-flex justify-content-center">
+                      <vs-button dark>Profile</vs-button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -99,7 +138,6 @@
 <script>
 
 import axios from 'axios';
-import OneSignalVue from "onesignal-vue";
 import moment from "moment";
 
 export default {
@@ -112,16 +150,20 @@ export default {
       createPostDialog: false,
       text: '',
       image: '',
-      link: ''
+      link: '',
+      isSearching: false,
+      search: '',
+      usersFound: [],
+      searchEmpty: true
     }
   },
-  async beforeMount(){
+  async beforeMount() {
     await this.getProfile()
   },
   async mounted() {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/OneSignalSDKWorker.js').then(function(registration) {
-      }).catch(function(e) {
+      navigator.serviceWorker.register('/OneSignalSDKWorker.js').then(function (registration) {
+      }).catch(function (e) {
         console.log('SW registration failed with error:', e);
       });
     }
@@ -140,8 +182,8 @@ export default {
                 cancelButton: "Cancel",
 
                 /* CATEGORY SLIDEDOWN SPECIFIC TEXT */
-                negativeUpdateButton:"Cancel",
-                positiveUpdateButton:"Save Preferences",
+                negativeUpdateButton: "Cancel",
+                positiveUpdateButton: "Save Preferences",
                 updateMessage: "Update your push notification subscription preferences.",
               },
               delay: {
@@ -200,39 +242,42 @@ export default {
     },
     async getProfile() {
       const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile/${this.$store.getters.user?.id}`)
-      if(response.data){
+      if (response.data) {
         this.profile = response.data.profile
-        console.log(this.profile)
       }
     },
     async searchProfile() {
-      const loading = this.$vs.loading();
-      const response = await axios.get(process.env.VUE_APP_BACKEND + '/profile?search=Luka').catch(error => {
+      this.checkIfSearchEmpty()
+      if (this.search === '') return
+      this.isSearching = true
+      const response = await axios.get(process.env.VUE_APP_BACKEND + `/profile?search=${this.search}`).catch(error => {
         this.$vs.notification({
           title: 'Error',
           text: 'Error searching profiles',
           color: 'danger',
           position: 'top-right'
         });
-        loading.close();
+        this.isSearching = false
         throw error;
       });
-      loading.close();
-      this.$vs.notification({
-        title: 'Success',
-        text: JSON.stringify(response.data),
-        color: 'success',
-        position: 'top-right',
-        duration: 10000
-      });
+      this.isSearching = false
+      this.usersFound = response.data.profiles
+      //this.changeRoute('/user/search')
     },
-    changeRoute(path){
+    checkIfSearchEmpty() {
+      if (this.search === '') {
+        this.usersFound = []
+        this.searchEmpty = true
+      } else
+        this.searchEmpty = false
+    },
+    changeRoute(path) {
       this.$router.replace(path)
     },
-    openCreatePostDialog(){
+    openCreatePostDialog() {
       this.createPostDialog = true
     },
-    async createPost(){
+    async createPost() {
       const newPost = {
         profile: {
           id: this.profile.id,
@@ -268,7 +313,7 @@ export default {
       this.$router.push('my-posts')
       this.resetCreatePostDialog()
     },
-    resetCreatePostDialog(){
+    resetCreatePostDialog() {
       this.text = ''
       this.image = ''
       this.link = ''

@@ -1,37 +1,81 @@
 <template>
-  <vs-card type="1" style="background: transparent">
-    <template #title>
-      <h3>{{ post.profile.firstName }} {{ post.profile.lastName }}</h3>
-    </template>
-    <template #img>
-      <img :src="img" alt="">
-    </template>
-    <template #text>
-      <p>
-        {{ post.content.text }}
-      </p>
-    </template>
-    <template #interactions v-if="checkIfLoggedUser()">
-      <vs-button :active="checkIfFlat('CELEBRATE')" border icon @click="sendLike">
-        <i class='bx bx-like'></i>
-        <span v-if="likes > 0">
-          {{ likes }}
-        </span>
-      </vs-button>
-      <vs-button :active="checkIfFlat('DISLIKE')" danger border icon @click="sendDislike">
-        <i class='bx bx-dislike'></i>
-        <span v-if="dislikes > 0">
-          {{ dislikes }}
-        </span>
-      </vs-button>
-      <vs-button class="btn-chat" dark icon>
-        <i class='bx bx-chat'></i>
-        <span v-if="comments > 0">
-          {{ comments }}
-        </span>
-      </vs-button>
-    </template>
-  </vs-card>
+  <div>
+    <vs-card type="1" style="background: transparent">
+      <template #title>
+        <h3>{{ post.profile.firstName }} {{ post.profile.lastName }}</h3>
+      </template>
+      <template #img>
+        <img :src="img" alt="">
+      </template>
+      <template #text>
+        <p>
+          {{ post.content.text }}
+        </p>
+      </template>
+      <template #interactions v-if="checkIfLoggedUser()">
+        <vs-button :active="checkIfFlat('CELEBRATE')" border icon @click="sendLike">
+          <i class='bx bx-like'></i>
+          <span v-if="likes > 0">
+            {{ likes }}
+          </span>
+        </vs-button>
+        <vs-button :active="checkIfFlat('DISLIKE')" danger border icon @click="sendDislike">
+          <i class='bx bx-dislike'></i>
+          <span v-if="dislikes > 0">
+            {{ dislikes }}
+          </span>
+        </vs-button>
+        <vs-button class="btn-chat" dark icon @click="openCommentDialog">
+          <i class='bx bx-chat'></i>
+          <span v-if="numOfComments > 0">
+            {{ numOfComments }}
+          </span>
+        </vs-button>
+        <vs-button v-if="ifUsersPost" danger icon @click="deletePost">
+          <i class='bx bx-x'></i>
+        </vs-button>
+      </template>
+    </vs-card>
+    <vs-dialog :prevent-close="true" @close="resetCommentDialog" auto-width v-model="commentDialog">
+      <template #header>
+        <h4 class="not-margin me-3 ms-3">
+          Comments
+        </h4>
+      </template>
+      <div class="con-form">
+        <div v-for="c in comments" :key="c.id" class="mb-3">
+          <div class="row" style="margin-bottom: 0px">
+            <div class="col-6" style="font-size: medium">
+              <label :for="c.id"><b>{{ c.commentCreator.firstName }} {{ c.commentCreator.lastName }}</b></label>
+            </div>
+            <div class="col" style="font-size: small">
+              <a disabled="">{{ formatDate(c.dateCreated) }}</a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col d-flex justify-content-center">
+              <vs-input required :id="c.id" disabled="" style="opacity: 100 !important;" primary state="primary" v-model="c.content"/>
+              <vs-button v-if="currentUser(c)" danger icon @click="deleteComment(c)">
+                <i class='bx bx-x'></i>
+              </vs-button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <div class="footer-dialog">
+          <div class="con-form" style="display: inline-block; padding-top: 3.5rem">
+            <div class="col">
+              <vs-input required class="mt-2" primary v-model="newComment" label-placeholder="Add new comment"/>
+            </div>
+          </div>
+          <vs-button block @click="addComment">
+            Send
+          </vs-button>
+        </div>
+      </template>
+    </vs-dialog>
+  </div>
 </template>
 
 <script>
@@ -46,8 +90,12 @@ export default {
       likes: 0,
       dislikes: 0,
       reactions: [],
-      comments: 0,
-      userReaction: {}
+      numOfComments: 0,
+      userReaction: {},
+      commentDialog: false,
+      comments: [],
+      newComment: '',
+      user: null
     }
   },
   props: {
@@ -57,9 +105,20 @@ export default {
     }
   },
   mounted() {
+    this.getProfile()
     this.getReactions()
+    this.getComments()
   },
   methods: {
+    currentUser(comment){
+      return comment.commentCreator.id === this.user.id
+    },
+    async getProfile() {
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile/${this.$store.getters.user?.id}`)
+      if (response.data) {
+        this.user = response.data.profile
+      }
+    },
     async getReactions() {
       const response = await axios.get(`${process.env.VUE_APP_BACKEND}/reaction/post/${this.post.id}`)
         .catch(e => {
@@ -75,6 +134,23 @@ export default {
         this.reactions = response.data.reactions
         this.likes = response.data.reactions.filter(r => r.type !== "DISLIKE").length
         this.dislikes = response.data.reactions.filter(r => r.type === "DISLIKE").length
+      }
+    },
+    async getComments() {
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/comment/post/${this.post.id}`)
+        .catch(e => {
+          this.$vs.notification({
+            title: 'Error',
+            text: 'Error loading comments',
+            color: 'danger',
+            position: 'top-right'
+          });
+          throw e;
+        })
+      if (response.data.comments?.length > 0) {
+        this.numOfComments = response.data.comments.length
+        this.comments = response.data.comments
+        this.comments = this.comments.sort((a, b) => moment(a.dateCreated) - moment(b.dateCreated))
       }
     },
     checkIfLoggedUser() {
@@ -102,8 +178,9 @@ export default {
           await this.getReactions()
         }
       } else {
-        if(userReaction.type === "CELEBRATE"){
+        if (userReaction.type === "CELEBRATE") {
           await axios.delete(`${process.env.VUE_APP_BACKEND}/reaction/${userReaction?.id}`).then(async () => {
+            //this.likes -= 1
             await this.getReactions()
           })
           return
@@ -150,10 +227,10 @@ export default {
           await this.getReactions()
         }
       } else {
-        if(userReaction.type === "DISLIKE"){
+        if (userReaction.type === "DISLIKE") {
           await axios.delete(`${process.env.VUE_APP_BACKEND}/reaction/${userReaction.id}`).then(async () => {
-            if(userReaction.type === "CELEBRATE")
-              await this.sendLike()
+            // if (userReaction.type === "CELEBRATE")
+            //   await this.sendLike()
             await this.getReactions()
           })
           return
@@ -185,12 +262,87 @@ export default {
       }
       return null
     },
-    checkIfFlat(type){
+    checkIfFlat(type) {
       for (let r of this.reactions) {
         if (r.userId === this.$store.getters.user.id && r.type === type)
           return true
       }
       return false
+    },
+    openCommentDialog() {
+      this.commentDialog = true
+    },
+    async addComment() {
+      if (this.newComment == '') return
+      const comment = {
+        content: this.newComment,
+        commentCreator: {
+          id: this.user.id,
+          firstName: this.user.firstName,
+          lastName: this.user.lastName,
+        },
+        postId: this.post.id,
+        dateCreated: moment().format()
+      }
+      const response = await axios.post(`${process.env.VUE_APP_BACKEND}/comment`, comment)
+        .catch(e => {
+          this.$vs.notification({
+            title: 'Error',
+            text: 'Error while posting a comment',
+            color: 'danger',
+            position: 'top-right'
+          });
+          throw e;
+        })
+      this.numOfComments += 1
+      this.comments.push(response.data.comment)
+      this.comments = this.comments.sort((a, b) => moment(a.dateCreated) - moment(b.dateCreated))
+      this.resetCommentDialog()
+    },
+    resetCommentDialog() {
+      this.newComment = ''
+    },
+    formatDate(date){
+      return moment(date).format('lll')
+    },
+    async deleteComment(c){
+      const response = await axios.delete(`${process.env.VUE_APP_BACKEND}/comment/${c.id}`)
+        .catch(e => {
+          this.$vs.notification({
+            title: 'Error',
+            text: 'Error while deleting comment',
+            color: 'danger',
+            position: 'top-right'
+          });
+          throw e;
+        })
+      this.numOfComments -= 1
+      this.comments = this.comments.filter(com => com.id !== c.id)
+      this.comments = this.comments.sort((a, b) => moment(a.dateCreated) - moment(b.dateCreated))
+      this.resetCommentDialog()
+    },
+    ifUsersPost(){
+      return this.user.id === this.post.userId
+    },
+    async deletePost(){
+      const response = await axios.delete(`${process.env.VUE_APP_BACKEND}/post/${this.post.id}`)
+        .catch(e => {
+          this.$vs.notification({
+            title: 'Error',
+            text: 'Error while deleting post',
+            color: 'danger',
+            position: 'top-right'
+          });
+          throw e;
+        })
+      // this.$vs.notification({
+      //   title: "Success",
+      //   text: "Post deleted",
+      //   color: "success",
+      //   position: "top-right"
+      // });
+      this.$destroy();
+      this.$el.parentNode.removeChild(this.$el);
     }
   }
 }

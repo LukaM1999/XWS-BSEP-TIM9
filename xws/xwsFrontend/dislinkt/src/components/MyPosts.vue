@@ -1,9 +1,13 @@
 <template>
   <div>
     <div class="row" style="margin-top: 7%">
-      <div class="col d-flex justify-content-center">
+      <div class="col">
         <div v-for="post in posts" :key="post.id">
-          <Post :post="post" class="mb-4" />
+          <div class="row">
+            <div class="col-12 d-flex justify-content-center">
+              <Post :post="post" class="mb-4" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -13,6 +17,7 @@
 <script>
 import Post from "@/components/Post";
 import axios from "axios";
+import moment from "moment";
 
 export default {
   name: "MyPosts",
@@ -43,6 +48,10 @@ export default {
       });
       loading.close();
       this.posts = response.data.posts;
+      this.sortPosts()
+    },
+    sortPosts(){
+      this.posts = this.posts.sort((a, b) => moment(b.createdAt) - moment(a.createdAt))
     }
   }
 }

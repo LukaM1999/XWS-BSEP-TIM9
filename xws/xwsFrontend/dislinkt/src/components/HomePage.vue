@@ -82,7 +82,7 @@
       <template #footer>
         <div class="footer-dialog">
           <vs-button block @click="createPost">
-            Register
+            Save
           </vs-button>
         </div>
       </template>
@@ -265,6 +265,7 @@ export default {
         position: 'top-right',
       });
       this.createPostDialog = false
+      this.$router.push('my-posts')
       this.resetCreatePostDialog()
     },
     resetCreatePostDialog(){

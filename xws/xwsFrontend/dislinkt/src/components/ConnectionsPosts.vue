@@ -1,9 +1,13 @@
 <template>
   <div>
     <div class="row" style="margin-top: 7%">
-      <div class="col d-flex justify-content-center">
+      <div class="col">
         <div v-for="post in posts" :key="post.id">
-          <Post :post="post" class="mb-4" />
+          <div class="row">
+            <div class="col-12 d-flex justify-content-center">
+              <Post :post="post" class="mb-4" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -13,6 +17,7 @@
 <script>
 import axios from "axios";
 import Post from "@/components/Post";
+import moment from "moment";
 
 export default {
   name: "ConnectionsPosts",
@@ -20,26 +25,57 @@ export default {
   data() {
     return {
       posts: [],
-      user: Object.assign({}, JSON.parse(localStorage.getItem('user'))),
+      connections: [],
+      user: null
     }
   },
   async mounted() {
-    const loading = this.$vs.loading();
-    const response = await axios.get(`https://localhost:8000/post/profile/62706d1b624b3da748f63fe3`).catch(error => {
-      this.$vs.notification({
-        title: 'Error',
-        text: 'Error getting posts',
-        color: 'danger',
-        position: 'top-right'
-      });
-      loading.close();
-      throw error;
-    });
-    if(response.data.posts.length > 0) {
-      loading.close();
-      this.posts = response.data.posts;
+    this.user = this.$store.getters.user
+    await this.getConnections()
+    if(this.connections.length > 0){
+      for (const c of this.connections) {
+        await this.getPosts(c.issuerId === this.user.id ? c.subjectId : c.issuerId)
+      }
     }
   },
+  methods: {
+    async getPosts(id){
+      const loading = this.$vs.loading();
+      const response = await axios.get(`https://localhost:8000/post/profile/${id}`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error getting posts',
+          color: 'danger',
+          position: 'top-right'
+        });
+        loading.close();
+        throw error;
+      });
+      loading.close();
+      for (let post of response.data.posts) {
+        this.posts.push(post)
+      }
+      this.sortPosts()
+    },
+    async getConnections(){
+      const loading = this.$vs.loading();
+      const response = await axios.get(`https://localhost:8000/connection/${this.user.id}`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error getting connections',
+          color: 'danger',
+          position: 'top-right'
+        });
+        loading.close();
+        throw error;
+      });
+      loading.close();
+      this.connections = response.data.connections;
+    },
+    sortPosts(){
+      this.posts = this.posts.sort((a, b) => moment(b.createdAt) - moment(a.createdAt))
+    }
+  }
 
 }
 </script>

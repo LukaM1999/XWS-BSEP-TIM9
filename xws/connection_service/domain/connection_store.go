@@ -14,4 +14,5 @@ type ConnectionStore interface {
 	GetBlockedUsers(userId string) ([]string, error)
 	GetBlockers(userId string) ([]string, error)
 	UnblockUser(issuerId string, subjectId string) (bool, error)
+	GetConnection(user1Id string, user2Id string) (*Connection, error)
 }

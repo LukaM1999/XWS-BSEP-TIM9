@@ -21,7 +21,7 @@
                   {{tr.fullName}}
                 </vs-navbar-item>
               </div>
-              <div v-if="!tr.isApproved === true" class="col d-flex justify-content-end  align-self-center">
+              <div v-if="!tr.isApproved && tr.subjectId === userId" class="col d-flex justify-content-end  align-self-center">
                 <vs-button primary style="font-size: medium" @click="approve(tr)">
                   <i class='bx bx-check'></i>
                 </vs-button>
@@ -29,8 +29,8 @@
                   <i class='bx bx-x'></i>
                 </vs-button>
               </div>
-              <div v-if="tr.isApproved === true" class="col d-flex justify-content-center  align-self-center">
-                <vs-button dark>Profile</vs-button>
+              <div class="col d-flex justify-content-center  align-self-center">
+                <vs-button @click="viewProfile(tr)" dark>Profile</vs-button>
               </div>
             </div>
           </div>
@@ -39,9 +39,9 @@
       </div>
     </div>
     <div class="col"></div>
-    <div v-if="connections.length > 0" class="col-4 mr-5" style="border-radius: 15px; background-color: lavenderblush" :key="refreshKey">
+    <div v-if="recommendations.length > 0" class="col-4 mr-5" style="border-radius: 15px; background-color: lavenderblush" :key="refreshKey">
       <h1>Suggested: </h1>
-      <div :key="i" v-for="(tr, i) in connections">
+      <div :key="i" v-for="(tr, i) in recommendations">
         <div class="row" style="margin-bottom: 5px; margin-top: 5px">
           <div class="col"></div>
           <div class="col-10">
@@ -61,7 +61,7 @@
                 </vs-navbar-item>
               </div>
               <div class="col d-flex justify-content-center  align-self-center">
-                <vs-button dark>Add connection</vs-button>
+                <vs-button @click="connect(tr.id)" dark>Connect</vs-button>
               </div>
             </div>
           </div>
@@ -74,6 +74,7 @@
 
 <script>
 import axios from "axios";
+import moment from "moment";
 
 export default {
   name: "MyConnections",
@@ -83,7 +84,7 @@ export default {
       recommendations: [],
       userId: this.$store.getters.user?.id,
       fullname: '',
-      refreshKey: 0
+      refreshKey: 0,
     }
   },
   async beforeMount() {
@@ -143,11 +144,29 @@ export default {
           throw error;
         });
       loading.close();
-      this.recommendations = response.data.recommendations
-      console.log(this.recommendations)
-      // for (const connection of this.connections) {
-      //   await this.getConnectionFullName(connection)
-      // }
+      const recommendations = response.data.recommendations
+       for (const recommendation of recommendations) {
+         await this.getRecommendationFullName(recommendation)
+       }
+    },
+    async getRecommendationFullName(id){
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile/${id}`)
+        .catch(error => {
+          this.$vs.notification({
+            title: 'Error',
+            text: 'Error getting user',
+            color: 'danger',
+            position: 'top-right'
+          });
+          throw error;
+        })
+      const profile = response.data.profile
+      const fullName = profile.firstName + " " + profile.lastName
+      this.recommendations.push({
+        id: id,
+        fullName: fullName
+      })
+      this.refreshKey += 1
     },
     async approve(c) {
       const loading = this.$vs.loading();
@@ -181,6 +200,32 @@ export default {
         });
       loading.close();
       this.connections = this.connections.filter(con => con.id !== c.id)
+    },
+    async connect(id){
+      const newConnection = {
+        issuerId: this.$store.getters.user?.id,
+        subjectId: id,
+        date: moment().format()
+      }
+      const loading = this.$vs.loading();
+      const response = await axios.post(process.env.VUE_APP_BACKEND + '/connection', newConnection).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error while creating connection',
+          color: 'danger',
+          position: 'top-right'
+        });
+        loading.close();
+        throw error;
+      });
+      loading.close();
+      this.recommendations = this.recommendations.filter(r => r.id !== id);
+    },
+    viewProfile(connection) {
+      let profileId = connection.subjectId
+      if(connection.subjectId === this.userId)
+        profileId = connection.issuerId
+      this.$router.push({name: 'profileInfo', params: { id: profileId }})
     }
   },
 }

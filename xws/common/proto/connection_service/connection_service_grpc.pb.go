@@ -26,6 +26,7 @@ type ConnectionServiceClient interface {
 	GetBlockedUsers(ctx context.Context, in *GetBlockedUsersRequest, opts ...grpc.CallOption) (*GetBlockedUsersResponse, error)
 	GetBlockers(ctx context.Context, in *GetBlockersRequest, opts ...grpc.CallOption) (*GetBlockersResponse, error)
 	UnblockUser(ctx context.Context, in *UnblockUserRequest, opts ...grpc.CallOption) (*UnblockUserResponse, error)
+	GetConnection(ctx context.Context, in *GetConnectionRequest, opts ...grpc.CallOption) (*GetConnectionResponse, error)
 }
 
 type connectionServiceClient struct {
@@ -117,6 +118,15 @@ func (c *connectionServiceClient) UnblockUser(ctx context.Context, in *UnblockUs
 	return out, nil
 }
 
+func (c *connectionServiceClient) GetConnection(ctx context.Context, in *GetConnectionRequest, opts ...grpc.CallOption) (*GetConnectionResponse, error) {
+	out := new(GetConnectionResponse)
+	err := c.cc.Invoke(ctx, "/connection.ConnectionService/GetConnection", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ConnectionServiceServer is the server API for ConnectionService service.
 // All implementations must embed UnimplementedConnectionServiceServer
 // for forward compatibility
@@ -130,6 +140,7 @@ type ConnectionServiceServer interface {
 	GetBlockedUsers(context.Context, *GetBlockedUsersRequest) (*GetBlockedUsersResponse, error)
 	GetBlockers(context.Context, *GetBlockersRequest) (*GetBlockersResponse, error)
 	UnblockUser(context.Context, *UnblockUserRequest) (*UnblockUserResponse, error)
+	GetConnection(context.Context, *GetConnectionRequest) (*GetConnectionResponse, error)
 	mustEmbedUnimplementedConnectionServiceServer()
 }
 
@@ -163,6 +174,9 @@ func (*UnimplementedConnectionServiceServer) GetBlockers(context.Context, *GetBl
 }
 func (*UnimplementedConnectionServiceServer) UnblockUser(context.Context, *UnblockUserRequest) (*UnblockUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnblockUser not implemented")
+}
+func (*UnimplementedConnectionServiceServer) GetConnection(context.Context, *GetConnectionRequest) (*GetConnectionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConnection not implemented")
 }
 func (*UnimplementedConnectionServiceServer) mustEmbedUnimplementedConnectionServiceServer() {}
 
@@ -332,6 +346,24 @@ func _ConnectionService_UnblockUser_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ConnectionService_GetConnection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetConnectionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ConnectionServiceServer).GetConnection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/connection.ConnectionService/GetConnection",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ConnectionServiceServer).GetConnection(ctx, req.(*GetConnectionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _ConnectionService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "connection.ConnectionService",
 	HandlerType: (*ConnectionServiceServer)(nil),
@@ -371,6 +403,10 @@ var _ConnectionService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UnblockUser",
 			Handler:    _ConnectionService_UnblockUser_Handler,
+		},
+		{
+			MethodName: "GetConnection",
+			Handler:    _ConnectionService_GetConnection_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

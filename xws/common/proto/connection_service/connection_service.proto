@@ -55,6 +55,11 @@ service ConnectionService{
       delete: "/connection/user/{userId}/block"
     };
   }
+  rpc GetConnection(GetConnectionRequest) returns(GetConnectionResponse) {
+    option (google.api.http) = {
+      get: "/connection/{user1Id}/{user2Id}"
+    };
+  }
 }
 
 message GetRequest {
@@ -126,6 +131,15 @@ message UnblockUserRequest {
 
 message UnblockUserResponse {
   bool success = 1;
+}
+
+message GetConnectionRequest {
+  string user1Id = 1;
+  string user2Id = 2;
+}
+
+message GetConnectionResponse {
+  Connection connection = 1;
 }
 
 message Connection {

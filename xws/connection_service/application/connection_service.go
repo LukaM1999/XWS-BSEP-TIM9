@@ -61,3 +61,7 @@ func (service *ConnectionService) GetBlockers(userId string) ([]string, error) {
 func (service *ConnectionService) UnblockUser(issuerId, subjectId string) (bool, error) {
 	return service.store.UnblockUser(issuerId, subjectId)
 }
+
+func (service *ConnectionService) GetConnection(user1Id string, user2Id string) (*domain.Connection, error) {
+	return service.store.GetConnection(user1Id, user2Id)
+}

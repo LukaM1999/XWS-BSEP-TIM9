@@ -176,3 +176,19 @@ func (handler *ConnectionHandler) UnblockUser(ctx context.Context, request *pb.U
 		Success: success,
 	}, nil
 }
+
+func (handler *ConnectionHandler) GetConnection(ctx context.Context, request *pb.GetConnectionRequest) (*pb.GetConnectionResponse, error) {
+	connection, err := handler.service.GetConnection(request.User1Id, request.User2Id)
+	if err != nil {
+		log.WithField("userId", request.User1Id).Errorf("Cannot get connection: %v", err)
+		return nil, err
+	}
+	if connection == nil {
+		return &pb.GetConnectionResponse{Connection: nil}, nil
+	}
+	response := &pb.GetConnectionResponse{
+		Connection: mapConnectionToPb(connection),
+	}
+
+	return response, nil
+}

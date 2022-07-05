@@ -40,7 +40,8 @@ func (store *ConnectionPostgresStore) Get(userId string) ([]*domain.Connection, 
 	}
 	defer client.Close()
 	all, err := client.Connection.Query().
-		Where(connection.And(connection.HasUserWith(user.PrimaryKeyEQ(userId)))).
+		Where(connection.Or(connection.HasUserWith(user.PrimaryKeyEQ(userId)),
+			connection.HasConnectionWith(user.PrimaryKeyEQ(userId)))).
 		All(context.TODO())
 	if err != nil {
 		return nil, err
@@ -262,9 +263,15 @@ func (store *ConnectionPostgresStore) GetRecommendations(userId string) ([]strin
 			return nil, err
 		}
 		for _, recommendationId := range recommendationIssuers {
+			if recommendationId == connectedUser.PrimaryKey {
+				continue
+			}
 			recommendations[recommendationId] = true
 		}
 		for _, recommendationId := range recommendationSubjects {
+			if recommendationId == connectedUser.PrimaryKey {
+				continue
+			}
 			recommendations[recommendationId] = true
 		}
 
@@ -356,4 +363,28 @@ func (store *ConnectionPostgresStore) UnblockUser(issuerId string, subjectId str
 		return false, err
 	}
 	return true, nil
+}
+
+func (store *ConnectionPostgresStore) GetConnection(user1Id string, user2Id string) (*domain.Connection, error) {
+	client, err := ent.Open("postgres", store.connectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+	connection, err := client.Connection.Query().
+		Where(connection.Or(connection.And(connection.HasUserWith(user.PrimaryKeyEQ(user1Id)),
+			connection.HasConnectionWith(user.PrimaryKeyEQ(user2Id))),
+			connection.And(connection.HasConnectionWith(user.PrimaryKeyEQ(user1Id)),
+				connection.HasUserWith(user.PrimaryKeyEQ(user2Id))))).
+		Only(context.TODO())
+	if err != nil || connection == nil {
+		return nil, nil
+	}
+	return &domain.Connection{
+		Id:         connection.ID,
+		IssuerId:   connection.IssuerPrimaryKey,
+		SubjectId:  connection.SubjectPrimaryKey,
+		Date:       connection.CreatedAt,
+		IsApproved: connection.IsApproved,
+	}, nil
 }

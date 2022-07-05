@@ -11,35 +11,35 @@
               <template #text>
                 <div class="row justify-content-center">
                   <div class="col justify-content-center d-grid">
-                    <vs-card class="text-center" v-if="isPrivate == false">
+                    <vs-card class="text-center" v-if="!privateProfile && !isBlocked">
                       <template #text>
                         <h6>
                           Date of birth: {{dateOfBirth}}
                         </h6>
                       </template>
                     </vs-card>
-                    <vs-card v-if="isPrivate == false">
+                    <vs-card v-if="!privateProfile && !isBlocked">
                       <template #text>
                         <h6>
                           Email: {{email}}
                         </h6>
                       </template>
                     </vs-card>
-                    <vs-card v-if="isPrivate == false">
+                    <vs-card v-if="!privateProfile && !isBlocked">
                       <template #text>
                         <h6>
                           Phone number: {{phoneNumber}}
                         </h6>
                       </template>
                     </vs-card>
-                    <vs-card v-if="isPrivate == false">
+                    <vs-card v-if="!privateProfile && !isBlocked">
                       <template #text>
                         <h6>
                           Gender: {{gender}}
                         </h6>
                       </template>
                     </vs-card>
-                    <vs-card v-if="isPrivate == false">
+                    <vs-card v-if="!privateProfile && !isBlocked">
                       <template #text>
                         <h6>
                           Biography: {{biography}}
@@ -50,7 +50,7 @@
                 </div>
               </template>
             </vs-card>
-            <vs-card style="padding-top: 1em" v-if="isPrivate == false" >
+            <vs-card style="padding-top: 1em" v-if="!privateProfile && !isBlocked" >
               <template #title>
                 <h6>Skills:</h6>
               </template>
@@ -60,7 +60,7 @@
                 </div>
               </template>
             </vs-card>
-            <vs-card v-if="isPrivate == false" style="padding-top: 1em; width: 30rem">
+            <vs-card v-if="!privateProfile && !isBlocked" style="padding-top: 1em; width: 30rem">
               <template #title>
                 <h6>Interests:</h6>
               </template>
@@ -70,7 +70,7 @@
                 </div>
               </template>
             </vs-card>
-            <vs-card v-if="isPrivate == false" style="padding-top: 1em; width: 30rem">
+            <vs-card v-if="!privateProfile && !isBlocked" style="padding-top: 1em; width: 30rem">
               <template #title>
                 <h6>Education:</h6>
               </template>
@@ -116,7 +116,7 @@
                 </div>
               </template>
             </vs-card>
-            <vs-card v-if="isPrivate == false" style="padding-top: 1em; width: 30rem">
+            <vs-card v-if="!privateProfile && !isBlocked" style="padding-top: 1em; width: 30rem">
               <template #title>
                 <h6>Work experience:</h6>
               </template>
@@ -166,74 +166,90 @@
         </div>
       </div>
       <div class="col-md-2">
-        <table>
-          <tr>
-            <td>
-              <vs-button block >
-                Follow
-              </vs-button>
-            </td>
-            <td>
-              <vs-button block>
-                Block
-              </vs-button>
-            </td>
-          </tr>
-        </table>
-        <vs-card>
-          <template #title>
-            <h3>People you may know</h3>
-          </template>
-          <template #text>
-            <div v-for="(item, i) in suggestions" v-bind:key="i">
-              <vs-card>
-                <template #text>
-                  <h6>
-                    {{item.firstName}} {{item.lastName}}
-                  </h6>
-                  <vs-button block >
-                    Follow
+        <div v-if="logged">
+          <table>
+            <tr>
+              <td>
+                <div v-if="!isConnected && !isBlocked && !IamBlocked">
+                  <vs-button block @click="connect()">
+                    Connect
                   </vs-button>
-                </template>
-              </vs-card>
-              <vs-card>
-                <template #text>
-                  <h6>
-                    Company: {{item.company}}
-                  </h6>
-                </template>
-              </vs-card>
-              <vs-card>
-                <template #text>
-                  <h6>
-                    Employment type: {{item.employmentType}}
-                  </h6>
-                </template>
-              </vs-card>
-              <vs-card>
-                <template #text>
-                  <h6>
-                    Location: {{item.location}}
-                  </h6>
-                </template>
-              </vs-card>
-              <vs-card>
-                <template #text>
-                  <h6>
-                    Started: {{item.startDate}}
-                  </h6>
-                </template>
-              </vs-card>
-              <vs-card>
-                <template #text>
-                  <h6>
-                    Ended: {{item.endDate}}
-                  </h6>
-                </template>
-              </vs-card>
-            </div>
-          </template>
-        </vs-card>
+                </div>
+                <div v-if="isConnected && !isBlocked && !IamBlocked">
+                  <vs-button block @click="removeConnection()">
+                    Remove
+                  </vs-button>
+                </div>
+              </td>
+              <td>
+                <div v-if="!isBlocked">
+                  <vs-button v-if="!isBlocked" block @click="block()">
+                    Block
+                  </vs-button>
+                </div>
+                <div v-if="isBlocked">
+                  <vs-button block @click="unblock()">
+                    Unblock
+                  </vs-button>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <vs-card>
+            <template #title>
+              <h3>People you may know</h3>
+            </template>
+            <template #text>
+              <div v-for="(item, i) in suggestions" v-bind:key="i">
+                <vs-card>
+                  <template #text>
+                    <h6>
+                      {{item.firstName}} {{item.lastName}}
+                    </h6>
+                    <vs-button block >
+                      Follow
+                    </vs-button>
+                  </template>
+                </vs-card>
+                <vs-card>
+                  <template #text>
+                    <h6>
+                      Company: {{item.company}}
+                    </h6>
+                  </template>
+                </vs-card>
+                <vs-card>
+                  <template #text>
+                    <h6>
+                      Employment type: {{item.employmentType}}
+                    </h6>
+                  </template>
+                </vs-card>
+                <vs-card>
+                  <template #text>
+                    <h6>
+                      Location: {{item.location}}
+                    </h6>
+                  </template>
+                </vs-card>
+                <vs-card>
+                  <template #text>
+                    <h6>
+                      Started: {{item.startDate}}
+                    </h6>
+                  </template>
+                </vs-card>
+                <vs-card>
+                  <template #text>
+                    <h6>
+                      Ended: {{item.endDate}}
+                    </h6>
+                  </template>
+                </vs-card>
+              </div>
+            </template>
+          </vs-card>
+        </div>
       </div>
     </div>
   </div>
@@ -268,12 +284,23 @@ export default {
       education: [],
       recomendations: [],
       posts: [],
+      isConnected: false,
+      isBlocked: false,
+      privateProfile: true,
+      logged: false,
+      IamBlocked: false
     }
   },
   mounted() {
     this.getProfile();
     this.getRecomendations();
     this.getMyPosts();
+    this.getIsConnected();
+    this.getIsBlocked();
+    this.amIBlocked();
+    if (this.$store.getters.user?.id) {
+      this.logged = true;
+    }
   },
   methods: {
     async getProfile() {
@@ -300,8 +327,10 @@ export default {
         this.skills = this.user.skills;
       if (this.user?.interests?.length > 0)
         this.interests = this.user.interests;
-      if (this.user?.isPrivate != undefined)
+      if (this.user?.isPrivate != undefined) {
         this.isPrivate = this.user.isPrivate;
+        this.privateProfile = this.user.isPrivate;
+      }
       this.phoneNumber = this.user.phoneNumber;
       if (this.user?.workExperience?.length > 0) {
         this.workExperience = this.user.workExperience;
@@ -354,7 +383,7 @@ export default {
       this.sortPosts()
     },
     sortPosts(){
-      this.posts = this.posts.sort((a, b) => moment(b.createdAt) - moment(a.createdAt))
+      this.posts = this.posts?.sort((a, b) => moment(b.createdAt) - moment(a.createdAt))
     },
     formatDate(date){
       return moment(date).format('l')
@@ -378,6 +407,116 @@ export default {
         return "SEASONAL"
 
       return "FULL_TIME"
+    },
+    async connect(){
+      const newConnection = {
+        issuerId: this.$store.getters.user?.id,
+        subjectId: this.id,
+        date: moment().format()
+      }
+      const loading = this.$vs.loading();
+      const response = await axios.post(process.env.VUE_APP_BACKEND + '/connection', newConnection).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error while creating post',
+          color: 'danger',
+          position: 'top-right'
+        });
+        loading.close();
+        throw error;
+      });
+      loading.close();
+      this.isConnected = response.data?.connection;
+    },
+    async getIsConnected(){
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/connection/${this.$store.getters.user?.id}/${this.id}`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error getting connection',
+          color: 'danger',
+          position: 'top-right'
+        });
+        throw error;
+      });
+      this.isConnected = response.data?.connection
+      if (this.isConnected)
+        this.privateProfile = false;
+    },
+    async getIsBlocked(){
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/connection/user/${this.$store.getters.user?.id}/block`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error getting blocked users',
+          color: 'danger',
+          position: 'top-right'
+        });
+        throw error;
+      });
+      this.isBlocked = response.data?.blockedUsers?.find(v => v === this.id)
+    },
+    async amIBlocked(){
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/connection/user/${this.$store.getters.user?.id}/blocker`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error getting blockers',
+          color: 'danger',
+          position: 'top-right'
+        });
+        throw error;
+      });
+      if (response.data?.blockers?.find(v => v === this.id)) {
+        this.privateProfile = true;
+        this.IamBlocked = true;
+      }
+    },
+    async block(){
+      const loading = this.$vs.loading();
+      const response = await axios.post(process.env.VUE_APP_BACKEND + `/connection/user/${this.id}/block`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error while creating post',
+          color: 'danger',
+          position: 'top-right'
+        });
+        loading.close();
+        throw error;
+      });
+      loading.close();
+      this.isBlocked = response.data?.success;
+      if (this.isBlocked)
+        this.privateProfile = true;
+    },
+    async removeConnection(){
+      const loading = this.$vs.loading();
+      const response = await axios.delete(process.env.VUE_APP_BACKEND + '/connection/' + this.isConnected.id).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error while removing connection',
+          color: 'danger',
+          position: 'top-right'
+        });
+        loading.close();
+        throw error;
+      });
+      loading.close();
+      this.isConnected = null;
+    },
+    async unblock(){
+      const loading = this.$vs.loading();
+      const response = await axios.delete(process.env.VUE_APP_BACKEND + `/connection/user/${this.id}/block`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error while removing connection',
+          color: 'danger',
+          position: 'top-right'
+        });
+        loading.close();
+        throw error;
+      });
+      loading.close();
+      this.isBlocked = false;
+      this.privateProfile = this.isPrivate;
+      this.amIBlocked();
     }
   }
 }

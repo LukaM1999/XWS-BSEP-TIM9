@@ -40,8 +40,7 @@ func (store *ConnectionPostgresStore) Get(userId string) ([]*domain.Connection, 
 	}
 	defer client.Close()
 	all, err := client.Connection.Query().
-		Where(connection.And(connection.HasUserWith(user.PrimaryKeyEQ(userId))),
-			connection.IsApprovedEQ(true)).
+		Where(connection.And(connection.HasUserWith(user.PrimaryKeyEQ(userId)))).
 		All(context.TODO())
 	if err != nil {
 		return nil, err
@@ -169,7 +168,7 @@ func (store *ConnectionPostgresStore) UpdateConnection(id int) (*domain.Connecti
 		log.Fatal(err)
 	}
 	defer client.Close()
-	oldConnection, err := client.Connection.Query().Where(connection.ConnectionID(id)).Only(context.TODO())
+	oldConnection, err := client.Connection.Query().Where(connection.ID(id)).Only(context.TODO())
 	if err != nil {
 		return nil, err
 	}

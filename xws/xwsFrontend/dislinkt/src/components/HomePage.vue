@@ -24,7 +24,7 @@
             <vs-navbar-item :active="active == 'myPosts'" id="myPosts" to="/user/my-posts">
               My posts
             </vs-navbar-item>
-            <vs-navbar-item :active="active == 'docs'" id="docs">
+            <vs-navbar-item :active="active == 'docs'" id="docs" to="/user/connections">
               Connections
             </vs-navbar-item>
             <vs-navbar-item :active="active == 'components'" id="components">
@@ -310,7 +310,7 @@ export default {
         position: 'top-right',
       });
       this.createPostDialog = false
-      this.$router.push('my-posts')
+      this.$router.replace('/user/my-posts')
       this.resetCreatePostDialog()
     },
     resetCreatePostDialog() {

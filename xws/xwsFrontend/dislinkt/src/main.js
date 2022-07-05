@@ -23,6 +23,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import './registerServiceWorker'
 import MyPosts from "@/components/MyPosts";
+import MyConnections from "@/components/MyConnections";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -133,7 +134,12 @@ const routes = [
         path: 'my-posts',
         name: 'myPosts',
         component: MyPosts
-      }
+      },
+      {
+        path: 'connections',
+        name: 'connections',
+        component: MyConnections
+      },
     ]
   },
   {

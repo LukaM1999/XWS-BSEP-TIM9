@@ -36,7 +36,7 @@
         </vs-button>
       </template>
     </vs-card>
-    <vs-dialog :prevent-close="true" @close="resetCommentDialog" auto-width v-model="commentDialog">
+    <vs-dialog :prevent-close="true" @close="resetCommentDialog" width="450px" v-model="commentDialog">
       <template #header>
         <h4 class="not-margin me-3 ms-3">
           Comments
@@ -45,39 +45,43 @@
       <div class="con-form">
         <div v-for="c in comments" :key="c.id" class="mb-3">
           <div class="row" style="margin-bottom: 0px">
-            <div class="col-6" style="font-size: medium">
+            <div class="col-6 d-flex justify-content-start" style="font-size: medium">
               <label :for="c.id"><b>{{ c.commentCreator.firstName }} {{ c.commentCreator.lastName }}</b></label>
             </div>
-            <div class="col" style="font-size: small">
+            <div class="col d-flex justify-content-end" style="font-size: small">
               <a disabled="">{{ formatDate(c.dateCreated) }}</a>
             </div>
           </div>
-          <div class="row">
-            <div class="col d-flex justify-content-center">
-              <vs-input required :id="c.id" disabled="" style="opacity: 100 !important;" primary state="primary" v-model="c.content"/>
-              <vs-button v-if="currentUser(c)" danger icon @click="deleteComment(c)">
-                <i class='bx bx-x'></i>
-              </vs-button>
+          <div class="row" style="padding-left: 15px; padding-right: 15px;">
+            <div class="col-12 d-flex justify-content-center"  style="background-color: lavender; border-radius: 12px;">
+                <p class="mt-3" style="font-size: medium">{{c.content}}</p>
+            </div>
+            <div v-if="currentUser(c)" class="col d-flex justify-content-end align-self-center">
+              <div>
+                <vs-button danger icon @click="deleteComment(c)">
+                  <i class='bx bx-x'></i>
+                </vs-button>
+              </div>
             </div>
           </div>
         </div>
       </div>
       <template #footer>
         <div class="footer-dialog">
-          <div class="con-form" style="display: inline-block; padding-top: 3.5rem">
-            <div class="col">
-              <vs-input required class="mt-2" primary v-model="newComment" label-placeholder="Add new comment"/>
+          <div class="con-form" style=" padding-top: 1rem">
+            <div class="col mt-2" style="display: grid">
+              <label for="textarea">Add new comment: </label>
+              <textarea class="vs-input mb-2" style="width: 100%; border-radius: 12px" required primary v-model="newComment" id="textarea"></textarea>
+              <vs-button block @click="addComment">
+                Send
+              </vs-button>
             </div>
           </div>
-          <vs-button block @click="addComment">
-            Send
-          </vs-button>
         </div>
       </template>
     </vs-dialog>
   </div>
 </template>
-
 <script>
 import axios from "axios";
 import moment from "moment";

@@ -186,7 +186,7 @@ export default {
         scale: 0.6,
         center: true
       });
-      await axios.post(`${process.env.VUE_APP_DISLINKT}/post/promote-job`, promotionRequest)
+      await axios.post(`${process.env.VUE_APP_DISLINKT}/job-offer/promote-job`, promotionRequest)
         .catch(error => {
           loading.close()
           this.$vs.notification({

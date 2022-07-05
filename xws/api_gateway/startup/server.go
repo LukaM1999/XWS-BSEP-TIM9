@@ -7,10 +7,12 @@ import (
 	"dislinkt/common/loggers"
 	commentGw "dislinkt/common/proto/comment_service"
 	connectionGw "dislinkt/common/proto/connection_service"
+	jobGw "dislinkt/common/proto/job_offer_service"
 	postGw "dislinkt/common/proto/post_service"
 	profileGw "dislinkt/common/proto/profile_service"
 	reactionGw "dislinkt/common/proto/reaction_service"
 	securityGw "dislinkt/common/proto/security_service"
+
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
@@ -123,6 +125,12 @@ func (server *Server) initHandlers() {
 
 	postEndpoint := fmt.Sprintf("%s:%s", server.config.PostHost, server.config.PostPort)
 	err = postGw.RegisterPostServiceHandlerFromEndpoint(context.TODO(), server.mux, postEndpoint, opts)
+	if err != nil {
+		panic(err)
+	}
+
+	jobOfferEndpoint := fmt.Sprintf("%s:%s", server.config.JobOfferHost, server.config.JobOfferPort)
+	err = jobGw.RegisterJobOfferServiceHandlerFromEndpoint(context.TODO(), server.mux, jobOfferEndpoint, opts)
 	if err != nil {
 		panic(err)
 	}

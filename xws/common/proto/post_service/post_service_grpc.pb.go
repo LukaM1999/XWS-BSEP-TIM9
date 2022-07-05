@@ -26,8 +26,6 @@ type PostServiceClient interface {
 	CreateConnection(ctx context.Context, in *CreateConnectionRequest, opts ...grpc.CallOption) (*CreateConnectionResponse, error)
 	DeleteConnection(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
-	CreateJob(ctx context.Context, in *CreateJobRequest, opts ...grpc.CallOption) (*CreateJobResponse, error)
-	PromoteJob(ctx context.Context, in *PromoteJobRequest, opts ...grpc.CallOption) (*PromoteJobResponse, error)
 }
 
 type postServiceClient struct {
@@ -119,24 +117,6 @@ func (c *postServiceClient) UpdateProfile(ctx context.Context, in *UpdateProfile
 	return out, nil
 }
 
-func (c *postServiceClient) CreateJob(ctx context.Context, in *CreateJobRequest, opts ...grpc.CallOption) (*CreateJobResponse, error) {
-	out := new(CreateJobResponse)
-	err := c.cc.Invoke(ctx, "/post.PostService/CreateJob", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *postServiceClient) PromoteJob(ctx context.Context, in *PromoteJobRequest, opts ...grpc.CallOption) (*PromoteJobResponse, error) {
-	out := new(PromoteJobResponse)
-	err := c.cc.Invoke(ctx, "/post.PostService/PromoteJob", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // PostServiceServer is the server API for PostService service.
 // All implementations must embed UnimplementedPostServiceServer
 // for forward compatibility
@@ -150,8 +130,6 @@ type PostServiceServer interface {
 	CreateConnection(context.Context, *CreateConnectionRequest) (*CreateConnectionResponse, error)
 	DeleteConnection(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
-	CreateJob(context.Context, *CreateJobRequest) (*CreateJobResponse, error)
-	PromoteJob(context.Context, *PromoteJobRequest) (*PromoteJobResponse, error)
 	mustEmbedUnimplementedPostServiceServer()
 }
 
@@ -185,12 +163,6 @@ func (*UnimplementedPostServiceServer) DeleteConnection(context.Context, *Delete
 }
 func (*UnimplementedPostServiceServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
-}
-func (*UnimplementedPostServiceServer) CreateJob(context.Context, *CreateJobRequest) (*CreateJobResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateJob not implemented")
-}
-func (*UnimplementedPostServiceServer) PromoteJob(context.Context, *PromoteJobRequest) (*PromoteJobResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PromoteJob not implemented")
 }
 func (*UnimplementedPostServiceServer) mustEmbedUnimplementedPostServiceServer() {}
 
@@ -360,42 +332,6 @@ func _PostService_UpdateProfile_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PostService_CreateJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateJobRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PostServiceServer).CreateJob(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/post.PostService/CreateJob",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PostServiceServer).CreateJob(ctx, req.(*CreateJobRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PostService_PromoteJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PromoteJobRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PostServiceServer).PromoteJob(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/post.PostService/PromoteJob",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PostServiceServer).PromoteJob(ctx, req.(*PromoteJobRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _PostService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "post.PostService",
 	HandlerType: (*PostServiceServer)(nil),
@@ -435,14 +371,6 @@ var _PostService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateProfile",
 			Handler:    _PostService_UpdateProfile_Handler,
-		},
-		{
-			MethodName: "CreateJob",
-			Handler:    _PostService_CreateJob_Handler,
-		},
-		{
-			MethodName: "PromoteJob",
-			Handler:    _PostService_PromoteJob_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

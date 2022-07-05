@@ -159,27 +159,3 @@ func (handler *PostHandler) UpdateProfile(ctx context.Context, request *pb.Updat
 		Profile: request.Profile,
 	}, nil
 }
-
-func (handler *PostHandler) CreateJob(ctx context.Context, request *pb.CreateJobRequest) (*pb.CreateJobResponse, error) {
-	job, err := handler.service.CreateJob(mapPbToJob(request.JobOffer))
-	if err != nil {
-		log.Errorf("Cannot create job: %v", err)
-		return nil, err
-	}
-	log.Info("Job created")
-	return &pb.CreateJobResponse{
-		JobOffer: mapJobToPb(job),
-	}, nil
-}
-
-func (handler *PostHandler) PromoteJob(ctx context.Context, request *pb.PromoteJobRequest) (*pb.PromoteJobResponse, error) {
-	job, err := handler.service.PromoteJob(mapPbToJob(request.JobOffer), request.Token, request.Username)
-	if err != nil {
-		log.Errorf("Cannot promote job: %v", err)
-		return nil, err
-	}
-	log.Info("Job promoted")
-	return &pb.PromoteJobResponse{
-		JobOffer: mapJobToPb(job),
-	}, nil
-}

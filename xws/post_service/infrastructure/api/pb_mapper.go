@@ -72,42 +72,6 @@ func mapPbToConnection(pbConnection *pb.Connection) *domain.Connection {
 	}
 }
 
-func mapJobToPb(job *domain.JobOffer) *pb.JobOffer {
-	return &pb.JobOffer{
-		Id: job.Id.Hex(),
-		Profile: &pb.Profile{
-			Id:        job.Profile.Id.Hex(),
-			FirstName: job.Profile.FirstName,
-			LastName:  job.Profile.LastName,
-		},
-		Company:     job.Company,
-		Position:    job.Position,
-		Description: job.Description,
-		Criteria:    job.Criteria,
-		CreatedAt:   timestamppb.New(job.CreatedAt),
-	}
-}
-
-func mapPbToJob(pbJob *pb.JobOffer) *domain.JobOffer {
-	jobOffer := &domain.JobOffer{
-		Profile:     domain.Profile{},
-		Company:     pbJob.Company,
-		Position:    pbJob.Position,
-		Description: pbJob.Description,
-		Criteria:    pbJob.Criteria,
-		CreatedAt:   pbJob.CreatedAt.AsTime(),
-	}
-	if pbJob.Id != "" {
-		jobOffer.Id = getObjectId(pbJob.Id)
-	}
-	if pbJob.Profile != nil {
-		jobOffer.Profile.Id = getObjectId(pbJob.Profile.Id)
-		jobOffer.Profile.FirstName = pbJob.Profile.FirstName
-		jobOffer.Profile.LastName = pbJob.Profile.LastName
-	}
-	return jobOffer
-}
-
 func getObjectId(id string) primitive.ObjectID {
 	if objectId, err := primitive.ObjectIDFromHex(id); err == nil {
 		return objectId

@@ -20,6 +20,8 @@ type Config struct {
 	ConnectionPort string
 	PostHost       string
 	PostPort       string
+	JobOfferHost   string
+	JobOfferPort   string
 }
 
 var log = loggers.NewGatewayLogger()
@@ -43,6 +45,8 @@ func NewConfig() *Config {
 		ConnectionPort: os.Getenv("CONNECTION_SERVICE_PORT"),
 		PostHost:       os.Getenv("POST_SERVICE_HOST"),
 		PostPort:       os.Getenv("POST_SERVICE_PORT"),
+		JobOfferHost:   os.Getenv("JOB_OFFER_SERVICE_HOST"),
+		JobOfferPort:   os.Getenv("JOB_OFFER_SERVICE_PORT"),
 	}
 }
 

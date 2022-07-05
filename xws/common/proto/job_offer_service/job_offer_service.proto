@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+option go_package = "dislinkt/common/job_offer";
+
+package job_offer;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+
+service JobOfferService {
+  rpc GetJob(GetJobRequest) returns (GetJobResponse) {
+    option (google.api.http) = {
+      get: "/job-offer/{id}"
+    };
+  }
+  rpc GetRecommendations(GetRecommendationsRequest) returns(GetRecommendationsResponse) {
+    option (google.api.http) = {
+      post: "/job-offer/recommendation",
+      body: "*",
+    };
+  }
+  rpc CreateJob(CreateJobRequest) returns(CreateJobResponse) {
+    option (google.api.http) = {
+      post: "/job-offer",
+      body: "*",
+    };
+  }
+  rpc PromoteJob(PromoteJobRequest) returns(PromoteJobResponse) {
+    option (google.api.http) = {
+      post: "/job-offer/promote-job",
+      body: "*"
+    };
+  }
+}
+
+message GetJobRequest {
+  int64 id = 1;
+}
+
+message GetJobResponse {
+  JobOffer jobOffer = 1;
+}
+
+message GetRecommendationsRequest {
+  repeated string skills = 1;
+}
+
+message GetRecommendationsResponse {
+  repeated JobRecommendation jobRecommendations = 1;
+}
+
+message CreateJobRequest {
+  JobOffer jobOffer = 1;
+}
+
+message CreateJobResponse {
+  JobOffer jobOffer = 1;
+}
+
+message PromoteJobRequest {
+  string token = 1;
+  string username = 2;
+  JobOffer jobOffer = 3;
+}
+
+message PromoteJobResponse {
+  JobOffer jobOffer = 1;
+}
+
+message JobOffer {
+  int64 id = 1;
+  string profileId = 2;
+  string company = 3;
+  string position = 4;
+  string description = 5;
+  string criteria = 6;
+  repeated string skills = 7;
+  google.protobuf.Timestamp createdAt = 8;
+}
+
+message JobRecommendation {
+  int64 jobId = 1;
+  int64 skillCount = 2;
+}

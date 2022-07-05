@@ -27,7 +27,7 @@
             <vs-navbar-item :active="active == 'docs'" @click="resetSearch()" id="docs" to="/user/connections">
               Connections
             </vs-navbar-item>
-            <vs-navbar-item :active="active == 'components'" @click="resetSearch()" id="components">
+            <vs-navbar-item :active="active === 'jobOffers'" @click="resetSearch()" id="jobOffers" to="/user/job-offers">
               Job offers
             </vs-navbar-item>
             <vs-navbar-item :active="active === 'messages'" @click="resetSearch()" id="messages" to="/user/messages">
@@ -180,8 +180,7 @@ export default {
                 actionMessage: "Would you like to receive notifications?",
                 acceptButton: "Allow",
                 cancelButton: "Cancel",
-
-                /* CATEGORY SLIDEDOWN SPECIFIC TEXT */
+                
                 negativeUpdateButton: "Cancel",
                 positiveUpdateButton: "Save Preferences",
                 updateMessage: "Update your push notification subscription preferences.",

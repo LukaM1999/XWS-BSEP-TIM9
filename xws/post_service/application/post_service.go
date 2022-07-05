@@ -1,10 +1,8 @@
 package application
 
 import (
-	"context"
 	pbProfile "dislinkt/common/proto/profile_service"
 	"dislinkt/post_service/domain"
-	"errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -64,19 +62,4 @@ func (service *PostService) CreateConnection(connection *domain.Connection) erro
 
 func (service *PostService) DeleteConnection(id primitive.ObjectID) error {
 	return service.store.DeleteConnection(id)
-}
-
-func (service *PostService) CreateJob(job *domain.JobOffer) (*domain.JobOffer, error) {
-	return service.store.CreateJob(job)
-}
-
-func (service *PostService) PromoteJob(job *domain.JobOffer, token string, username string) (*domain.JobOffer, error) {
-	profile, err := service.profileClient.GetByToken(context.TODO(), &pbProfile.GetByTokenRequest{Token: &token})
-	if err != nil {
-		return nil, err
-	}
-	if *profile.Profile.Username != username {
-		return nil, errors.New("invalid username or token")
-	}
-	return service.store.CreateJob(job)
 }

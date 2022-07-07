@@ -427,6 +427,32 @@ export default {
       });
       loading.close();
       this.isConnected = response.data?.connection;
+      await this.sendNotification(newConnection.subjectId);
+    },
+    async sendNotification(subjectId){
+      const myProfile = await this.getMyProfile()
+      const notification = {
+        app_id: process.env.VUE_APP_ONESIGNAL_APP_ID,
+        contents: { en: `New connection ${this.isConnected ? 'with' : 'request from'} ${myProfile.firstName} ${myProfile.lastName}` },
+        url: 'https://localhost:7777/user/connections',
+        filters: [
+          {field: "tag", key: "connections", relation: "=", value: 1},
+          {field: "tag", key: "user_id", relation: "=", value: subjectId}
+        ]
+      }
+      await axios.post('https://onesignal.com/api/v1/notifications', notification)
+    },
+    async getMyProfile(){
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile/${this.$store.getters.user?.id}`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error getting user',
+          color: 'danger',
+          position: 'top-right'
+        });
+        throw error;
+      });
+      return response.data?.profile
     },
     async getIsConnected(){
       const response = await axios.get(`${process.env.VUE_APP_BACKEND}/connection/${this.$store.getters.user?.id}/${this.id}`).catch(error => {

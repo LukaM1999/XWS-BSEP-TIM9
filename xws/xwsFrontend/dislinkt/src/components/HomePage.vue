@@ -180,7 +180,7 @@ export default {
                 actionMessage: "Would you like to receive notifications?",
                 acceptButton: "Allow",
                 cancelButton: "Cancel",
-                
+
                 negativeUpdateButton: "Cancel",
                 positiveUpdateButton: "Save Preferences",
                 updateMessage: "Update your push notification subscription preferences.",
@@ -309,8 +309,37 @@ export default {
         position: 'top-right',
       });
       this.createPostDialog = false
+      await this.sendNotification()
       this.$router.replace('/user/my-posts')
       this.resetCreatePostDialog()
+    },
+    async sendNotification(){
+      const connections = await this.getMyConnections()
+      for(let c of connections){
+        const notification = {
+          app_id: process.env.VUE_APP_ONESIGNAL_APP_ID,
+          contents: { en: `New post from ${this.profile?.firstName} ${this.profile?.lastName}\n\n${this.text.substring(0, 100)}${this.text.length > 100 ? '...' : ''}` },
+          url: 'https://localhost:7777/user/posts',
+          filters: [
+            {field: "tag", key: "posts", relation: "=", value: 1},
+            {field: "tag", key: "user_id", relation: "=", value: c.subjectId === this.profile.id ? c.issuerId : c.subjectId }
+          ]
+        }
+        await axios.post('https://onesignal.com/api/v1/notifications', notification)
+      }
+    },
+    async getMyConnections() {
+      const response = await axios.get(process.env.VUE_APP_BACKEND + `/connection/${this.$store.getters.user?.id}`)
+        .catch(error => {
+          this.$vs.notification({
+            title: 'Error',
+            text: 'Error getting connections',
+            color: 'danger',
+            position: 'top-right'
+          });
+          throw error;
+        });
+      return response.data.connections
     },
     resetCreatePostDialog() {
       this.text = ''

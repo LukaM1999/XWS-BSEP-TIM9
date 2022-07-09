@@ -7,6 +7,7 @@ import (
 	"dislinkt/common/loggers"
 	pb "dislinkt/common/proto/comment_service"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var log = loggers.NewCommentLogger()
@@ -105,6 +106,16 @@ func (handler *CommentHandler) GetLogs(ctx context.Context, request *pb.GetLogsR
 		log.Errorf("GLF")
 		return nil, err
 	}
+	pbLogs := make([]*pb.Log, len(logs))
+	for i, log := range logs {
+		pbLogs[i] = &pb.Log{
+			Time:        timestamppb.New(log.Time),
+			Level:       log.Level,
+			Service:     "Comment service",
+			Msg:         log.Msg,
+			FullContent: log.FullContent,
+		}
+	}
 	log.Info("GLD")
-	return &pb.GetLogsResponse{Logs: logs}, nil
+	return &pb.GetLogsResponse{Logs: pbLogs}, nil
 }

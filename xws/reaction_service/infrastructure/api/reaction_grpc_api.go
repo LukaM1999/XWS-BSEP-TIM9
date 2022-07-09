@@ -6,6 +6,7 @@ import (
 	pb "dislinkt/common/proto/reaction_service"
 	"dislinkt/reaction_service/application"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var log = loggers.NewReactionLogger()
@@ -82,6 +83,16 @@ func (handler *ReactionHandler) GetLogs(ctx context.Context, request *pb.GetLogs
 		log.Errorf("GLF")
 		return nil, err
 	}
+	pbLogs := make([]*pb.Log, len(logs))
+	for i, log := range logs {
+		pbLogs[i] = &pb.Log{
+			Time:        timestamppb.New(log.Time),
+			Level:       log.Level,
+			Service:     "Reaction service",
+			Msg:         log.Msg,
+			FullContent: log.FullContent,
+		}
+	}
 	log.Info("GLD")
-	return &pb.GetLogsResponse{Logs: logs}, nil
+	return &pb.GetLogsResponse{Logs: pbLogs}, nil
 }

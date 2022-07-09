@@ -26,6 +26,7 @@ import MyPosts from "@/components/MyPosts";
 import MyConnections from "@/components/MyConnections";
 import ProfileInfo from "@/components/ProfileInfo";
 import * as https from "https";
+import AdminHomePage from "@/components/AdminHomePage";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -157,7 +158,7 @@ const routes = [
   {
     path: '/admin',
     name: 'adminHomepage',
-    component: HomePage
+    component: AdminHomePage,
   },
   {
     path: '/passwordRecovery',

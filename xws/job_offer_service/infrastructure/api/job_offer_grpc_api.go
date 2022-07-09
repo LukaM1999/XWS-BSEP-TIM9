@@ -5,6 +5,7 @@ import (
 	"dislinkt/common/loggers"
 	pb "dislinkt/common/proto/job_offer_service"
 	"dislinkt/job_offer_service/application"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var log = loggers.NewJobLogger()
@@ -80,6 +81,16 @@ func (handler *JobOfferHandler) GetLogs(ctx context.Context, request *pb.GetLogs
 		log.Errorf("GLF")
 		return nil, err
 	}
+	pbLogs := make([]*pb.Log, len(logs))
+	for i, log := range logs {
+		pbLogs[i] = &pb.Log{
+			Time:        timestamppb.New(log.Time),
+			Level:       log.Level,
+			Service:     "Job offer service",
+			Msg:         log.Msg,
+			FullContent: log.FullContent,
+		}
+	}
 	log.Info("GLD")
-	return &pb.GetLogsResponse{Logs: logs}, nil
+	return &pb.GetLogsResponse{Logs: pbLogs}, nil
 }

@@ -6,6 +6,8 @@ package security;
 
 import "google/api/annotations.proto";
 import "google/api/httpbody.proto";
+import "google/protobuf/timestamp.proto";
+
 
 service SecurityService{
   rpc Get(GetRequest) returns(GetResponse) {
@@ -160,8 +162,16 @@ message UpdatePasswordRequest {
 
 message UpdatePasswordResponse {}
 
+message Log {
+  google.protobuf.Timestamp time = 1;
+  string level = 2;
+  string msg = 3;
+  string service = 4;
+  string fullContent = 5;
+}
+
 message GetLogsRequest {}
 
 message GetLogsResponse {
-  repeated string logs = 1;
+  repeated Log logs = 1;
 }

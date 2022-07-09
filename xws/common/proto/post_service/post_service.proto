@@ -152,11 +152,18 @@ message Connection {
   string subjectId = 3;
 }
 
+message Log {
+  google.protobuf.Timestamp time = 1;
+  string level = 2;
+  string msg = 3;
+  string service = 4;
+  string fullContent = 5;
+}
 
 message GetLogsRequest {
 }
 
 message GetLogsResponse {
-  repeated string logs = 1;
+  repeated Log logs = 1;
 }
 

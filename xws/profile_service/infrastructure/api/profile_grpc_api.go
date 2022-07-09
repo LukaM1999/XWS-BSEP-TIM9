@@ -145,6 +145,18 @@ func (handler *ProfileHandler) GetLogs(ctx context.Context, request *pb.GetLogsR
 		log.Errorf("GLF")
 		return nil, err
 	}
+	pbLogs := make([]*pb.Log, len(logs))
+	for i, log := range logs {
+		s := "Profile service"
+		service := &s
+		pbLogs[i] = &pb.Log{
+			Time:        timestamppb.New(log.Time),
+			Level:       &log.Level,
+			Service:     service,
+			Msg:         &log.Msg,
+			FullContent: &log.FullContent,
+		}
+	}
 	log.Info("GLD")
-	return &pb.GetLogsResponse{Logs: logs}, nil
+	return &pb.GetLogsResponse{Logs: pbLogs}, nil
 }

@@ -6,6 +6,7 @@ import (
 	pb "dislinkt/common/proto/connection_service"
 	pbPost "dislinkt/common/proto/post_service"
 	"dislinkt/connection_service/application"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
 )
 
@@ -199,6 +200,16 @@ func (handler *ConnectionHandler) GetLogs(ctx context.Context, request *pb.GetLo
 		log.Errorf("GLF")
 		return nil, err
 	}
+	pbLogs := make([]*pb.Log, len(logs))
+	for i, log := range logs {
+		pbLogs[i] = &pb.Log{
+			Time:        timestamppb.New(log.Time),
+			Level:       log.Level,
+			Service:     "Connection service",
+			Msg:         log.Msg,
+			FullContent: log.FullContent,
+		}
+	}
 	log.Info("GLD")
-	return &pb.GetLogsResponse{Logs: logs}, nil
+	return &pb.GetLogsResponse{Logs: pbLogs}, nil
 }

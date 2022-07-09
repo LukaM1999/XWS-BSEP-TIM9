@@ -1,5 +1,10 @@
 version: "3.8"
 
+x-logging: &fluent-bit
+  driver: fluentd
+  options:
+    fluentd-address: ${FLUENT_BIT_ADDRESS}:24224
+
 services:
   security_service:
     image: security_service
@@ -10,6 +15,7 @@ services:
     restart: on-failure
     ports:
       - 8001:${SECURITY_SERVICE_PORT}
+    logging: *fluent-bit
     environment:
       OS_ENV: docker
       SECURITY_DB_HOST: ${SECURITY_DB_HOST}
@@ -29,6 +35,7 @@ services:
       - security_db
     networks:
       - network
+      - monitoring
 
   profile_service:
     image: profile_service
@@ -39,6 +46,7 @@ services:
     restart: on-failure
     ports:
       - 8002:${PROFILE_SERVICE_PORT}
+    logging: *fluent-bit
     environment:
       OS_ENV: docker
       PROFILE_DB_HOST: ${PROFILE_DB_HOST}
@@ -64,6 +72,7 @@ services:
       - profile_db
     networks:
       - network
+      - monitoring
 
   comment_service:
     image: comment_service
@@ -74,6 +83,7 @@ services:
     restart: on-failure
     ports:
       - 8003:${COMMENT_SERVICE_PORT}
+    logging: *fluent-bit
     environment:
       OS_ENV: docker
       COMMENT_DB_HOST: ${COMMENT_DB_HOST}
@@ -91,6 +101,7 @@ services:
       - comment_db
     networks:
       - network
+      - monitoring
 
   reaction_service:
     image: reaction_service
@@ -101,6 +112,7 @@ services:
     restart: on-failure
     ports:
       - 8004:${REACTION_SERVICE_PORT}
+    logging: *fluent-bit
     environment:
       OS_ENV: docker
       REACTION_DB_HOST: ${REACTION_DB_HOST}
@@ -116,6 +128,7 @@ services:
       - reaction_db
     networks:
       - network
+      - monitoring
 
   connection_service:
     image: connection_service
@@ -126,6 +139,7 @@ services:
     restart: on-failure
     ports:
       - 8005:${CONNECTION_SERVICE_PORT}
+    logging: *fluent-bit
     environment:
       OS_ENV: docker
       CONNECTION_DB_HOST: ${CONNECTION_DB_HOST}
@@ -145,6 +159,7 @@ services:
       - connection_db
     networks:
       - network
+      - monitoring
 
   post_service:
     image: post_service
@@ -155,6 +170,7 @@ services:
     restart: on-failure
     ports:
       - 8006:${POST_SERVICE_PORT}
+    logging: *fluent-bit
     environment:
       OS_ENV: docker
       POST_DB_HOST: ${POST_DB_HOST}
@@ -176,6 +192,7 @@ services:
       - post_db
     networks:
       - network
+      - monitoring
 
   job_offer_service:
     image: job_offer_service
@@ -211,6 +228,7 @@ services:
     restart: on-failure
     ports:
       - ${GATEWAY_PORT}:${GATEWAY_PORT}
+    logging: *fluent-bit
     environment:
       OS_ENV: docker
       GATEWAY_PORT: ${GATEWAY_PORT}
@@ -230,6 +248,7 @@ services:
       JOB_OFFER_SERVICE_PORT: ${JOB_OFFER_SERVICE_PORT}
     networks:
       - network
+      - monitoring
 
   security_db:
     image: mongo
@@ -237,8 +256,10 @@ services:
     restart: on-failure
     ports:
       - 27017:${SECURITY_DB_PORT}
+    logging: *fluent-bit
     networks:
       - network
+      - monitoring
 
   profile_db:
     image: mongo
@@ -246,8 +267,10 @@ services:
     restart: on-failure
 #    ports:
 #      - 27017:${PROFILE_DB_PORT}
+    logging: *fluent-bit
     networks:
       - network
+      - monitoring
 
   comment_db:
     image: mongo
@@ -255,8 +278,10 @@ services:
     restart: on-failure
 #    ports:
 #      - 27017:${COMMENT_DB_PORT}
+    logging: *fluent-bit
     networks:
       - network
+      - monitoring
 
   reaction_db:
     image: mongo
@@ -264,8 +289,10 @@ services:
     restart: on-failure
 #    ports:
 #      - 27017:${REACTION_DB_PORT}
+    logging: *fluent-bit
     networks:
       - network
+      - monitoring
 
   connection_db:
     image: postgres:14.1-alpine
@@ -277,8 +304,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - 5433:${CONNECTION_DB_PORT}
+    logging: *fluent-bit
     networks:
       - network
+      - monitoring
 
   post_db:
     image: mongo
@@ -286,8 +315,10 @@ services:
     restart: on-failure
 #    ports:
 #      - 27017:${POST_DB_PORT}
+    logging: *fluent-bit
     networks:
       - network
+      - monitoring
 
   job_offer_db:
     image: postgres:14.1-alpine
@@ -306,9 +337,13 @@ services:
     image: nats
     container_name: nats
     restart: on-failure
+    logging: *fluent-bit
     networks:
       - network
+      - monitoring
 
 networks:
   network:
     driver: bridge
+  monitoring:
+    external: true

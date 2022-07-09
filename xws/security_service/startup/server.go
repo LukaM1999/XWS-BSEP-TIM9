@@ -14,10 +14,13 @@ import (
 	"dislinkt/security_service/infrastructure/persistence"
 	"dislinkt/security_service/startup/config"
 	"fmt"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"
+	"net/http"
 	"time"
 )
 
@@ -170,7 +173,7 @@ func (server *Server) startGrpcServer(userHandler *api.UserHandler, jwtManager *
 	}
 	serverOptions := []grpc.ServerOption{
 		grpc.Creds(tlsCredentials),
-		grpc.UnaryInterceptor(interceptor.Unary()),
+		grpc.ChainUnaryInterceptor(interceptor.Unary(), grpc_prometheus.UnaryServerInterceptor),
 		grpc.StreamInterceptor(interceptor.Stream()),
 	}
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server.config.Port))
@@ -178,8 +181,19 @@ func (server *Server) startGrpcServer(userHandler *api.UserHandler, jwtManager *
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer(serverOptions...)
-	reflection.Register(grpcServer)
 	security.RegisterSecurityServiceServer(grpcServer, userHandler)
+	reflection.Register(grpcServer)
+	grpc_prometheus.Register(grpcServer)
+	http.Handle("/metrics", promhttp.Handler())
+	//serveMux := http.NewServeMux()
+	//serveMux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+	//	promhttp.Handler().ServeHTTP(w, r)
+	//})
+	//err = http.ListenAndServe(fmt.Sprintf(":%s", server.config.Port), serveMux)
+	//if err != nil {
+	//	log.Fatalf("failed to listen: %v", err)
+	//	return
+	//}
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}

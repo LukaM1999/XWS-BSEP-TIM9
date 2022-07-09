@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	cfg "dislinkt/api_gateway/startup/config"
+	auth "dislinkt/common/domain"
 	"dislinkt/common/loggers"
 	commentGw "dislinkt/common/proto/comment_service"
 	connectionGw "dislinkt/common/proto/connection_service"
@@ -14,13 +15,19 @@ import (
 	securityGw "dislinkt/common/proto/security_service"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
+	muxprom "gitlab.com/msvechla/mux-prometheus/pkg/middleware"
+	"net/http"
+	"os"
+	"regexp"
+	"strings"
+	"time"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"net/http"
-	"os"
-	"strings"
 )
 
 var log = loggers.NewGatewayLogger()
@@ -28,6 +35,11 @@ var log = loggers.NewGatewayLogger()
 type Server struct {
 	config *cfg.Config
 	mux    *runtime.ServeMux
+}
+
+func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func NewServer(config *cfg.Config) *Server {
@@ -91,6 +103,33 @@ func cors(next http.Handler) http.Handler {
 	})
 }
 
+func prom(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/metrics" {
+			promhttp.Handler().ServeHTTP(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+//var (
+//	httpDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+//		Name: "dislinkt_http_duration_seconds",
+//		Help: "Duration of HTTP requests.",
+//	}, []string{"path"})
+//)
+//
+//func prometheusMiddleware(next http.Handler) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		route := mux.CurrentRoute(r)
+//		path, _ := route.GetPathTemplate()
+//		timer := prometheus.NewTimer(httpDuration.WithLabelValues(path))
+//		next.ServeHTTP(w, r)
+//		timer.ObserveDuration()
+//	})
+//}
+
 func (server *Server) initHandlers() {
 	//tlsCredentials, err := auth.LoadTLSClientCredentials()
 	config := &tls.Config{
@@ -139,6 +178,19 @@ func (server *Server) initHandlers() {
 		panic(err)
 	}
 
+	//err = server.mux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	//	promhttp.Handler().ServeHTTP(w, r)
+	//})
+	//if err != nil {
+	//	return
+	//}
+	//err = server.mux.HandlePath("GET", "/security/metrics", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	//	promhttp.Handler().ServeHTTP(w, r)
+	//})
+	//if err != nil {
+	//	return
+	//}
+
 	err = registerGatewayLogs(server)
 	if err != nil {
 		panic(err)
@@ -157,13 +209,41 @@ func registerGatewayLogs(server *Server) error {
 		if os.Getenv("OS_ENV") == "docker" {
 			logPathPrefix = "./logs/"
 		}
-		resp := make(map[string][]string)
+		resp := make(map[string][]auth.Log)
 		content, err := os.ReadFile(logPathPrefix + "api_gateway/api_gateway.log")
 		if err != nil {
 			log.Fatalf("Error happened in JSON marshal. Err: %s", err)
 		}
 		lines := strings.Split(string(content), "\n")
-		resp["logs"] = lines
+		logs := make([]auth.Log, 0)
+		for _, line := range lines {
+			if line == "" {
+				continue
+			}
+			var log auth.Log
+			splitBySpace := strings.Split(line, " ")
+			log.Time, err = time.Parse("2006-01-02T15:04:05.000Z", strings.Trim(strings.Split(splitBySpace[0], "=")[1], "\""))
+			if err != nil {
+				log.Time = time.Time{}
+			}
+			log.Level = strings.Split(splitBySpace[1], "=")[1]
+			re := regexp.MustCompile(`msg="[/\\=!?'"\.a-zA-Z0-9_\s:-]*"`)
+			msg := re.FindString(line)
+			if msg != "" {
+				log.Msg = strings.Trim(strings.Split(msg, "=")[1], "\"")
+			}
+			if msg == "" {
+				re = regexp.MustCompile(`msg=[a-zA-Z]*`)
+				msg = re.FindString(line)
+				if msg != "" {
+					log.Msg = strings.Split(msg, "=")[1]
+				}
+			}
+			log.Service = "API gateway"
+			log.FullContent = line
+			logs = append(logs, log)
+		}
+		resp["logs"] = logs
 		jsonResp, err := json.Marshal(resp)
 		if err != nil {
 			log.Fatalf("Error happened in JSON marshal. Err: %s", err)
@@ -179,13 +259,41 @@ func registerInterceptorLogs(server *Server) error {
 		if os.Getenv("OS_ENV") == "docker" {
 			logPathPrefix = "./logs/"
 		}
-		resp := make(map[string][]string)
+		resp := make(map[string][]auth.Log)
 		content, err := os.ReadFile(logPathPrefix + "auth_interceptor/auth_interceptor.log")
 		if err != nil {
 			log.Fatalf("Error happened in JSON marshal. Err: %s", err)
 		}
 		lines := strings.Split(string(content), "\n")
-		resp["logs"] = lines
+		logs := make([]auth.Log, 0)
+		for _, line := range lines {
+			if line == "" {
+				continue
+			}
+			var log auth.Log
+			splitBySpace := strings.Split(line, " ")
+			log.Time, err = time.Parse("2006-01-02T15:04:05.000Z", strings.Trim(strings.Split(splitBySpace[0], "=")[1], "\""))
+			if err != nil {
+				log.Time = time.Time{}
+			}
+			log.Level = strings.Split(splitBySpace[1], "=")[1]
+			re := regexp.MustCompile(`msg="[/\\=!?'"\.a-zA-Z0-9_\s:-]*"`)
+			msg := re.FindString(line)
+			if msg != "" {
+				log.Msg = strings.Trim(strings.Split(msg, "=")[1], "\"")
+			}
+			if msg == "" {
+				re = regexp.MustCompile(`msg=[a-zA-Z]*`)
+				msg = re.FindString(line)
+				if msg != "" {
+					log.Msg = strings.Split(msg, "=")[1]
+				}
+			}
+			log.Service = "Auth interceptor"
+			log.FullContent = line
+			logs = append(logs, log)
+		}
+		resp["logs"] = logs
 		jsonResp, err := json.Marshal(resp)
 		if err != nil {
 			log.Fatalf("Error happened in JSON marshal. Err: %s", err)
@@ -195,10 +303,20 @@ func registerInterceptorLogs(server *Server) error {
 }
 
 func (server *Server) Start() {
+	r := mux.NewRouter()
+	instrumentation := muxprom.NewDefaultInstrumentation()
+	r.Use(instrumentation.Middleware)
+	r.Path("/metrics").Handler(promhttp.Handler())
+	r.PathPrefix("/").Handler(cors(muxMiddleware(server)))
 	serverCertFile := getCertPath() + "cert/server-cert.pem"
 	serverKeyFile := getCertPath() + "cert/server-key.pem"
-	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%s", server.config.Port),
-		serverCertFile, serverKeyFile, cors(server.mux)))
+	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%s", server.config.Port), serverCertFile, serverKeyFile, r))
+}
+
+func muxMiddleware(server *Server) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		server.mux.ServeHTTP(w, r)
+	})
 }
 
 func getCertPath() string {

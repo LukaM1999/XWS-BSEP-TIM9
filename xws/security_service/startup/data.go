@@ -69,6 +69,13 @@ var userVerifications = []*domain.UserVerification{
 		TimeCreated: time.Now(),
 		IsVerified:  true,
 	},
+	{
+		Id:          getObjectId("62706d1b624b3da748f63fe3"),
+		Username:    "admin",
+		Token:       "AB122CD45E",
+		TimeCreated: time.Now(),
+		IsVerified:  true,
+	},
 }
 
 func getObjectId(id string) primitive.ObjectID {

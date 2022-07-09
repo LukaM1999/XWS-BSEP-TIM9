@@ -2,12 +2,8 @@ package startup
 
 import (
 	"dislinkt/common/auth"
-	"dislinkt/common/client"
 	"dislinkt/common/loggers"
-	pbComment "dislinkt/common/proto/comment_service"
-	pbPost "dislinkt/common/proto/post_service"
 	profile "dislinkt/common/proto/profile_service"
-	pbSecurity "dislinkt/common/proto/security_service"
 	saga "dislinkt/common/saga/messaging"
 	"dislinkt/common/saga/messaging/nats"
 	"dislinkt/profile_service/application"
@@ -44,7 +40,7 @@ func accessibleRoles() map[string]string {
 
 	return map[string]string{
 		//profileServicePath + "GetAll":        "search:all-profiles",
-		profileServicePath + "GenerateToken": "write:profile-token",
+		//profileServicePath + "GenerateToken": "write:profile-token",
 		//profileServicePath + "Get":    {"user"},
 		//profileServicePath + "Create": {"user"},
 		//profileServicePath + "Update": {"user"},
@@ -71,22 +67,11 @@ func (server *Server) Start() {
 	replyPublisher = server.initPublisher(server.config.CreateProfileReplySubject)
 	server.initCreateProfileHandler(profileService, replyPublisher, commandSubscriber)
 
-	postClient, err := client.NewPostClient(fmt.Sprintf("%s:%s", server.config.PostHost, server.config.PostPort))
-	if err != nil {
-		log.Fatal(err)
-	}
+	commandSubscriber = server.initSubscriber(server.config.PromoteJobCommandSubject, QueueGroup)
+	replyPublisher = server.initPublisher(server.config.PromoteJobReplySubject)
+	server.initPromoteJobHandler(profileService, replyPublisher, commandSubscriber)
 
-	commentClient, err := client.NewCommentClient(fmt.Sprintf("%s:%s", server.config.CommentHost, server.config.CommentPort))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	securityClient, err := client.NewSecurityClient(fmt.Sprintf("%s:%s", server.config.SecurityHost, server.config.SecurityPort))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	profileHandler := server.initProfileHandler(profileService, postClient, commentClient, securityClient)
+	profileHandler := server.initProfileHandler(profileService)
 
 	server.startGrpcServer(profileHandler, jwtManager)
 }
@@ -160,9 +145,15 @@ func (server *Server) initUpdateProfileHandler(service *application.ProfileServi
 	}
 }
 
-func (server *Server) initProfileHandler(service *application.ProfileService, postClient pbPost.PostServiceClient,
-	commentClient pbComment.CommentServiceClient, securityClient pbSecurity.SecurityServiceClient) *api.ProfileHandler {
-	return api.NewProfileHandler(service, postClient, commentClient, securityClient)
+func (server *Server) initPromoteJobHandler(service *application.ProfileService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewPromoteJobCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (server *Server) initProfileHandler(service *application.ProfileService) *api.ProfileHandler {
+	return api.NewProfileHandler(service)
 }
 
 func (server *Server) startGrpcServer(userHandler *api.ProfileHandler, jwtManager *auth.JWTManager) {

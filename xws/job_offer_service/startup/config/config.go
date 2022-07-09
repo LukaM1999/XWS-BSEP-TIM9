@@ -9,15 +9,15 @@ import (
 var log = loggers.NewConnectionLogger()
 
 type Config struct {
-	Port           string
-	JobOfferDBHost string
-	JobOfferDBPort string
-	ProfileHost    string
-	ProfilePort    string
-	NatsHost       string
-	NatsPort       string
-	NatsUser       string
-	NatsPass       string
+	Port                     string
+	JobOfferDBHost           string
+	JobOfferDBPort           string
+	NatsHost                 string
+	NatsPort                 string
+	NatsUser                 string
+	NatsPass                 string
+	PromoteJobCommandSubject string
+	PromoteJobReplySubject   string
 }
 
 func NewConfig() *Config {
@@ -26,15 +26,15 @@ func NewConfig() *Config {
 		return nil
 	}
 	return &Config{
-		Port:           os.Getenv("JOB_OFFER_SERVICE_PORT"),
-		JobOfferDBHost: os.Getenv("JOB_OFFER_DB_HOST"),
-		JobOfferDBPort: os.Getenv("JOB_OFFER_DB_PORT"),
-		ProfileHost:    os.Getenv("PROFILE_SERVICE_HOST"),
-		ProfilePort:    os.Getenv("PROFILE_SERVICE_PORT"),
-		NatsHost:       os.Getenv("NATS_HOST"),
-		NatsPort:       os.Getenv("NATS_PORT"),
-		NatsUser:       os.Getenv("NATS_USER"),
-		NatsPass:       os.Getenv("NATS_PASS"),
+		Port:                     os.Getenv("JOB_OFFER_SERVICE_PORT"),
+		JobOfferDBHost:           os.Getenv("JOB_OFFER_DB_HOST"),
+		JobOfferDBPort:           os.Getenv("JOB_OFFER_DB_PORT"),
+		NatsHost:                 os.Getenv("NATS_HOST"),
+		NatsPort:                 os.Getenv("NATS_PORT"),
+		NatsUser:                 os.Getenv("NATS_USER"),
+		NatsPass:                 os.Getenv("NATS_PASS"),
+		PromoteJobCommandSubject: os.Getenv("PROMOTE_JOB_COMMAND_SUBJECT"),
+		PromoteJobReplySubject:   os.Getenv("PROMOTE_JOB_REPLY_SUBJECT"),
 	}
 }
 

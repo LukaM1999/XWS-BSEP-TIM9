@@ -18,13 +18,17 @@ var reactionLogger = logrus.New()
 var jobLogger = logrus.New()
 
 func NewJobLogger() *logrus.Logger {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
 	jobLogger.SetLevel(logrus.InfoLevel)
 	jobLogger.SetReportCaller(true)
 	jobLogger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/job_offer_service/job_offer.log",
+		Filename:   logPathPrefix + "job_offer_service/job_offer.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -35,13 +39,17 @@ func NewJobLogger() *logrus.Logger {
 }
 
 func NewReactionLogger() *logrus.Logger {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
 	reactionLogger.SetLevel(logrus.InfoLevel)
 	reactionLogger.SetReportCaller(true)
 	reactionLogger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/reaction_service/reaction.log",
+		Filename:   logPathPrefix + "reaction_service/reaction.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -52,13 +60,17 @@ func NewReactionLogger() *logrus.Logger {
 }
 
 func NewConnectionLogger() *logrus.Logger {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
 	connectionLogger.SetLevel(logrus.InfoLevel)
 	connectionLogger.SetReportCaller(true)
 	connectionLogger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/connection_service/connection.log",
+		Filename:   logPathPrefix + "connection_service/connection.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -69,13 +81,17 @@ func NewConnectionLogger() *logrus.Logger {
 }
 
 func NewCommentLogger() *logrus.Logger {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
 	commentLogger.SetLevel(logrus.InfoLevel)
 	commentLogger.SetReportCaller(true)
 	commentLogger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/comment_service/comment.log",
+		Filename:   logPathPrefix + "comment_service/comment.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -86,13 +102,17 @@ func NewCommentLogger() *logrus.Logger {
 }
 
 func NewPostLogger() *logrus.Logger {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
 	postLogger.SetLevel(logrus.InfoLevel)
 	postLogger.SetReportCaller(true)
 	postLogger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/post_service/post.log",
+		Filename:   logPathPrefix + "post_service/post.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -103,13 +123,17 @@ func NewPostLogger() *logrus.Logger {
 }
 
 func NewProfileLogger() *logrus.Logger {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
 	profileLogger.SetLevel(logrus.InfoLevel)
 	profileLogger.SetReportCaller(true)
 	profileLogger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/profile_service/profile.log",
+		Filename:   logPathPrefix + "profile_service/profile.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -120,13 +144,17 @@ func NewProfileLogger() *logrus.Logger {
 }
 
 func NewSecurityLogger() *logrus.Logger {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
 	securityLogger.SetLevel(logrus.InfoLevel)
 	securityLogger.SetReportCaller(true)
 	securityLogger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/security_service/security.log",
+		Filename:   logPathPrefix + "security_service/security.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -137,13 +165,17 @@ func NewSecurityLogger() *logrus.Logger {
 }
 
 func NewGatewayLogger() *logrus.Logger {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
 	gatewayLogger.SetLevel(logrus.InfoLevel)
 	gatewayLogger.SetReportCaller(true)
 	gatewayLogger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/api_gateway/api_gateway.log",
+		Filename:   logPathPrefix + "api_gateway/api_gateway.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,
@@ -154,13 +186,17 @@ func NewGatewayLogger() *logrus.Logger {
 }
 
 func NewInterceptorLogger() *logrus.Logger {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
 	interceptorLogger.SetLevel(logrus.InfoLevel)
 	interceptorLogger.SetReportCaller(true)
 	interceptorLogger.SetFormatter(&logrus.TextFormatter{
 		TimestampFormat: "2006-01-02T15:04:05.000Z",
 	})
 	multiWriter := io.MultiWriter(os.Stdout, &lumberjack.Logger{
-		Filename:   "../../logs/auth_interceptor/auth_interceptor.log",
+		Filename:   logPathPrefix + "auth_interceptor/auth_interceptor.log",
 		MaxSize:    1,
 		MaxBackups: 3,
 		MaxAge:     28,

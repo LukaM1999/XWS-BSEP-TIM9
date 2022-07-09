@@ -2,10 +2,10 @@ package startup
 
 import (
 	"dislinkt/common/auth"
-	"dislinkt/common/client"
 	"dislinkt/common/loggers"
 	job "dislinkt/common/proto/job_offer_service"
-	pbProfile "dislinkt/common/proto/profile_service"
+	saga "dislinkt/common/saga/messaging"
+	"dislinkt/common/saga/messaging/nats"
 	"dislinkt/job_offer_service/application"
 	"dislinkt/job_offer_service/domain"
 	"dislinkt/job_offer_service/infrastructure/api"
@@ -51,21 +51,16 @@ func (server *Server) Start() {
 
 	jwtManager := auth.NewJWTManager("secretKey", 30*time.Minute)
 
-	profileClient, err := client.NewProfileClient(fmt.Sprintf("%s:%s", server.config.ProfileHost, server.config.ProfilePort))
-	if err != nil {
-		log.Fatal(err)
-	}
+	commandPublisher := server.initPublisher(server.config.PromoteJobCommandSubject)
+	replySubscriber := server.initSubscriber(server.config.PromoteJobReplySubject, QueueGroup)
+	promoteJobOrchestrator := server.initPromoteJobOrchestrator(commandPublisher, replySubscriber)
 
-	jobOfferService := server.initJobOfferService(jobOfferStore, profileClient)
+	jobOfferService := server.initJobOfferService(jobOfferStore, promoteJobOrchestrator)
 
-	//commandSubscriber := server.initSubscriber(server.config.CreateProfileCommandSubject, QueueGroup)
-	//replyPublisher := server.initPublisher(server.config.CreateProfileReplySubject)
-	//server.initCreateProfileHandler(connectionService, replyPublisher, commandSubscriber)
-	//
-	//commandSubscriber = server.initSubscriber(server.config.UpdateProfileCommandSubject, QueueGroup)
-	//replyPublisher = server.initPublisher(server.config.UpdateProfileReplySubject)
-	//server.initUpdateProfileHandler(connectionService, replyPublisher, commandSubscriber)
-	//
+	commandSubscriber := server.initSubscriber(server.config.PromoteJobCommandSubject, QueueGroup)
+	replyPublisher := server.initPublisher(server.config.PromoteJobReplySubject)
+	server.initPromoteJobHandler(jobOfferService, replyPublisher, commandSubscriber)
+
 	jobOfferHandler := server.initJobOfferHandler(jobOfferService)
 
 	server.startGrpcServer(jobOfferHandler, jwtManager)
@@ -86,32 +81,47 @@ func (server *Server) initJobOfferStore() domain.JobOfferStore {
 	return store
 }
 
-//func (server *Server) initPublisher(subject string) saga.Publisher {
-//	publisher, err := nats.NewNATSPublisher(
-//		server.config.NatsHost, server.config.NatsPort,
-//		server.config.NatsUser, server.config.NatsPass, subject)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	return publisher
-//}
-//
-//func (server *Server) initSubscriber(subject, queueGroup string) saga.Subscriber {
-//	subscriber, err := nats.NewNATSSubscriber(
-//		server.config.NatsHost, server.config.NatsPort,
-//		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	return subscriber
-//}
+func (server *Server) initJobOfferService(store domain.JobOfferStore, orchestrator *application.PromoteJobOrchestrator) *application.JobOfferService {
+	return application.NewJobOfferService(store, orchestrator)
+}
 
-func (server *Server) initJobOfferService(store domain.JobOfferStore, profileClient pbProfile.ProfileServiceClient) *application.JobOfferService {
-	return application.NewJobOfferService(store, profileClient)
+func (server *Server) initPublisher(subject string) saga.Publisher {
+	publisher, err := nats.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) saga.Subscriber {
+	subscriber, err := nats.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
+}
+
+func (server *Server) initPromoteJobOrchestrator(publisher saga.Publisher, subscriber saga.Subscriber) *application.PromoteJobOrchestrator {
+	orchestrator, err := application.NewPromoteJobOrchestrator(publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return orchestrator
 }
 
 func (server *Server) initJobOfferHandler(service *application.JobOfferService) *api.JobOfferHandler {
 	return api.NewJobOfferHandler(service)
+}
+
+func (server *Server) initPromoteJobHandler(service *application.JobOfferService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := api.NewPromoteJobCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (server *Server) startGrpcServer(jobOfferHandler *api.JobOfferHandler, jwtManager *auth.JWTManager) {

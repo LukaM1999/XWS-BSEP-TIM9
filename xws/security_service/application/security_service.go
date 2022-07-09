@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"image/png"
 	"net/smtp"
+	"os"
 	"strings"
 	"text/template"
 	"time"
@@ -243,4 +244,17 @@ func (service *SecurityService) CreatePasswordRecovery(passwordRecovery *domain.
 		return err
 	}
 	return nil
+}
+
+func (service *SecurityService) GetLogs() ([]string, error) {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
+	content, err := os.ReadFile(logPathPrefix + "security_service/security.log")
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(content), "\n")
+	return lines, nil
 }

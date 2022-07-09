@@ -71,6 +71,11 @@ service SecurityService{
       body: "*"
     };
   }
+  rpc GetLogs(GetLogsRequest) returns(GetLogsResponse) {
+    option (google.api.http) = {
+      get: "/security/logs"
+    };
+  }
 }
 
 message GetRequest {
@@ -154,3 +159,9 @@ message UpdatePasswordRequest {
 }
 
 message UpdatePasswordResponse {}
+
+message GetLogsRequest {}
+
+message GetLogsResponse {
+  repeated string logs = 1;
+}

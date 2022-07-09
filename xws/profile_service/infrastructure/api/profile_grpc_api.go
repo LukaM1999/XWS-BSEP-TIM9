@@ -3,10 +3,7 @@ package api
 import (
 	"context"
 	"dislinkt/common/loggers"
-	pbComment "dislinkt/common/proto/comment_service"
-	pbPost "dislinkt/common/proto/post_service"
 	pb "dislinkt/common/proto/profile_service"
-	pbSecurity "dislinkt/common/proto/security_service"
 	"dislinkt/profile_service/application"
 	"dislinkt/profile_service/domain"
 	"strings"
@@ -22,21 +19,14 @@ var log = loggers.NewProfileLogger()
 
 type ProfileHandler struct {
 	pb.UnimplementedProfileServiceServer
-	service        *application.ProfileService
-	postClient     pbPost.PostServiceClient
-	commentClient  pbComment.CommentServiceClient
-	securityClient pbSecurity.SecurityServiceClient
-	validate       *validator.Validate
+	service  *application.ProfileService
+	validate *validator.Validate
 }
 
-func NewProfileHandler(service *application.ProfileService, postClient pbPost.PostServiceClient,
-	commentClient pbComment.CommentServiceClient, securityClient pbSecurity.SecurityServiceClient) *ProfileHandler {
+func NewProfileHandler(service *application.ProfileService) *ProfileHandler {
 	return &ProfileHandler{
-		service:        service,
-		postClient:     postClient,
-		commentClient:  commentClient,
-		securityClient: securityClient,
-		validate:       domain.NewProfileValidator(),
+		service:  service,
+		validate: domain.NewProfileValidator(),
 	}
 }
 
@@ -122,9 +112,9 @@ func (handler *ProfileHandler) Delete(ctx context.Context, request *pb.DeleteReq
 }
 
 func (handler *ProfileHandler) GenerateToken(ctx context.Context, request *pb.GenerateTokenRequest) (*pb.GenerateTokenResponse, error) {
-	if ctx.Value("userId").(string) != *request.Id {
-		return nil, status.Errorf(codes.Unauthenticated, "user not authenticated")
-	}
+	//if ctx.Value("userId").(string) != *request.Id {
+	//	return nil, status.Errorf(codes.Unauthenticated, "user not authenticated")
+	//}
 	token, err := handler.service.GenerateToken(*request.Id)
 	if err != nil {
 		log.Errorf("Cannot generate token: %v", err)

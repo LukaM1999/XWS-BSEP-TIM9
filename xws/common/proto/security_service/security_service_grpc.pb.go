@@ -29,6 +29,7 @@ type SecurityServiceClient interface {
 	VerifyUser(ctx context.Context, in *VerifyUserRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	RecoverPassword(ctx context.Context, in *RecoverPasswordRequest, opts ...grpc.CallOption) (*RecoverPasswordResponse, error)
 	UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
+	GetLogs(ctx context.Context, in *GetLogsRequest, opts ...grpc.CallOption) (*GetLogsResponse, error)
 }
 
 type securityServiceClient struct {
@@ -138,6 +139,15 @@ func (c *securityServiceClient) UpdatePassword(ctx context.Context, in *UpdatePa
 	return out, nil
 }
 
+func (c *securityServiceClient) GetLogs(ctx context.Context, in *GetLogsRequest, opts ...grpc.CallOption) (*GetLogsResponse, error) {
+	out := new(GetLogsResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/GetLogs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SecurityServiceServer is the server API for SecurityService service.
 // All implementations must embed UnimplementedSecurityServiceServer
 // for forward compatibility
@@ -153,6 +163,7 @@ type SecurityServiceServer interface {
 	VerifyUser(context.Context, *VerifyUserRequest) (*httpbody.HttpBody, error)
 	RecoverPassword(context.Context, *RecoverPasswordRequest) (*RecoverPasswordResponse, error)
 	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error)
+	GetLogs(context.Context, *GetLogsRequest) (*GetLogsResponse, error)
 	mustEmbedUnimplementedSecurityServiceServer()
 }
 
@@ -192,6 +203,9 @@ func (*UnimplementedSecurityServiceServer) RecoverPassword(context.Context, *Rec
 }
 func (*UnimplementedSecurityServiceServer) UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePassword not implemented")
+}
+func (*UnimplementedSecurityServiceServer) GetLogs(context.Context, *GetLogsRequest) (*GetLogsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLogs not implemented")
 }
 func (*UnimplementedSecurityServiceServer) mustEmbedUnimplementedSecurityServiceServer() {}
 
@@ -397,6 +411,24 @@ func _SecurityService_UpdatePassword_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SecurityService_GetLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).GetLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/GetLogs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).GetLogs(ctx, req.(*GetLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _SecurityService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "security.SecurityService",
 	HandlerType: (*SecurityServiceServer)(nil),
@@ -444,6 +476,10 @@ var _SecurityService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdatePassword",
 			Handler:    _SecurityService_UpdatePassword_Handler,
+		},
+		{
+			MethodName: "GetLogs",
+			Handler:    _SecurityService_GetLogs_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

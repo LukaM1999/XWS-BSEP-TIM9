@@ -169,9 +169,9 @@ export default {
     async promoteJobOffer(jobOffer){
       const promotionRequest = {
         jobOffer: {
-          id: "",
+          id: 0,
           company: jobOffer.companyName,
-          profile: null,
+          profileId: null,
           position: jobOffer.position,
           description: jobOffer.description,
           criteria: jobOffer.criteria,

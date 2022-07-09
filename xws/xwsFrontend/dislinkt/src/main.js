@@ -25,6 +25,7 @@ import './registerServiceWorker'
 import MyPosts from "@/components/MyPosts";
 import MyConnections from "@/components/MyConnections";
 import ProfileInfo from "@/components/ProfileInfo";
+import * as https from "https";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -35,6 +36,10 @@ Vue.use(Vuex)
 Vue.use(VueRouter)
 Vue.use(OneSignalVue)
 Vue.use(VueAxios, axios)
+Vue.axios.defaults.httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+  requestCert: false,
+})
 Vue.use(Toasted, {
   position: 'top-right',
   duration: 3000,

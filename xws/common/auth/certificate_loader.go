@@ -41,7 +41,7 @@ func LoadTLSServerCredentials() (credentials.TransportCredentials, error) {
 		Certificates: []tls.Certificate{serverCert},
 		//ClientAuth:   tls.RequireAndVerifyClientCert,
 		//ClientCAs:    certPool,
-		//InsecureSkipVerify: true,
+		InsecureSkipVerify: true,
 	}
 
 	return credentials.NewTLS(config), nil

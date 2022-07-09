@@ -26,6 +26,8 @@ type Config struct {
 	CreateProfileReplySubject   string
 	UpdateProfileCommandSubject string
 	UpdateProfileReplySubject   string
+	PromoteJobCommandSubject    string
+	PromoteJobReplySubject      string
 }
 
 func NewConfig() *Config {
@@ -51,6 +53,8 @@ func NewConfig() *Config {
 		CreateProfileReplySubject:   os.Getenv("CREATE_PROFILE_REPLY_SUBJECT"),
 		UpdateProfileCommandSubject: os.Getenv("UPDATE_PROFILE_COMMAND_SUBJECT"),
 		UpdateProfileReplySubject:   os.Getenv("UPDATE_PROFILE_REPLY_SUBJECT"),
+		PromoteJobCommandSubject:    os.Getenv("PROMOTE_JOB_COMMAND_SUBJECT"),
+		PromoteJobReplySubject:      os.Getenv("PROMOTE_JOB_REPLY_SUBJECT"),
 	}
 }
 

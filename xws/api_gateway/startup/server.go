@@ -2,8 +2,8 @@ package startup
 
 import (
 	"context"
+	"crypto/tls"
 	cfg "dislinkt/api_gateway/startup/config"
-	"dislinkt/common/auth"
 	"dislinkt/common/loggers"
 	commentGw "dislinkt/common/proto/comment_service"
 	connectionGw "dislinkt/common/proto/connection_service"
@@ -12,11 +12,11 @@ import (
 	profileGw "dislinkt/common/proto/profile_service"
 	reactionGw "dislinkt/common/proto/reaction_service"
 	securityGw "dislinkt/common/proto/security_service"
-
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"net/http"
 	"os"
 	"strings"
@@ -91,10 +91,13 @@ func cors(next http.Handler) http.Handler {
 }
 
 func (server *Server) initHandlers() {
-	tlsCredentials, err := auth.LoadTLSClientCredentials()
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(tlsCredentials)}
+	//tlsCredentials, err := auth.LoadTLSClientCredentials()
+	config := &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewTLS(config))}
 	securityEndpoint := fmt.Sprintf("%s:%s", server.config.SecurityHost, server.config.SecurityPort)
-	err = securityGw.RegisterSecurityServiceHandlerFromEndpoint(context.TODO(), server.mux, securityEndpoint, opts)
+	err := securityGw.RegisterSecurityServiceHandlerFromEndpoint(context.TODO(), server.mux, securityEndpoint, opts)
 	if err != nil {
 		panic(err)
 	}

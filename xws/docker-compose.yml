@@ -58,6 +58,8 @@ services:
       CREATE_PROFILE_REPLY_SUBJECT: ${CREATE_PROFILE_REPLY_SUBJECT}
       UPDATE_PROFILE_COMMAND_SUBJECT: ${UPDATE_PROFILE_COMMAND_SUBJECT}
       UPDATE_PROFILE_REPLY_SUBJECT: ${UPDATE_PROFILE_REPLY_SUBJECT}
+      PROMOTE_JOB_COMMAND_SUBJECT: ${PROMOTE_JOB_COMMAND_SUBJECT}
+      PROMOTE_JOB_REPLY_SUBJECT: ${PROMOTE_JOB_REPLY_SUBJECT}
     depends_on:
       - profile_db
     networks:
@@ -175,6 +177,31 @@ services:
     networks:
       - network
 
+  job_offer_service:
+    image: job_offer_service
+    container_name: job_offer_service
+    build:
+      context: .
+      dockerfile: ./job_offer_service/Dockerfile
+    restart: on-failure
+    ports:
+      - 8007:${JOB_OFFER_SERVICE_PORT}
+    environment:
+      OS_ENV: docker
+      JOB_OFFER_DB_HOST: ${JOB_OFFER_DB_HOST}
+      JOB_OFFER_DB_PORT: ${JOB_OFFER_DB_PORT}
+      JOB_OFFER_SERVICE_PORT: ${JOB_OFFER_SERVICE_PORT}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+      PROMOTE_JOB_COMMAND_SUBJECT: ${PROMOTE_JOB_COMMAND_SUBJECT}
+      PROMOTE_JOB_REPLY_SUBJECT: ${PROMOTE_JOB_REPLY_SUBJECT}
+    depends_on:
+      - job_offer_db
+    networks:
+      - network
+
   api_gateway:
     image: api_gateway
     container_name: api_gateway
@@ -199,6 +226,8 @@ services:
       CONNECTION_SERVICE_PORT: ${CONNECTION_SERVICE_PORT}
       POST_SERVICE_HOST: ${POST_SERVICE_HOST}
       POST_SERVICE_PORT: ${POST_SERVICE_PORT}
+      JOB_OFFER_SERVICE_HOST: ${JOB_OFFER_SERVICE_HOST}
+      JOB_OFFER_SERVICE_PORT: ${JOB_OFFER_SERVICE_PORT}
     networks:
       - network
 
@@ -239,11 +268,15 @@ services:
       - network
 
   connection_db:
-    image: mongo
+    image: postgres:14.1-alpine
     container_name: connection_db
     restart: on-failure
-#    ports:
-#      - 27017:${CONNECTION_DB_PORT}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - 5433:${CONNECTION_DB_PORT}
     networks:
       - network
 
@@ -253,6 +286,19 @@ services:
     restart: on-failure
 #    ports:
 #      - 27017:${POST_DB_PORT}
+    networks:
+      - network
+
+  job_offer_db:
+    image: postgres:14.1-alpine
+    container_name: job_offer_db
+    restart: on-failure
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - 5434:${JOB_OFFER_DB_PORT}
     networks:
       - network
 

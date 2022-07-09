@@ -315,3 +315,13 @@ func (handler *UserHandler) UpdatePassword(ctx context.Context, req *pb.UpdatePa
 	}
 	return &pb.UpdatePasswordResponse{}, nil
 }
+
+func (handler *UserHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
+	logs, err := handler.service.GetLogs()
+	if err != nil {
+		log.Errorf("GLF")
+		return nil, err
+	}
+	log.Info("GLD")
+	return &pb.GetLogsResponse{Logs: logs}, nil
+}

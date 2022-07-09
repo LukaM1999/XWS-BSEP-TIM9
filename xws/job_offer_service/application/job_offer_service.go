@@ -1,21 +1,18 @@
 package application
 
 import (
-	"context"
-	pbProfile "dislinkt/common/proto/profile_service"
 	"dislinkt/job_offer_service/domain"
-	"errors"
 )
 
 type JobOfferService struct {
-	store         domain.JobOfferStore
-	profileClient pbProfile.ProfileServiceClient
+	store        domain.JobOfferStore
+	orchestrator *PromoteJobOrchestrator
 }
 
-func NewJobOfferService(store domain.JobOfferStore, profileClient pbProfile.ProfileServiceClient) *JobOfferService {
+func NewJobOfferService(store domain.JobOfferStore, orchestrator *PromoteJobOrchestrator) *JobOfferService {
 	return &JobOfferService{
-		store:         store,
-		profileClient: profileClient,
+		store:        store,
+		orchestrator: orchestrator,
 	}
 }
 
@@ -28,14 +25,11 @@ func (service *JobOfferService) CreateJob(job *domain.JobOffer) (*domain.JobOffe
 }
 
 func (service *JobOfferService) PromoteJob(job *domain.JobOffer, token string, username string) (*domain.JobOffer, error) {
-	profile, err := service.profileClient.GetByToken(context.TODO(), &pbProfile.GetByTokenRequest{Token: &token})
+	err := service.orchestrator.Start(token, username, *job)
 	if err != nil {
 		return nil, err
 	}
-	if *profile.Profile.Username != username {
-		return nil, errors.New("invalid username or token")
-	}
-	return service.store.CreateJob(job)
+	return job, nil
 }
 
 func (service *JobOfferService) Delete(id int) error {

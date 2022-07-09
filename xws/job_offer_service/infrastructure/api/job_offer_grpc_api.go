@@ -44,7 +44,7 @@ func (handler *JobOfferHandler) CreateJob(ctx context.Context, request *pb.Creat
 }
 
 func (handler *JobOfferHandler) GetRecommendations(ctx context.Context, request *pb.GetRecommendationsRequest) (*pb.GetRecommendationsResponse, error) {
-	jobOffers, err := handler.service.GetRecommendations(request.Skills)
+	jobOffers, err := handler.service.GetRecommendations(request.ProfileId, request.Skills)
 	if err != nil {
 		log.Errorf("Cannot get job recommendations: %v", err)
 		return nil, err

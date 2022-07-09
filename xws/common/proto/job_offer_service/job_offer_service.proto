@@ -48,7 +48,8 @@ message GetJobResponse {
 }
 
 message GetRecommendationsRequest {
-  repeated string skills = 1;
+  string profileId = 1;
+  repeated string skills = 2;
 }
 
 message GetRecommendationsResponse {

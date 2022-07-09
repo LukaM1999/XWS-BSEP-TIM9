@@ -158,13 +158,14 @@ func (store *JobOfferPostgresStore) DeleteSkill(skillName string) error {
 	return nil
 }
 
-func (store *JobOfferPostgresStore) GetRecommendations(skills []string) ([]*domain.JobRecommendation, error) {
+func (store *JobOfferPostgresStore) GetRecommendations(profileId string, skills []string) ([]*domain.JobRecommendation, error) {
 	client, err := ent.Open("postgres", store.jobOfferString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
 	jobOffers, err := client.JobOffer.Query().
+		Where(joboffer.ProfileIDNEQ(profileId)).
 		QueryRequires().
 		Where(skill.NameIn(skills...)).
 		QueryRequired().

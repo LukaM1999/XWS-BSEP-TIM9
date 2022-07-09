@@ -5,6 +5,6 @@ type JobOfferStore interface {
 	Delete(id int) error
 	DeleteSkill(skillName string) error
 	DeleteAll() error
-	GetRecommendations(skills []string) ([]*JobRecommendation, error)
+	GetRecommendations(profileId string, skills []string) ([]*JobRecommendation, error)
 	CreateJob(job *JobOffer) (*JobOffer, error)
 }

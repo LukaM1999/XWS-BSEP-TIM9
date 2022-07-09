@@ -32,6 +32,11 @@ service JobOfferService {
       body: "*"
     };
   }
+  rpc GetLogs(GetLogsRequest) returns(GetLogsResponse) {
+    option (google.api.http) = {
+      get: "/job-offer/logs"
+    };
+  }
 }
 
 message GetJobRequest {
@@ -82,4 +87,11 @@ message JobOffer {
 message JobRecommendation {
   int64 jobId = 1;
   int64 skillCount = 2;
+}
+
+message GetLogsRequest {
+}
+
+message GetLogsResponse {
+  repeated string logs = 1;
 }

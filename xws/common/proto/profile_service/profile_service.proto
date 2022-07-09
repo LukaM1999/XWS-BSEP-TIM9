@@ -47,6 +47,12 @@ service ProfileService{
       get: "/profile/token/{token}"
     };
   }
+
+  rpc GetLogs(GetLogsRequest) returns(GetLogsResponse) {
+    option (google.api.http) = {
+      get: "/profile/logs"
+    };
+  }
 }
 
 message GetRequest {
@@ -154,4 +160,11 @@ message WorkExperience{
 
 message Search {
   required string search = 1;
+}
+
+message GetLogsRequest {
+}
+
+message GetLogsResponse {
+  repeated string logs = 1;
 }

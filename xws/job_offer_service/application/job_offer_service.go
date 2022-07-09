@@ -2,6 +2,8 @@ package application
 
 import (
 	"dislinkt/job_offer_service/domain"
+	"os"
+	"strings"
 )
 
 type JobOfferService struct {
@@ -42,4 +44,17 @@ func (service *JobOfferService) DeleteSkill(skillName string) error {
 
 func (service *JobOfferService) GetRecommendations(skills []string) ([]*domain.JobRecommendation, error) {
 	return service.store.GetRecommendations(skills)
+}
+
+func (service *JobOfferService) GetLogs() ([]string, error) {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
+	content, err := os.ReadFile(logPathPrefix + "job_offer_service/job_offer.log")
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(content), "\n")
+	return lines, nil
 }

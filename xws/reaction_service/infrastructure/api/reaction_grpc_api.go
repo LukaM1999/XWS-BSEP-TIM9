@@ -75,3 +75,13 @@ func (handler *ReactionHandler) DeletePostReactions(ctx context.Context,
 	log.Info("Reactions deleted")
 	return &pb.DeletePostReactionsResponse{}, nil
 }
+
+func (handler *ReactionHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
+	logs, err := handler.service.GetLogs()
+	if err != nil {
+		log.Errorf("GLF")
+		return nil, err
+	}
+	log.Info("GLD")
+	return &pb.GetLogsResponse{Logs: logs}, nil
+}

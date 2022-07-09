@@ -30,6 +30,12 @@ service ReactionService{
       delete: "/reaction/post/{postId}"
     };
   }
+
+  rpc GetLogs(GetLogsRequest) returns(GetLogsResponse) {
+    option (google.api.http) = {
+      get: "/reaction/logs"
+    };
+  }
 }
 
 message GetRequest {
@@ -77,4 +83,11 @@ message DeletePostReactionsRequest {
 }
 
 message DeletePostReactionsResponse {
+}
+
+message GetLogsRequest {
+}
+
+message GetLogsResponse {
+  repeated string logs = 1;
 }

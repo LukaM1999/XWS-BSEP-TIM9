@@ -64,6 +64,11 @@ service PostService{
       body: "profile"
     };
   }
+  rpc GetLogs(GetLogsRequest) returns(GetLogsResponse) {
+    option (google.api.http) = {
+      get: "/post/logs"
+    };
+  }
 }
 
 message GetRequest {
@@ -145,5 +150,13 @@ message Connection {
   string id = 1;
   string issuerId = 2;
   string subjectId = 3;
+}
+
+
+message GetLogsRequest {
+}
+
+message GetLogsResponse {
+  repeated string logs = 1;
 }
 

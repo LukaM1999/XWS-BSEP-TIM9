@@ -192,3 +192,13 @@ func (handler *ConnectionHandler) GetConnection(ctx context.Context, request *pb
 
 	return response, nil
 }
+
+func (handler *ConnectionHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
+	logs, err := handler.service.GetLogs()
+	if err != nil {
+		log.Errorf("GLF")
+		return nil, err
+	}
+	log.Info("GLD")
+	return &pb.GetLogsResponse{Logs: logs}, nil
+}

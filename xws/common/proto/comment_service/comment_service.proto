@@ -36,6 +36,11 @@ service CommentService{
       delete: "/comment/post/{postId}"
     };
   }
+  rpc GetLogs(GetLogsRequest) returns(GetLogsResponse) {
+    option (google.api.http) = {
+      get: "/comment/logs"
+    };
+  }
 }
 
 message GetRequest {
@@ -89,4 +94,11 @@ message DeletePostCommentsRequest {
 }
 
 message DeletePostCommentsResponse {
+}
+
+message GetLogsRequest {
+}
+
+message GetLogsResponse {
+  repeated string logs = 1;
 }

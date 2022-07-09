@@ -73,3 +73,13 @@ func (handler *JobOfferHandler) PromoteJob(ctx context.Context, request *pb.Prom
 		JobOffer: mapJobToPb(job),
 	}, nil
 }
+
+func (handler *JobOfferHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
+	logs, err := handler.service.GetLogs()
+	if err != nil {
+		log.Errorf("GLF")
+		return nil, err
+	}
+	log.Info("GLD")
+	return &pb.GetLogsResponse{Logs: logs}, nil
+}

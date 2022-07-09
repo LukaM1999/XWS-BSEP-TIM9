@@ -27,6 +27,7 @@ type ConnectionServiceClient interface {
 	GetBlockers(ctx context.Context, in *GetBlockersRequest, opts ...grpc.CallOption) (*GetBlockersResponse, error)
 	UnblockUser(ctx context.Context, in *UnblockUserRequest, opts ...grpc.CallOption) (*UnblockUserResponse, error)
 	GetConnection(ctx context.Context, in *GetConnectionRequest, opts ...grpc.CallOption) (*GetConnectionResponse, error)
+	GetLogs(ctx context.Context, in *GetLogsRequest, opts ...grpc.CallOption) (*GetLogsResponse, error)
 }
 
 type connectionServiceClient struct {
@@ -127,6 +128,15 @@ func (c *connectionServiceClient) GetConnection(ctx context.Context, in *GetConn
 	return out, nil
 }
 
+func (c *connectionServiceClient) GetLogs(ctx context.Context, in *GetLogsRequest, opts ...grpc.CallOption) (*GetLogsResponse, error) {
+	out := new(GetLogsResponse)
+	err := c.cc.Invoke(ctx, "/connection.ConnectionService/GetLogs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ConnectionServiceServer is the server API for ConnectionService service.
 // All implementations must embed UnimplementedConnectionServiceServer
 // for forward compatibility
@@ -141,6 +151,7 @@ type ConnectionServiceServer interface {
 	GetBlockers(context.Context, *GetBlockersRequest) (*GetBlockersResponse, error)
 	UnblockUser(context.Context, *UnblockUserRequest) (*UnblockUserResponse, error)
 	GetConnection(context.Context, *GetConnectionRequest) (*GetConnectionResponse, error)
+	GetLogs(context.Context, *GetLogsRequest) (*GetLogsResponse, error)
 	mustEmbedUnimplementedConnectionServiceServer()
 }
 
@@ -177,6 +188,9 @@ func (*UnimplementedConnectionServiceServer) UnblockUser(context.Context, *Unblo
 }
 func (*UnimplementedConnectionServiceServer) GetConnection(context.Context, *GetConnectionRequest) (*GetConnectionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetConnection not implemented")
+}
+func (*UnimplementedConnectionServiceServer) GetLogs(context.Context, *GetLogsRequest) (*GetLogsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLogs not implemented")
 }
 func (*UnimplementedConnectionServiceServer) mustEmbedUnimplementedConnectionServiceServer() {}
 
@@ -364,6 +378,24 @@ func _ConnectionService_GetConnection_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ConnectionService_GetLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ConnectionServiceServer).GetLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/connection.ConnectionService/GetLogs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ConnectionServiceServer).GetLogs(ctx, req.(*GetLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _ConnectionService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "connection.ConnectionService",
 	HandlerType: (*ConnectionServiceServer)(nil),
@@ -407,6 +439,10 @@ var _ConnectionService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetConnection",
 			Handler:    _ConnectionService_GetConnection_Handler,
+		},
+		{
+			MethodName: "GetLogs",
+			Handler:    _ConnectionService_GetLogs_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

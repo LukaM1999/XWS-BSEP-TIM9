@@ -2,6 +2,8 @@ package application
 
 import (
 	"dislinkt/connection_service/domain"
+	"os"
+	"strings"
 )
 
 type ConnectionService struct {
@@ -64,4 +66,17 @@ func (service *ConnectionService) UnblockUser(issuerId, subjectId string) (bool,
 
 func (service *ConnectionService) GetConnection(user1Id string, user2Id string) (*domain.Connection, error) {
 	return service.store.GetConnection(user1Id, user2Id)
+}
+
+func (service *ConnectionService) GetLogs() ([]string, error) {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
+	content, err := os.ReadFile(logPathPrefix + "connection_service/connection.log")
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(content), "\n")
+	return lines, nil
 }

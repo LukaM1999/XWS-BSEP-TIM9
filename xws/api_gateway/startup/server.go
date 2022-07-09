@@ -12,6 +12,7 @@ import (
 	profileGw "dislinkt/common/proto/profile_service"
 	reactionGw "dislinkt/common/proto/reaction_service"
 	securityGw "dislinkt/common/proto/security_service"
+	"encoding/json"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/sirupsen/logrus"
@@ -137,6 +138,60 @@ func (server *Server) initHandlers() {
 	if err != nil {
 		panic(err)
 	}
+
+	err = registerGatewayLogs(server)
+	if err != nil {
+		panic(err)
+	}
+
+	err = registerInterceptorLogs(server)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func registerGatewayLogs(server *Server) error {
+	return server.mux.HandlePath("GET", "/logs", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		w.Header().Set("Content-Type", "application/json")
+		logPathPrefix := "../../logs/"
+		if os.Getenv("OS_ENV") == "docker" {
+			logPathPrefix = "./logs/"
+		}
+		resp := make(map[string][]string)
+		content, err := os.ReadFile(logPathPrefix + "api_gateway/api_gateway.log")
+		if err != nil {
+			log.Fatalf("Error happened in JSON marshal. Err: %s", err)
+		}
+		lines := strings.Split(string(content), "\n")
+		resp["logs"] = lines
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			log.Fatalf("Error happened in JSON marshal. Err: %s", err)
+		}
+		w.Write(jsonResp)
+	})
+}
+
+func registerInterceptorLogs(server *Server) error {
+	return server.mux.HandlePath("GET", "/interceptor/logs", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		w.Header().Set("Content-Type", "application/json")
+		logPathPrefix := "../../logs/"
+		if os.Getenv("OS_ENV") == "docker" {
+			logPathPrefix = "./logs/"
+		}
+		resp := make(map[string][]string)
+		content, err := os.ReadFile(logPathPrefix + "auth_interceptor/auth_interceptor.log")
+		if err != nil {
+			log.Fatalf("Error happened in JSON marshal. Err: %s", err)
+		}
+		lines := strings.Split(string(content), "\n")
+		resp["logs"] = lines
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			log.Fatalf("Error happened in JSON marshal. Err: %s", err)
+		}
+		w.Write(jsonResp)
+	})
 }
 
 func (server *Server) Start() {

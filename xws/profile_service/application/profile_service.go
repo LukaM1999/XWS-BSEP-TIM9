@@ -5,6 +5,8 @@ import (
 	"dislinkt/common/loggers"
 	"dislinkt/profile_service/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"os"
+	"strings"
 )
 
 var log = loggers.NewProfileLogger()
@@ -120,4 +122,17 @@ func (service *ProfileService) GenerateToken(profileId string) (string, error) {
 	}
 
 	return service.store.GenerateToken(id)
+}
+
+func (service *ProfileService) GetLogs() ([]string, error) {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
+	content, err := os.ReadFile(logPathPrefix + "profile_service/profile.log")
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(content), "\n")
+	return lines, nil
 }

@@ -60,6 +60,11 @@ service ConnectionService{
       get: "/connection/{user1Id}/{user2Id}"
     };
   }
+  rpc GetLogs(GetLogsRequest) returns(GetLogsResponse) {
+    option (google.api.http) = {
+      get: "/connection/logs"
+    };
+  }
 }
 
 message GetRequest {
@@ -148,4 +153,11 @@ message Connection {
   string subjectId = 3;
   google.protobuf.Timestamp date = 4;
   bool isApproved = 5;
+}
+
+message GetLogsRequest {
+}
+
+message GetLogsResponse {
+  repeated string logs = 1;
 }

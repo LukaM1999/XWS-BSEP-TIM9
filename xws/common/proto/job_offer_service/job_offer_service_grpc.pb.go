@@ -21,6 +21,7 @@ type JobOfferServiceClient interface {
 	GetRecommendations(ctx context.Context, in *GetRecommendationsRequest, opts ...grpc.CallOption) (*GetRecommendationsResponse, error)
 	CreateJob(ctx context.Context, in *CreateJobRequest, opts ...grpc.CallOption) (*CreateJobResponse, error)
 	PromoteJob(ctx context.Context, in *PromoteJobRequest, opts ...grpc.CallOption) (*PromoteJobResponse, error)
+	GetLogs(ctx context.Context, in *GetLogsRequest, opts ...grpc.CallOption) (*GetLogsResponse, error)
 }
 
 type jobOfferServiceClient struct {
@@ -67,6 +68,15 @@ func (c *jobOfferServiceClient) PromoteJob(ctx context.Context, in *PromoteJobRe
 	return out, nil
 }
 
+func (c *jobOfferServiceClient) GetLogs(ctx context.Context, in *GetLogsRequest, opts ...grpc.CallOption) (*GetLogsResponse, error) {
+	out := new(GetLogsResponse)
+	err := c.cc.Invoke(ctx, "/job_offer.JobOfferService/GetLogs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // JobOfferServiceServer is the server API for JobOfferService service.
 // All implementations must embed UnimplementedJobOfferServiceServer
 // for forward compatibility
@@ -75,6 +85,7 @@ type JobOfferServiceServer interface {
 	GetRecommendations(context.Context, *GetRecommendationsRequest) (*GetRecommendationsResponse, error)
 	CreateJob(context.Context, *CreateJobRequest) (*CreateJobResponse, error)
 	PromoteJob(context.Context, *PromoteJobRequest) (*PromoteJobResponse, error)
+	GetLogs(context.Context, *GetLogsRequest) (*GetLogsResponse, error)
 	mustEmbedUnimplementedJobOfferServiceServer()
 }
 
@@ -93,6 +104,9 @@ func (*UnimplementedJobOfferServiceServer) CreateJob(context.Context, *CreateJob
 }
 func (*UnimplementedJobOfferServiceServer) PromoteJob(context.Context, *PromoteJobRequest) (*PromoteJobResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PromoteJob not implemented")
+}
+func (*UnimplementedJobOfferServiceServer) GetLogs(context.Context, *GetLogsRequest) (*GetLogsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLogs not implemented")
 }
 func (*UnimplementedJobOfferServiceServer) mustEmbedUnimplementedJobOfferServiceServer() {}
 
@@ -172,6 +186,24 @@ func _JobOfferService_PromoteJob_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _JobOfferService_GetLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobOfferServiceServer).GetLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/job_offer.JobOfferService/GetLogs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobOfferServiceServer).GetLogs(ctx, req.(*GetLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _JobOfferService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "job_offer.JobOfferService",
 	HandlerType: (*JobOfferServiceServer)(nil),
@@ -191,6 +223,10 @@ var _JobOfferService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PromoteJob",
 			Handler:    _JobOfferService_PromoteJob_Handler,
+		},
+		{
+			MethodName: "GetLogs",
+			Handler:    _JobOfferService_GetLogs_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

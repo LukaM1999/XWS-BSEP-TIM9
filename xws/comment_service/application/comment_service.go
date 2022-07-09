@@ -3,6 +3,8 @@ package application
 import (
 	"dislinkt/comment_service/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"os"
+	"strings"
 )
 
 type CommentService struct {
@@ -33,4 +35,17 @@ func (service *CommentService) UpdateCommentCreator(creatorId primitive.ObjectID
 
 func (service *CommentService) DeletePostComments(postId primitive.ObjectID) error {
 	return service.store.DeletePostComments(postId)
+}
+
+func (service *CommentService) GetLogs() ([]string, error) {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
+	content, err := os.ReadFile(logPathPrefix + "comment_service/comment.log")
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(content), "\n")
+	return lines, nil
 }

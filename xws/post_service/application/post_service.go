@@ -4,6 +4,8 @@ import (
 	pbProfile "dislinkt/common/proto/profile_service"
 	"dislinkt/post_service/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"os"
+	"strings"
 )
 
 type PostService struct {
@@ -62,4 +64,17 @@ func (service *PostService) CreateConnection(connection *domain.Connection) erro
 
 func (service *PostService) DeleteConnection(id primitive.ObjectID) error {
 	return service.store.DeleteConnection(id)
+}
+
+func (service *PostService) GetLogs() ([]string, error) {
+	logPathPrefix := "../../logs/"
+	if os.Getenv("OS_ENV") == "docker" {
+		logPathPrefix = "./logs/"
+	}
+	content, err := os.ReadFile(logPathPrefix + "post_service/post.log")
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(content), "\n")
+	return lines, nil
 }

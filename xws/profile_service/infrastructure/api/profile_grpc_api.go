@@ -138,3 +138,13 @@ func (handler *ProfileHandler) GetByToken(ctx context.Context, request *pb.GetBy
 	}
 	return response, nil
 }
+
+func (handler *ProfileHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
+	logs, err := handler.service.GetLogs()
+	if err != nil {
+		log.Errorf("GLF")
+		return nil, err
+	}
+	log.Info("GLD")
+	return &pb.GetLogsResponse{Logs: logs}, nil
+}

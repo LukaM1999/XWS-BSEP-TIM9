@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -52,5 +53,10 @@ public class JobOffer {
     @Getter
     @Setter
     private boolean isPromoted;
+
+    @Column
+    @Getter
+    @Setter
+    private String[] skills;
 
 }

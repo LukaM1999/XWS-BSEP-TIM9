@@ -21,6 +21,40 @@ func NewJobOfferHandler(service *application.JobOfferService) *JobOfferHandler {
 	}
 }
 
+func (handler *JobOfferHandler) GetJobs(ctx context.Context, request *pb.GetJobsRequest) (*pb.GetJobsResponse, error) {
+	jobOffers, err := handler.service.GetJobs()
+	if err != nil {
+		log.Errorf("Cannot get job offer: %v", err)
+		return nil, err
+	}
+
+	var jobOffersPb []*pb.JobOffer
+	for _, jobOffer := range jobOffers {
+		jobOffersPb = append(jobOffersPb, mapJobToPb(jobOffer))
+	}
+
+	return &pb.GetJobsResponse{
+		JobOffers: jobOffersPb,
+	}, nil
+}
+
+func (handler *JobOfferHandler) GetMyJobs(ctx context.Context, request *pb.GetMyJobsRequest) (*pb.GetMyJobsResponse, error) {
+	jobOffers, err := handler.service.GetMyJobs(request.ProfileId)
+	if err != nil {
+		log.Errorf("Cannot get job offer: %v", err)
+		return nil, err
+	}
+
+	var jobOffersPb []*pb.JobOffer
+	for _, jobOffer := range jobOffers {
+		jobOffersPb = append(jobOffersPb, mapJobToPb(jobOffer))
+	}
+
+	return &pb.GetMyJobsResponse{
+		JobOffers: jobOffersPb,
+	}, nil
+}
+
 func (handler *JobOfferHandler) GetJob(ctx context.Context, request *pb.GetJobRequest) (*pb.GetJobResponse, error) {
 	jobOffer, err := handler.service.GetJob(int(request.Id))
 	if err != nil {

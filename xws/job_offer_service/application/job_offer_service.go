@@ -88,3 +88,11 @@ func (service *JobOfferService) GetLogs() ([]auth.Log, error) {
 	}
 	return logs, nil
 }
+
+func (service *JobOfferService) GetJobs() ([]*domain.JobOffer, error) {
+	return service.store.GetJobs()
+}
+
+func (service *JobOfferService) GetMyJobs(profileId string) ([]*domain.JobOffer, error) {
+	return service.store.GetMyJobs(profileId)
+}

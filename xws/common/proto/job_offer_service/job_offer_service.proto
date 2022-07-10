@@ -9,6 +9,16 @@ import "google/protobuf/timestamp.proto";
 
 
 service JobOfferService {
+  rpc GetJobs(GetJobsRequest) returns (GetJobsResponse) {
+    option (google.api.http) = {
+      get: "/job-offer"
+    };
+  }
+  rpc GetMyJobs(GetMyJobsRequest) returns (GetMyJobsResponse) {
+    option (google.api.http) = {
+      get: "/job-offer/profile/{profileId}"
+    };
+  }
   rpc GetJob(GetJobRequest) returns (GetJobResponse) {
     option (google.api.http) = {
       get: "/job-offer/{id}"
@@ -37,6 +47,22 @@ service JobOfferService {
       get: "/job-offer/logs"
     };
   }
+}
+
+message GetJobsRequest {
+
+}
+
+message GetJobsResponse {
+  repeated JobOffer jobOffers = 1;
+}
+
+message GetMyJobsResponse {
+  repeated JobOffer jobOffers = 1;
+}
+
+message GetMyJobsRequest {
+  string profileId = 1;
 }
 
 message GetJobRequest {

@@ -1,0 +1,46 @@
+{
+  "positions": [
+    {
+      "value" : "Management"
+    },
+    {
+      "value" : "QA"
+    },
+    {
+      "value" : "DevOps"
+    },
+    {
+      "value" : "Embedded"
+    },
+    {
+      "value" : "Other"
+    },
+    {
+      "value" : "Data Science"
+    },
+    {
+      "value" : "Support"
+    },
+    {
+      "value" : "Fullstack"
+    },
+    {
+      "value" : "Backend"
+    },
+    {
+      "value" : "Mobile"
+    },
+    {
+      "value" : "Frontend"
+    },
+    {
+      "value" : "Cyber security"
+    },
+    {
+      "value" : "Sysadmin"
+    },
+    {
+      "value" : "UX UI Design"
+    }
+  ]
+}

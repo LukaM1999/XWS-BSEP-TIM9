@@ -2,6 +2,8 @@ package domain
 
 type JobOfferStore interface {
 	GetJob(id int) (*JobOffer, error)
+	GetJobs() ([]*JobOffer, error)
+	GetMyJobs(profileId string) ([]*JobOffer, error)
 	Delete(id int) error
 	DeleteSkill(skillName string) error
 	DeleteAll() error

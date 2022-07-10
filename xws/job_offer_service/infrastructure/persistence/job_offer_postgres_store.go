@@ -33,6 +33,80 @@ func NewJobOfferPostgresStore(host string, port string) domain.JobOfferStore {
 	}
 }
 
+func (store *JobOfferPostgresStore) GetJobs() ([]*domain.JobOffer, error) {
+	client, err := ent.Open("postgres", store.jobOfferString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+	all, err := client.JobOffer.Query().All(context.TODO())
+
+	if err != nil {
+		return nil, err
+	}
+
+	var jobOffers = make([]*domain.JobOffer, 0)
+
+	for _, jobOffer := range all {
+		skills, err := client.JobOffer.QueryRequires(jobOffer).All(context.TODO())
+		if err != nil {
+			return nil, err
+		}
+		var skillNames []string
+		for _, s := range skills {
+			skillNames = append(skillNames, s.Name)
+		}
+		jobOffers = append(jobOffers, &domain.JobOffer{
+			Id:          jobOffer.ID,
+			ProfileId:   jobOffer.ProfileID,
+			Company:     jobOffer.Company,
+			Position:    jobOffer.Position,
+			Description: jobOffer.Description,
+			Criteria:    jobOffer.Criteria,
+			Skills:      skillNames,
+			CreatedAt:   jobOffer.CreatedAt,
+		})
+	}
+	return jobOffers, nil
+}
+
+func (store *JobOfferPostgresStore) GetMyJobs(profileId string) ([]*domain.JobOffer, error) {
+	client, err := ent.Open("postgres", store.jobOfferString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+	all, err := client.JobOffer.Query().Where(joboffer.ProfileID(profileId)).All(context.TODO())
+
+	if err != nil {
+		return nil, err
+	}
+
+	var jobOffers = make([]*domain.JobOffer, 0)
+
+	for _, jobOffer := range all {
+		skills, err := client.JobOffer.QueryRequires(jobOffer).All(context.TODO())
+		if err != nil {
+			return nil, err
+		}
+		var skillNames []string
+		for _, s := range skills {
+			skillNames = append(skillNames, s.Name)
+		}
+		jobOffers = append(jobOffers, &domain.JobOffer{
+			Id:          jobOffer.ID,
+			ProfileId:   jobOffer.ProfileID,
+			Company:     jobOffer.Company,
+			Position:    jobOffer.Position,
+			Description: jobOffer.Description,
+			Criteria:    jobOffer.Criteria,
+			Skills:      skillNames,
+			CreatedAt:   jobOffer.CreatedAt,
+		})
+	}
+	return jobOffers, nil
+}
+
 func (store *JobOfferPostgresStore) GetJob(id int) (*domain.JobOffer, error) {
 	client, err := ent.Open("postgres", store.jobOfferString)
 	if err != nil {

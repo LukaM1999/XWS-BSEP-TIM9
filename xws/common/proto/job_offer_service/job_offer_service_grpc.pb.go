@@ -17,6 +17,8 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type JobOfferServiceClient interface {
+	GetJobs(ctx context.Context, in *GetJobsRequest, opts ...grpc.CallOption) (*GetJobsResponse, error)
+	GetMyJobs(ctx context.Context, in *GetMyJobsRequest, opts ...grpc.CallOption) (*GetMyJobsResponse, error)
 	GetJob(ctx context.Context, in *GetJobRequest, opts ...grpc.CallOption) (*GetJobResponse, error)
 	GetRecommendations(ctx context.Context, in *GetRecommendationsRequest, opts ...grpc.CallOption) (*GetRecommendationsResponse, error)
 	CreateJob(ctx context.Context, in *CreateJobRequest, opts ...grpc.CallOption) (*CreateJobResponse, error)
@@ -30,6 +32,24 @@ type jobOfferServiceClient struct {
 
 func NewJobOfferServiceClient(cc grpc.ClientConnInterface) JobOfferServiceClient {
 	return &jobOfferServiceClient{cc}
+}
+
+func (c *jobOfferServiceClient) GetJobs(ctx context.Context, in *GetJobsRequest, opts ...grpc.CallOption) (*GetJobsResponse, error) {
+	out := new(GetJobsResponse)
+	err := c.cc.Invoke(ctx, "/job_offer.JobOfferService/GetJobs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *jobOfferServiceClient) GetMyJobs(ctx context.Context, in *GetMyJobsRequest, opts ...grpc.CallOption) (*GetMyJobsResponse, error) {
+	out := new(GetMyJobsResponse)
+	err := c.cc.Invoke(ctx, "/job_offer.JobOfferService/GetMyJobs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *jobOfferServiceClient) GetJob(ctx context.Context, in *GetJobRequest, opts ...grpc.CallOption) (*GetJobResponse, error) {
@@ -81,6 +101,8 @@ func (c *jobOfferServiceClient) GetLogs(ctx context.Context, in *GetLogsRequest,
 // All implementations must embed UnimplementedJobOfferServiceServer
 // for forward compatibility
 type JobOfferServiceServer interface {
+	GetJobs(context.Context, *GetJobsRequest) (*GetJobsResponse, error)
+	GetMyJobs(context.Context, *GetMyJobsRequest) (*GetMyJobsResponse, error)
 	GetJob(context.Context, *GetJobRequest) (*GetJobResponse, error)
 	GetRecommendations(context.Context, *GetRecommendationsRequest) (*GetRecommendationsResponse, error)
 	CreateJob(context.Context, *CreateJobRequest) (*CreateJobResponse, error)
@@ -93,6 +115,12 @@ type JobOfferServiceServer interface {
 type UnimplementedJobOfferServiceServer struct {
 }
 
+func (*UnimplementedJobOfferServiceServer) GetJobs(context.Context, *GetJobsRequest) (*GetJobsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetJobs not implemented")
+}
+func (*UnimplementedJobOfferServiceServer) GetMyJobs(context.Context, *GetMyJobsRequest) (*GetMyJobsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMyJobs not implemented")
+}
 func (*UnimplementedJobOfferServiceServer) GetJob(context.Context, *GetJobRequest) (*GetJobResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetJob not implemented")
 }
@@ -112,6 +140,42 @@ func (*UnimplementedJobOfferServiceServer) mustEmbedUnimplementedJobOfferService
 
 func RegisterJobOfferServiceServer(s *grpc.Server, srv JobOfferServiceServer) {
 	s.RegisterService(&_JobOfferService_serviceDesc, srv)
+}
+
+func _JobOfferService_GetJobs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetJobsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobOfferServiceServer).GetJobs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/job_offer.JobOfferService/GetJobs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobOfferServiceServer).GetJobs(ctx, req.(*GetJobsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _JobOfferService_GetMyJobs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMyJobsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobOfferServiceServer).GetMyJobs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/job_offer.JobOfferService/GetMyJobs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobOfferServiceServer).GetMyJobs(ctx, req.(*GetMyJobsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _JobOfferService_GetJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -208,6 +272,14 @@ var _JobOfferService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "job_offer.JobOfferService",
 	HandlerType: (*JobOfferServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetJobs",
+			Handler:    _JobOfferService_GetJobs_Handler,
+		},
+		{
+			MethodName: "GetMyJobs",
+			Handler:    _JobOfferService_GetMyJobs_Handler,
+		},
 		{
 			MethodName: "GetJob",
 			Handler:    _JobOfferService_GetJob_Handler,

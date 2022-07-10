@@ -27,6 +27,9 @@ import MyConnections from "@/components/MyConnections";
 import ProfileInfo from "@/components/ProfileInfo";
 import * as https from "https";
 import AdminHomePage from "@/components/AdminHomePage";
+import JobOffers from "@/components/JobOffers";
+import moment from "moment";
+import MyJobOffers from "@/components/MyJobOffers";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -153,6 +156,18 @@ const routes = [
         props: true,
         component: ProfileInfo
       },
+      {
+        path: 'job-offers',
+        name: 'jobOffers',
+        props: true,
+        component: JobOffers
+      },
+      {
+        path: 'my-job-offers',
+        name: 'myJobOffers',
+        props: true,
+        component: MyJobOffers
+      },
     ]
   },
   {
@@ -195,6 +210,12 @@ router.beforeEach((to, from, next) => {
   }
   else next()
 })
+
+Vue.filter('formatDate', function(value) {
+  if (value) {
+    return moment(String(value)).format('DD.MM.YYYY.')
+  }
+});
 
 export var vue = new Vue({
   render: h => h(App),

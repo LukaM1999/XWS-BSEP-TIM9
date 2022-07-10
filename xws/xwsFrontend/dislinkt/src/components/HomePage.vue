@@ -24,6 +24,9 @@
             <vs-navbar-item :active="active == 'myPosts'" @click="resetSearch()" id="myPosts" to="/user/my-posts">
               My posts
             </vs-navbar-item>
+            <vs-navbar-item :active="active == 'myJobOffers'" @click="resetSearch()" id="myJobOffers" to="/user/my-job-offers">
+              My job offers
+            </vs-navbar-item>
             <vs-navbar-item :active="active == 'docs'" @click="resetSearch()" id="docs" to="/user/connections">
               Connections
             </vs-navbar-item>

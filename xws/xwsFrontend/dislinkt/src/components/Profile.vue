@@ -8,8 +8,7 @@
 }
 </style>
 <template >
-  <div class="row" style="margin-left: 10%; margin-top: 7%; margin-right: 10%">
-    <h2 style="margin-bottom: 2%">PROFILE</h2>
+  <div class="row" style="margin-left: 10%; margin-top: 10%; margin-right: 10%">
     <div class="col-3">
       <div class="row">
         <div class="col">

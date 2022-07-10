@@ -69,6 +69,21 @@ service PostService{
       get: "/post/logs"
     };
   }
+  rpc UpdatePostImage(UpdatePostImageRequest) returns(UpdatePostImageResponse) {
+    option (google.api.http) = {
+      patch: "/post",
+      body: "*"
+    };
+  }
+}
+
+message UpdatePostImageRequest {
+  string id = 1;
+  string url = 2;
+}
+
+message UpdatePostImageResponse {
+  Post post = 1;
 }
 
 message GetRequest {

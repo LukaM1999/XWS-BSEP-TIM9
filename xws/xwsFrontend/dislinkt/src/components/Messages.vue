@@ -107,7 +107,7 @@ export default {
   data() {
     return {
       currentUserId: this.$store.getters.user?.id,
-      theme: 'dark',
+      theme: 'light',
       isDevice: false,
       roomsPerPage: 15,
       rooms: [],
@@ -173,7 +173,7 @@ export default {
     }
   },
 
-  async mounted() {
+  async beforeMount() {
     this.currentUserId = this.$store.getters.user?.id;
     await this.fetchRooms()
     await this.getConnections();
@@ -822,17 +822,19 @@ export default {
     async createRoom() {
       this.disableForm = true
 
-      console.log(this.connectionNames.get(this.newChatUser)?.fullName)
+      console.log(this.connectionNames.get(this.newChatUser)?.name)
       await firestoreService.addIdentifiedUser(this.newChatUser, {
         _id: this.newChatUser,
         username: this.connectionNames.get(this.newChatUser)?.username,
-        fullName: this.connectionNames.get(this.newChatUser)?.fullName,
+        fullName: this.connectionNames.get(this.newChatUser)?.name,
       })
+
+      const user = await this.getProfile()
 
       await firestoreService.addIdentifiedUser(this.currentUserId, {
         _id: this.currentUserId,
         username: this.$store.getters.user?.username,
-        fullName: this.$store.getters.user?.fullName,
+        fullName: user?.firstName + " " + user?.lastName,
       })
 
 
@@ -844,6 +846,19 @@ export default {
       this.addNewRoom = false
       this.newChatUser = ''
       this.fetchRooms()
+    },
+
+    async getProfile() {
+      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile/${this.$store.getters.user?.id}`).catch(error => {
+        this.$vs.notification({
+          title: 'Error',
+          text: 'Error getting user',
+          color: 'danger',
+          position: 'top-right'
+        });
+        throw error;
+      });
+      return response.data.profile
     },
 
     inviteUser(roomId) {

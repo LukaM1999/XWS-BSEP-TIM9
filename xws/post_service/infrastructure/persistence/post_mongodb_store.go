@@ -46,6 +46,18 @@ func NewPostMongoDBStore(client *mongo.Client) domain.PostStore {
 	}
 }
 
+func (store *PostMongoDBStore) UpdatePostImage(id primitive.ObjectID, url string) (*domain.Post, error) {
+	_, err := store.posts.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": bson.M{"content.image": url}})
+	if err != nil {
+		return nil, err
+	}
+	post, err := store.filterOne(bson.M{"_id": id})
+	if err != nil {
+		return nil, err
+	}
+	return post, nil
+}
+
 func (store *PostMongoDBStore) Get(id string) (*domain.Post, error) {
 	postId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

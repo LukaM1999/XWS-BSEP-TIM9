@@ -5,12 +5,17 @@
         <h3>{{ post.profile.firstName }} {{ post.profile.lastName }}</h3>
       </template>
       <template #img>
-        <img :src="img" alt="">
+        <img :src="post.content.image" alt="">
       </template>
       <template #text>
         <p>
           {{ post.content.text }}
         </p>
+        <div v-if="post.content.links.length > 0">
+          <div class="row" :key="i" v-for="(link, i) in post.content.links">
+            <a :href="link">{{link}}</a>
+          </div>
+        </div>
       </template>
       <template #interactions v-if="checkIfLoggedUser()">
         <vs-button :active="checkIfFlat('CELEBRATE')" border icon @click="sendLike">
@@ -90,7 +95,6 @@ export default {
   name: "Post",
   data() {
     return {
-      img: "/proba.jpg",
       likes: 0,
       dislikes: 0,
       reactions: [],

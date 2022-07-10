@@ -108,3 +108,7 @@ func (service *PostService) GetLogs() ([]auth.Log, error) {
 	}
 	return logs, nil
 }
+
+func (service *PostService) UpdatePostImage(id primitive.ObjectID, url string) (*domain.Post, error) {
+	return service.store.UpdatePostImage(id, url)
+}

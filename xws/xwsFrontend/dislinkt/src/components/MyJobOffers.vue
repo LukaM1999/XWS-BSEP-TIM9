@@ -96,7 +96,6 @@
         <vs-button @click="openModal" class="vs-button--size-large" color="##be1d7b"><strong>Add job offer</strong></vs-button>
       </div>
     </div>
-    <h1>My job offers</h1>
     <div class="row">
       <div class="col-4 mt-4" v-for="jobOffer in myJobs" :key="jobOffer.id">
         <vs-card style="padding-left: 5%;">

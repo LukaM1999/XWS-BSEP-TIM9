@@ -13,4 +13,5 @@ type PostStore interface {
 	UpdateProfile(id primitive.ObjectID, profile *Profile) error
 	Delete(id string) error
 	DeleteAll() error
+	UpdatePostImage(id primitive.ObjectID, url string) (*Post, error)
 }

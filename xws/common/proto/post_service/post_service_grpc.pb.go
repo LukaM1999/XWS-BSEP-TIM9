@@ -27,6 +27,7 @@ type PostServiceClient interface {
 	DeleteConnection(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
 	GetLogs(ctx context.Context, in *GetLogsRequest, opts ...grpc.CallOption) (*GetLogsResponse, error)
+	UpdatePostImage(ctx context.Context, in *UpdatePostImageRequest, opts ...grpc.CallOption) (*UpdatePostImageResponse, error)
 }
 
 type postServiceClient struct {
@@ -127,6 +128,15 @@ func (c *postServiceClient) GetLogs(ctx context.Context, in *GetLogsRequest, opt
 	return out, nil
 }
 
+func (c *postServiceClient) UpdatePostImage(ctx context.Context, in *UpdatePostImageRequest, opts ...grpc.CallOption) (*UpdatePostImageResponse, error) {
+	out := new(UpdatePostImageResponse)
+	err := c.cc.Invoke(ctx, "/post.PostService/UpdatePostImage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PostServiceServer is the server API for PostService service.
 // All implementations must embed UnimplementedPostServiceServer
 // for forward compatibility
@@ -141,6 +151,7 @@ type PostServiceServer interface {
 	DeleteConnection(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
 	GetLogs(context.Context, *GetLogsRequest) (*GetLogsResponse, error)
+	UpdatePostImage(context.Context, *UpdatePostImageRequest) (*UpdatePostImageResponse, error)
 	mustEmbedUnimplementedPostServiceServer()
 }
 
@@ -177,6 +188,9 @@ func (*UnimplementedPostServiceServer) UpdateProfile(context.Context, *UpdatePro
 }
 func (*UnimplementedPostServiceServer) GetLogs(context.Context, *GetLogsRequest) (*GetLogsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLogs not implemented")
+}
+func (*UnimplementedPostServiceServer) UpdatePostImage(context.Context, *UpdatePostImageRequest) (*UpdatePostImageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePostImage not implemented")
 }
 func (*UnimplementedPostServiceServer) mustEmbedUnimplementedPostServiceServer() {}
 
@@ -364,6 +378,24 @@ func _PostService_GetLogs_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PostService_UpdatePostImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePostImageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostServiceServer).UpdatePostImage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/post.PostService/UpdatePostImage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostServiceServer).UpdatePostImage(ctx, req.(*UpdatePostImageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _PostService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "post.PostService",
 	HandlerType: (*PostServiceServer)(nil),
@@ -407,6 +439,10 @@ var _PostService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLogs",
 			Handler:    _PostService_GetLogs_Handler,
+		},
+		{
+			MethodName: "UpdatePostImage",
+			Handler:    _PostService_UpdatePostImage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

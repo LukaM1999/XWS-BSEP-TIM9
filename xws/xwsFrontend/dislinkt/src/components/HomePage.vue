@@ -80,7 +80,7 @@
           <div class="d-flex align-items-left">
             <label for="img">Add image</label>
           </div>
-          <input class="mb-4 form-control" style="border-radius: 15px" type="file" id="img" name="img"/>
+          <input class="mb-4 form-control" @change="handleFileInput($event.target.files[0])" style="border-radius: 15px" type="file" id="img" name="img"/>
         </div>
         <div class="form-group">
           <div class="d-flex align-items-left">
@@ -142,6 +142,9 @@
 
 import axios from 'axios';
 import moment from "moment";
+import * as firestoreService from '@/database/firestore'
+import * as firebaseService from '@/database/firebase'
+import * as storageService from '@/database/storage'
 
 export default {
   name: "HomePage",
@@ -152,12 +155,13 @@ export default {
       profile: null,
       createPostDialog: false,
       text: '',
-      image: '',
+      image: null,
       link: '',
       isSearching: false,
       search: '',
       usersFound: [],
-      searchEmpty: true
+      searchEmpty: true,
+      file: undefined
     }
   },
   async beforeMount() {
@@ -304,6 +308,17 @@ export default {
         loading.close();
         throw error;
       });
+        await this.uploadFile(response.data.post.id).catch(error => {
+          this.$vs.notification({
+            title: 'Error',
+            text: 'Error while uploading image',
+            color: 'danger',
+            position: 'top-right'
+          });
+          loading.close();
+          throw error;
+        });
+
       loading.close();
       this.$vs.notification({
         title: 'Success',
@@ -313,8 +328,10 @@ export default {
       });
       this.createPostDialog = false
       await this.sendNotification()
-      this.$router.replace('/user/my-posts')
       this.resetCreatePostDialog()
+      if(this.$route.path.includes('my-posts'))
+        this.$router.go(0)
+      this.$router.replace('/user/my-posts')
     },
     async sendNotification(){
       const connections = await this.getMyConnections()
@@ -350,7 +367,6 @@ export default {
       this.link = ''
     },
     viewProfile(id){
-      console.log(id)
       this.search = "";
       this.searchEmpty = true;
       localStorage.setItem('searchId', id);
@@ -360,6 +376,29 @@ export default {
       this.search = "";
       this.searchEmpty = true;
     },
+    async handleFileInput(img) {
+      const buffer = await img.arrayBuffer()
+      const bytes = new Uint8Array(buffer)
+      // let reader = new FileReader();
+      // reader.readAsBinaryString(img)
+      this.file = bytes
+    },
+    async uploadFile(postId){
+      return new Promise(resolve => {
+        storageService.listenUploadPostImgProgress(this.file, `${postId}.jpeg`,
+          e => {
+            resolve(false)
+          },
+          async url => {
+            await axios.patch(`${process.env.VUE_APP_BACKEND}/post`, {id: postId, url: url})
+              .catch(error => {
+                resolve(false)
+              })
+            resolve(true)
+          }
+        )
+      })
+    }
   }
 }
 </script>

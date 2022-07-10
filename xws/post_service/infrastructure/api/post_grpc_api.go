@@ -180,3 +180,19 @@ func (handler *PostHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequ
 	log.Info("GLD")
 	return &pb.GetLogsResponse{Logs: pbLogs}, nil
 }
+
+func (handler *PostHandler) UpdatePostImage(ctx context.Context, request *pb.UpdatePostImageRequest) (*pb.UpdatePostImageResponse, error) {
+	id, err := primitive.ObjectIDFromHex(request.Id)
+	if err != nil {
+		return nil, err
+	}
+	post, err := handler.service.UpdatePostImage(id, request.Url)
+	if err != nil {
+		log.WithField("postId", id).Errorf("Cannot update post: %v", err)
+		return nil, err
+	}
+	log.WithField("postId", id).Infof("Post updated")
+	return &pb.UpdatePostImageResponse{
+		Post: mapPostToPb(post),
+	}, nil
+}

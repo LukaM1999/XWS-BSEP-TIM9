@@ -30,10 +30,10 @@
             <vs-navbar-item :active="active == 'docs'" @click="resetSearch()" id="docs" to="/user/connections">
               Connections
             </vs-navbar-item>
-            <vs-navbar-item :active="active === 'jobOffers'" @click="resetSearch()" id="jobOffers" to="/user/job-offers">
+            <vs-navbar-item :active="active == 'jobOffers'" @click="resetSearch()" id="jobOffers" to="/user/job-offers">
               Job offers
             </vs-navbar-item>
-            <vs-navbar-item :active="active === 'messages'" @click="resetSearch()" id="messages" to="/user/messages">
+            <vs-navbar-item :active="active == 'messages'" @click="resetSearch()" id="messages" to="/user/messages">
               Messages
             </vs-navbar-item>
             <vs-navbar-item :active="active == 'license'" @click="resetSearch()" id="license" to="/user/profile">
@@ -105,7 +105,7 @@
           <div class="col"></div>
           <div class="col" style="border-radius: 15px; background-color: lavenderblush">
             <div :key="i" v-for="(tr, i) in usersFound">
-              <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+              <div class="row"  style="margin-bottom: 5px; margin-top: 5px">
                 <div class="col"></div>
                 <div class="col-10">
                   <div class="row" style="margin-bottom: 5px; margin-top: 5px">
@@ -350,9 +350,11 @@ export default {
       this.link = ''
     },
     viewProfile(id){
+      console.log(id)
       this.search = "";
       this.searchEmpty = true;
-      this.$router.push({name: 'profileInfo', params: { id: id }})
+      localStorage.setItem('searchId', id);
+      this.$router.push({name: 'profileInfo'})
     },
     resetSearch(){
       this.search = "";

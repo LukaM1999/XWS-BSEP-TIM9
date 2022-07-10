@@ -30,6 +30,7 @@ import AdminHomePage from "@/components/AdminHomePage";
 import JobOffers from "@/components/JobOffers";
 import moment from "moment";
 import MyJobOffers from "@/components/MyJobOffers";
+import Search from "@/components/Search";
 
 Vue.config.productionTip = false
 Vue.config.devtools
@@ -117,7 +118,14 @@ const routes = [
   {
     path: '/',
     name: 'landingPage',
-    component: LandingPage
+    component: LandingPage,
+    children: [
+      {
+        path: 'search',
+        name: 'search',
+        component: Search
+      },
+    ]
   },
   {
     path: '/user',
@@ -153,7 +161,6 @@ const routes = [
       {
         path: 'profile-info',
         name: 'profileInfo',
-        props: true,
         component: ProfileInfo
       },
       {

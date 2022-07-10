@@ -10,14 +10,21 @@
                 <img src="/logo.png" width="100" height="100" alt="">
               </div>
               <div class="col align-self-center">
-                <p
-                  style="font-family: 'Bauhaus 93'; margin-bottom: 0rem; margin-left:-2rem ;  font-size: xxx-large; color: #be1d7b">
+                <p @click="goHome()"
+                  style="font-family: 'Bauhaus 93'; margin-bottom: 0rem; margin-left:-2rem ;  font-size: xxx-large; color: #be1d7b" to="/">
                   DISLINKT</p>
               </div>
             </div>
           </template>
           <template #right>
-            <vs-input type="search" @input="searchProfile()" v-model="search"></vs-input>
+            <div class="center content-inputs">
+              <vs-input state="primary" primary v-model="search" @input="searchProfile"
+                        placeholder="Search users" :loading="isSearching">
+                <template #icon>
+                  <i class='bx bx-search'></i>
+                </template>
+              </vs-input>
+            </div>
             <vs-button flat :disabled="isLoginDisabled()" @click="openLoginDialog()" color="#be1d7b">Login</vs-button>
             <vs-button @click="openRegisterDialog()" color="#be1d7b" gradient>Get Started</vs-button>
           </template>
@@ -208,12 +215,48 @@
         </div>
       </div>
     </div>
-    <div class="row" style="margin-top: 10rem; background-color: transparent;">
+    <div class="row" v-if="searchEmpty && !profileSelected" style="margin-top: 10rem; background-color: transparent;">
       <div class="col"></div>
       <div class="col d-flex justify-content-center" style="background-color: transparent">
         <Post :post="post"></Post>
       </div>
       <div class="col"></div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <router-view v-if="searchEmpty"></router-view>
+        <div v-if="!searchEmpty" style="margin-top: 10%" class="row">
+          <div class="col"></div>
+          <div class="col" style="border-radius: 15px; background-color: lavenderblush">
+            <div :key="i" v-for="(tr, i) in usersFound">
+              <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+                <div class="col"></div>
+                <div class="col-10">
+                  <div class="row" style="margin-bottom: 5px; margin-top: 5px">
+                    <div class="col d-flex justify-content-center align-self-center">
+                      <div class="center con-avatars">
+                        <vs-avatar circle primary size="35">
+                          <template #text>
+                            {{ tr.firstName }} {{ tr.lastName }}
+                          </template>
+                        </vs-avatar>
+                      </div>
+                    </div>
+                    <div class="col d-flex justify-content-center align-self-end" style="color: black">
+                      <vs-navbar-item style="font-size: large; cursor: default">{{ tr.firstName }} {{ tr.lastName }}</vs-navbar-item>
+                    </div>
+                    <div class="col d-flex justify-content-center">
+                      <vs-button @click="viewProfile(tr.id)" dark>Profile</vs-button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col"></div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -273,7 +316,11 @@ export default {
         content: {
           text: "Check out my github page"
         }
-      }
+      },
+      isSearching: false,
+      usersFound: [],
+      searchEmpty: true,
+      profileSelected: false
     }
   },
   validations: {
@@ -320,23 +367,36 @@ export default {
     }
   },
   methods: {
-    async searchProfile(){
-      const loading = this.$vs.loading();
-      const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile?search=${this.search}`).catch(error => {
+    async searchProfile() {
+      this.checkIfSearchEmpty()
+      if (this.search === '') return
+      this.isSearching = true
+      const response = await axios.get(process.env.VUE_APP_BACKEND + `/profile?search=${this.search}`).catch(error => {
         this.$vs.notification({
           title: 'Error',
-          text: 'Error generating token',
+          text: 'Error searching profiles',
           color: 'danger',
           position: 'top-right'
         });
-        loading.close();
+        this.isSearching = false
         throw error;
       });
-      console.log(response.data);
-      loading.close();
+      this.isSearching = false
+      this.usersFound = response.data.profiles
+      //this.changeRoute('/user/search')
+    },
+    checkIfSearchEmpty() {
+      if (this.search === '') {
+        this.usersFound = []
+        this.searchEmpty = true
+      } else
+        this.searchEmpty = false
     },
     isPasswordStrong() {
       return zxcvbn(this.password, [this.username, this.email, this.firstName, this.lastName])?.score >= 3
+    },
+    goHome(){
+      this.$router.push('/');
     },
     isLoginDisabled() {
       return this.$store.getters.failedLoginAttempts > 5
@@ -475,6 +535,14 @@ export default {
     },
     openEmailDialog() {
       this.dialogEmail = true;
+    },
+
+    viewProfile(id){
+      this.search = "";
+      this.searchEmpty = true;
+      this.profileSelected = true;
+      localStorage.setItem('searchId', id);
+      this.$router.push({name: 'search'});
     },
 
     resetLogin() {

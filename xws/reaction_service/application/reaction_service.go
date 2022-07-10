@@ -1,7 +1,9 @@
 package application
 
 import (
+	"context"
 	auth "dislinkt/common/domain"
+	"dislinkt/common/tracer"
 	"dislinkt/reaction_service/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
@@ -20,23 +22,43 @@ func NewReactionService(store domain.ReactionStore) *ReactionService {
 	}
 }
 
-func (service *ReactionService) Get(postId string) ([]*domain.Reaction, error) {
-	return service.store.Get(postId)
+func (service *ReactionService) Get(ctx context.Context, postId string) ([]*domain.Reaction, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Get(ctx, postId)
 }
 
-func (service *ReactionService) Reaction(reaction *domain.Reaction) (*domain.Reaction, error) {
-	return service.store.Reaction(reaction)
+func (service *ReactionService) Reaction(ctx context.Context, reaction *domain.Reaction) (*domain.Reaction, error) {
+	span := tracer.StartSpanFromContext(ctx, "Reaction Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Reaction(ctx, reaction)
 }
 
-func (service *ReactionService) Delete(id string) error {
-	return service.store.Delete(id)
+func (service *ReactionService) Delete(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Delete(ctx, id)
 }
 
-func (service *ReactionService) DeletePostReactions(postId primitive.ObjectID) error {
-	return service.store.DeletePostReactions(postId)
+func (service *ReactionService) DeletePostReactions(ctx context.Context, postId primitive.ObjectID) error {
+	span := tracer.StartSpanFromContext(ctx, "DeletePostReactions Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.DeletePostReactions(ctx, postId)
 }
 
-func (service *ReactionService) GetLogs() ([]auth.Log, error) {
+func (service *ReactionService) GetLogs(ctx context.Context) ([]auth.Log, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	
 	logPathPrefix := "../../logs/"
 	if os.Getenv("OS_ENV") == "docker" {
 		logPathPrefix = "./logs/"

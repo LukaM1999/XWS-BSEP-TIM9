@@ -2,7 +2,9 @@ package application
 
 import (
 	"bytes"
+	"context"
 	auth "dislinkt/common/domain"
+	"dislinkt/common/tracer"
 	"dislinkt/security_service/domain"
 	"fmt"
 	"github.com/google/uuid"
@@ -29,16 +31,28 @@ func NewSecurityService(store domain.UserStore, orchestrator *CreateProfileOrche
 	}
 }
 
-func (service *SecurityService) Get(username string) (*auth.User, error) {
-	return service.store.Get(username)
+func (service *SecurityService) Get(ctx context.Context, username string) (*auth.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Get(ctx, username)
 }
 
-func (service *SecurityService) GetAll() ([]*auth.User, error) {
-	return service.store.GetAll()
+func (service *SecurityService) GetAll(ctx context.Context) ([]*auth.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetAll Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetAll(ctx)
 }
 
-func (service *SecurityService) Register(user *auth.User, firstName string, lastName string, email string) (*auth.User, error) {
-	registeredUser, err := service.store.Register(user)
+func (service *SecurityService) Register(ctx context.Context, user *auth.User, firstName string, lastName string, email string) (*auth.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "Register Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	registeredUser, err := service.store.Register(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -62,25 +76,41 @@ func (service *SecurityService) Register(user *auth.User, firstName string, last
 	}
 	err = service.orchestrator.Start(profile)
 	if err != nil {
-		service.store.Delete(registeredUser.Id)
+		service.store.Delete(ctx, registeredUser.Id)
 		return nil, err
 	}
 	return registeredUser, nil
 }
 
-func (service *SecurityService) CreateUserVerification(userVerification *domain.UserVerification) (*domain.UserVerification, error) {
-	return service.store.CreateUserVerification(userVerification)
+func (service *SecurityService) CreateUserVerification(ctx context.Context, userVerification *domain.UserVerification) (*domain.UserVerification, error) {
+	span := tracer.StartSpanFromContext(ctx, "CreateUserVerification Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.CreateUserVerification(ctx, userVerification)
 }
 
-func (service *SecurityService) Update(id primitive.ObjectID, username string) (string, error) {
-	return service.store.Update(id, username)
+func (service *SecurityService) Update(ctx context.Context, id primitive.ObjectID, username string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "Update Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Update(ctx, id, username)
 }
 
-func (service *SecurityService) Delete(id primitive.ObjectID) error {
-	return service.store.Delete(id)
+func (service *SecurityService) Delete(ctx context.Context, id primitive.ObjectID) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Delete(ctx, id)
 }
 
-func (service *SecurityService) SetupOTP(username string) (string, []byte, error) {
+func (service *SecurityService) SetupOTP(ctx context.Context, username string) (string, []byte, error) {
+	span := tracer.StartSpanFromContext(ctx, "SetupOTP Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	key, err := totp.Generate(totp.GenerateOpts{
 		Issuer:      "dislinkt.com",
 		AccountName: username,
@@ -96,7 +126,7 @@ func (service *SecurityService) SetupOTP(username string) (string, []byte, error
 	}
 	png.Encode(&buf, img)
 
-	err = service.store.SaveOTPSecret(username, key.Secret())
+	err = service.store.SaveOTPSecret(ctx, username, key.Secret())
 	if err != nil {
 		return "", nil, err
 	}
@@ -104,11 +134,19 @@ func (service *SecurityService) SetupOTP(username string) (string, []byte, error
 	return key.Secret(), buf.Bytes(), nil
 }
 
-func (service *SecurityService) GetOTPSecret(username string) (string, error) {
-	return service.store.GetOTPSecret(username)
+func (service *SecurityService) GetOTPSecret(ctx context.Context, username string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetOTPSecret Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetOTPSecret(ctx, username)
 }
 
-func (service *SecurityService) SendVerificationEmail(username string, email string, token string) error {
+func (service *SecurityService) SendVerificationEmail(ctx context.Context, username string, email string, token string) error {
+	span := tracer.StartSpanFromContext(ctx, "SendVerificationEmail Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	// Sender data.
 	from := "isatestmail2021@gmail.com"
 	password := "yciuowcxhvykcots"
@@ -156,7 +194,11 @@ func (service *SecurityService) SendVerificationEmail(username string, email str
 	return nil
 }
 
-func (service *SecurityService) GenerateVerificationToken() (string, error) {
+func (service *SecurityService) GenerateVerificationToken(ctx context.Context) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GenerateVerificationToken Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	uuidWithHyphen := uuid.New()
 	fmt.Println(uuidWithHyphen)
 	uuid := strings.Replace(uuidWithHyphen.String(), "-", "", -1)
@@ -164,8 +206,12 @@ func (service *SecurityService) GenerateVerificationToken() (string, error) {
 	return uuid, nil
 }
 
-func (service *SecurityService) VerifyUser(token string) (string, error) {
-	message, err := service.store.VerifyUser(token)
+func (service *SecurityService) VerifyUser(ctx context.Context, token string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "VerifyUser Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	message, err := service.store.VerifyUser(ctx, token)
 	if err != nil {
 		fmt.Println(err)
 		return "", err
@@ -174,15 +220,23 @@ func (service *SecurityService) VerifyUser(token string) (string, error) {
 	return message, nil
 }
 
-func (service *SecurityService) IsVerified(username string) (bool, error) {
-	isVerified, err := service.store.IsVerified(username)
+func (service *SecurityService) IsVerified(ctx context.Context, username string) (bool, error) {
+	span := tracer.StartSpanFromContext(ctx, "IsVerified Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	isVerified, err := service.store.IsVerified(ctx, username)
 	if err != nil {
 		return false, err
 	}
 	return isVerified, nil
 }
 
-func (service *SecurityService) SendRecoverPasswordEmail(email string, username string, token string) error {
+func (service *SecurityService) SendRecoverPasswordEmail(ctx context.Context, email string, username string, token string) error {
+	span := tracer.StartSpanFromContext(ctx, "SendRecoverPasswordEmail Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	// Sender data.
 	from := "isatestmail2021@gmail.com"
 	password := "yciuowcxhvykcots"
@@ -231,23 +285,35 @@ func (service *SecurityService) SendRecoverPasswordEmail(email string, username 
 	return nil
 }
 
-func (service *SecurityService) UpdatePassword(token string, password string) error {
-	_, err := service.store.UpdatePassword(token, password)
+func (service *SecurityService) UpdatePassword(ctx context.Context, token string, password string) error {
+	span := tracer.StartSpanFromContext(ctx, "UpdatePassword Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := service.store.UpdatePassword(ctx, token, password)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (service *SecurityService) CreatePasswordRecovery(passwordRecovery *domain.PasswordRecovery) error {
-	err := service.store.CreatePasswordRecovery(passwordRecovery)
+func (service *SecurityService) CreatePasswordRecovery(ctx context.Context, passwordRecovery *domain.PasswordRecovery) error {
+	span := tracer.StartSpanFromContext(ctx, "CreatePasswordRecovery Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	err := service.store.CreatePasswordRecovery(ctx, passwordRecovery)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (service *SecurityService) GetLogs() ([]auth.Log, error) {
+func (service *SecurityService) GetLogs(ctx context.Context) ([]auth.Log, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	logPathPrefix := "../../logs/"
 	if os.Getenv("OS_ENV") == "docker" {
 		logPathPrefix = "./logs/"

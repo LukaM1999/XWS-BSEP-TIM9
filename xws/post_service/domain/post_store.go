@@ -1,17 +1,21 @@
 package domain
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"context"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type PostStore interface {
-	Get(id string) (*Post, error)
-	GetProfilePosts(profileId string) ([]*Post, error)
-	GetConnectionPosts(profileId string) ([]*Post, error)
-	Create(post *Post) error
-	CreateConnection(connection *Connection) error
-	DeleteConnection(id primitive.ObjectID) error
-	Update(id string, post *Post) error
-	UpdateProfile(id primitive.ObjectID, profile *Profile) error
-	Delete(id string) error
-	DeleteAll() error
-	UpdatePostImage(id primitive.ObjectID, url string) (*Post, error)
+	Get(ctx context.Context, id string) (*Post, error)
+	GetProfilePosts(ctx context.Context, profileId string) ([]*Post, error)
+	GetConnectionPosts(ctx context.Context, profileId string) ([]*Post, error)
+	Create(ctx context.Context, post *Post) error
+	CreateConnection(ctx context.Context, connection *Connection) error
+	DeleteConnection(ctx context.Context, id primitive.ObjectID) error
+	Update(ctx context.Context, id string, post *Post) error
+	UpdateProfile(ctx context.Context, id primitive.ObjectID, profile *Profile) error
+	Delete(ctx context.Context, id string) error
+	DeleteAll(ctx context.Context) error
+	UpdatePostImage(ctx context.Context, id primitive.ObjectID, url string) (*Post, error)
 }

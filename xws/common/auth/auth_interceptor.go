@@ -69,6 +69,7 @@ func (interceptor *AuthInterceptor) Stream() grpc.StreamServerInterceptor {
 
 func getSecurityDatabaseClient(host, port string) (*mongo.Client, error) {
 	uri := fmt.Sprintf("mongodb://%s:%s/", host, port)
+	log.Info("Connecting to security database: ", uri)
 	options := options.Client().ApplyURI(uri)
 	return mongo.Connect(context.TODO(), options)
 }
@@ -84,7 +85,7 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 		return nil, "", ""
 	}
 
-	securityClient, err := getSecurityDatabaseClient("localhost", "27017")
+	securityClient, err := getSecurityDatabaseClient("security_db", "27017")
 	if err != nil {
 		logger.Error("GMGF")
 		return status.Errorf(codes.Internal, "could not connect to security database: %v", err), "", ""

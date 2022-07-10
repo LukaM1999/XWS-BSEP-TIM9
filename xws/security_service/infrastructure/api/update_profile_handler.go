@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	saga "dislinkt/common/saga/messaging"
 	events "dislinkt/common/saga/update_profile"
 	"dislinkt/security_service/application"
@@ -39,14 +40,14 @@ func (handler *UpdateProfileCommandHandler) handle(command *events.UpdateProfile
 		if command.Profile.Username == command.OldUsername {
 			return
 		}
-		_, err := handler.securityService.Update(command.Profile.Id, command.Profile.Username)
+		_, err := handler.securityService.Update(context.TODO(), command.Profile.Id, command.Profile.Username)
 		if err != nil {
 			return
 		}
 		reply.Type = events.ProfileUpdated
 		break
 	case events.RollbackUpdatedProfile:
-		_, err := handler.securityService.Update(command.Profile.Id, command.Profile.Username)
+		_, err := handler.securityService.Update(context.TODO(), command.Profile.Id, command.Profile.Username)
 		if err != nil {
 			return
 		}

@@ -2,13 +2,15 @@ package persistence
 
 import (
 	"context"
+	"dislinkt/common/tracer"
 	"dislinkt/post_service/domain"
 	"errors"
+	"time"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 const (
@@ -46,8 +48,12 @@ func NewPostMongoDBStore(client *mongo.Client) domain.PostStore {
 	}
 }
 
-func (store *PostMongoDBStore) UpdatePostImage(id primitive.ObjectID, url string) (*domain.Post, error) {
-	_, err := store.posts.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.M{"$set": bson.M{"content.image": url}})
+func (store *PostMongoDBStore) UpdatePostImage(ctx context.Context, id primitive.ObjectID, url string) (*domain.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "UpdatePostImage Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := store.posts.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"content.image": url}})
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +64,11 @@ func (store *PostMongoDBStore) UpdatePostImage(id primitive.ObjectID, url string
 	return post, nil
 }
 
-func (store *PostMongoDBStore) Get(id string) (*domain.Post, error) {
+func (store *PostMongoDBStore) Get(ctx context.Context, id string) (*domain.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	postId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
@@ -67,7 +77,11 @@ func (store *PostMongoDBStore) Get(id string) (*domain.Post, error) {
 	return store.filterOne(filter)
 }
 
-func (store *PostMongoDBStore) GetProfilePosts(profileId string) ([]*domain.Post, error) {
+func (store *PostMongoDBStore) GetProfilePosts(ctx context.Context, profileId string) ([]*domain.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetProfilePosts Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	id, err := primitive.ObjectIDFromHex(profileId)
 	if err != nil {
 		return nil, err
@@ -76,7 +90,11 @@ func (store *PostMongoDBStore) GetProfilePosts(profileId string) ([]*domain.Post
 	return store.filter(filter)
 }
 
-func (store *PostMongoDBStore) GetConnectionPosts(profileId string) ([]*domain.Post, error) {
+func (store *PostMongoDBStore) GetConnectionPosts(ctx context.Context, profileId string) ([]*domain.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetConnectionPosts Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	id, err := primitive.ObjectIDFromHex(profileId)
 	if err != nil {
 		return nil, err
@@ -105,8 +123,12 @@ func (store *PostMongoDBStore) GetConnectionPosts(profileId string) ([]*domain.P
 	return posts, nil
 }
 
-func (store *PostMongoDBStore) Create(post *domain.Post) error {
-	result, err := store.posts.InsertOne(context.TODO(), post)
+func (store *PostMongoDBStore) Create(ctx context.Context, post *domain.Post) error {
+	span := tracer.StartSpanFromContext(ctx, "Create Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result, err := store.posts.InsertOne(ctx, post)
 	if err != nil {
 		return err
 	}
@@ -114,8 +136,12 @@ func (store *PostMongoDBStore) Create(post *domain.Post) error {
 	return nil
 }
 
-func (store *PostMongoDBStore) CreateConnection(connection *domain.Connection) error {
-	result, err := store.connections.InsertOne(context.TODO(), connection)
+func (store *PostMongoDBStore) CreateConnection(ctx context.Context, connection *domain.Connection) error {
+	span := tracer.StartSpanFromContext(ctx, "CreateConnection Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result, err := store.connections.InsertOne(ctx, connection)
 	if err != nil {
 		return err
 	}
@@ -123,21 +149,29 @@ func (store *PostMongoDBStore) CreateConnection(connection *domain.Connection) e
 	return nil
 }
 
-func (store *PostMongoDBStore) DeleteConnection(id primitive.ObjectID) error {
-	_, err := store.connections.DeleteOne(context.TODO(), bson.M{"_id": id})
+func (store *PostMongoDBStore) DeleteConnection(ctx context.Context, id primitive.ObjectID) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteConnection Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := store.connections.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *PostMongoDBStore) Update(id string, post *domain.Post) error {
+func (store *PostMongoDBStore) Update(ctx context.Context, id string, post *domain.Post) error {
+	span := tracer.StartSpanFromContext(ctx, "Update Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	postId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
 	result, err := store.posts.ReplaceOne(
-		context.TODO(),
+		ctx,
 		bson.M{"_id": postId},
 		post,
 	)
@@ -150,13 +184,17 @@ func (store *PostMongoDBStore) Update(id string, post *domain.Post) error {
 	return nil
 }
 
-func (store *PostMongoDBStore) UpdateProfile(id primitive.ObjectID, profile *domain.Profile) error {
+func (store *PostMongoDBStore) UpdateProfile(ctx context.Context, id primitive.ObjectID, profile *domain.Profile) error {
+	span := tracer.StartSpanFromContext(ctx, "UpdateProfile Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	posts, err := store.filter(bson.M{"profile._id": id})
 	if err != nil {
 		return err
 	}
 	for _, post := range posts {
-		_, err := store.posts.UpdateOne(context.TODO(), bson.M{"_id": post.Id}, bson.M{"$set": bson.M{"profile": profile}})
+		_, err := store.posts.UpdateOne(ctx, bson.M{"_id": post.Id}, bson.M{"$set": bson.M{"profile": profile}})
 		if err != nil {
 			return err
 		}
@@ -164,28 +202,36 @@ func (store *PostMongoDBStore) UpdateProfile(id primitive.ObjectID, profile *dom
 	return nil
 }
 
-func (store *PostMongoDBStore) Delete(id string) error {
+func (store *PostMongoDBStore) Delete(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	postId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
-	_, err = store.posts.DeleteOne(context.TODO(), bson.M{"_id": postId})
+	_, err = store.posts.DeleteOne(ctx, bson.M{"_id": postId})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *PostMongoDBStore) DeleteAll() error {
-	_, err := store.posts.DeleteMany(context.TODO(), bson.D{{}})
+func (store *PostMongoDBStore) DeleteAll(ctx context.Context) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteAll Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := store.posts.DeleteMany(ctx, bson.D{{}})
 	if err != nil {
 		return err
 	}
-	_, err = store.connections.DeleteMany(context.TODO(), bson.D{{}})
+	_, err = store.connections.DeleteMany(ctx, bson.D{{}})
 	if err != nil {
 		return err
 	}
-	_, err = store.jobs.DeleteMany(context.TODO(), bson.D{{}})
+	_, err = store.jobs.DeleteMany(ctx, bson.D{{}})
 	if err != nil {
 		return err
 	}

@@ -13,21 +13,30 @@ import (
 	profileGw "dislinkt/common/proto/profile_service"
 	reactionGw "dislinkt/common/proto/reaction_service"
 	securityGw "dislinkt/common/proto/security_service"
+	"dislinkt/common/tracer"
+	_ "dislinkt/common/tracer"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/opentracing/opentracing-go"
+	otgo "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
+	"github.com/urfave/negroni"
 	muxprom "gitlab.com/msvechla/mux-prometheus/pkg/middleware"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 var log = loggers.NewGatewayLogger()
@@ -35,6 +44,8 @@ var log = loggers.NewGatewayLogger()
 type Server struct {
 	config *cfg.Config
 	mux    *runtime.ServeMux
+	tracer otgo.Tracer
+	closer io.Closer
 }
 
 func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -43,12 +54,16 @@ func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 }
 
 func NewServer(config *cfg.Config) *Server {
+	tracer, closer := tracer.Init("api-gateway")
+	otgo.SetGlobalTracer(tracer)
 	server := &Server{
 		config: config,
 		mux: runtime.NewServeMux(
 			//runtime.WithForwardResponseOption(append),
 			runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.HTTPBodyMarshaler{&runtime.JSONPb{}}),
 		),
+		tracer: tracer,
+		closer: closer,
 	}
 	server.initHandlers()
 	return server
@@ -113,6 +128,33 @@ func prom(next http.Handler) http.Handler {
 	})
 }
 
+var (
+	totalReq = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "dislinkt_total_req",
+		Help: "The total number of requests",
+	})
+	successfulReq = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "dislinkt_successful_req",
+		Help: "The number of successful requests",
+	})
+	failedReq = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "dislinkt_failed_req",
+		Help: "The total number of failed requests",
+	})
+	notFoundReq = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "dislinkt_not_found_req",
+		Help: "The total number of 404 requests with endpoint",
+	}, []string{"code", "method"})
+	visitor = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "dislinkt_visitor_req",
+		Help: "Visitor from request",
+	}, []string{"ip", "browser", "timestamp"})
+	dataFlowFromReq = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "dislinkt_data_flow_req",
+		Help: "Data flow from request",
+	})
+)
+
 //var (
 //	httpDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 //		Name: "dislinkt_http_duration_seconds",
@@ -135,7 +177,11 @@ func (server *Server) initHandlers() {
 	config := &tls.Config{
 		InsecureSkipVerify: true,
 	}
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewTLS(config))}
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(credentials.NewTLS(config)),
+		grpc.WithUnaryInterceptor(grpc_opentracing.UnaryClientInterceptor(
+			grpc_opentracing.WithTracer(otgo.GlobalTracer()))),
+	}
 	securityEndpoint := fmt.Sprintf("%s:%s", server.config.SecurityHost, server.config.SecurityPort)
 	err := securityGw.RegisterSecurityServiceHandlerFromEndpoint(context.TODO(), server.mux, securityEndpoint, opts)
 	if err != nil {
@@ -313,9 +359,56 @@ func (server *Server) Start() {
 	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%s", server.config.Port), serverCertFile, serverKeyFile, r))
 }
 
+var grpcGatewayTag = opentracing.Tag{Key: string(ext.Component), Value: "grpc-gateway"}
+
 func muxMiddleware(server *Server) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		server.mux.ServeHTTP(w, r)
+		endpointName := r.Method + " " + r.URL.Path
+
+		parentSpanContext, err2 := opentracing.GlobalTracer().Extract(
+			opentracing.HTTPHeaders,
+			opentracing.HTTPHeadersCarrier(r.Header))
+		if err2 == nil || err2 == opentracing.ErrSpanContextNotFound {
+			serverSpan := opentracing.GlobalTracer().StartSpan(
+				endpointName,
+				ext.RPCServerOption(parentSpanContext),
+				grpcGatewayTag,
+			)
+			r = r.WithContext(opentracing.ContextWithSpan(r.Context(), serverSpan))
+			defer serverSpan.Finish()
+		}
+		lrw := negroni.NewResponseWriter(w)
+		server.mux.ServeHTTP(lrw, r)
+
+		statusCode := lrw.Status()
+		ipAddr := r.RemoteAddr
+		browser := r.UserAgent()
+		t := time.Now()
+		visitorLabel := prometheus.Labels{
+			"ip":        ipAddr,
+			"browser":   browser,
+			"timestamp": t.Format("2006-01-02T15:04:05.000Z"),
+		}
+		visitor.With(visitorLabel).Inc()
+
+		gb := r.ContentLength
+		fmt.Println(gb)
+		dataFlowFromReq.Add(float64(gb))
+		fmt.Println(dataFlowFromReq)
+
+		totalReq.Inc()
+		if statusCode >= 200 && statusCode <= 399 {
+			successfulReq.Inc()
+		} else if statusCode >= 400 && statusCode <= 599 {
+			if statusCode == 404 {
+				labels := prometheus.Labels{
+					"code":   "404",
+					"method": endpointName,
+				}
+				notFoundReq.With(labels).Inc()
+			}
+			failedReq.Add(3)
+		}
 	})
 }
 

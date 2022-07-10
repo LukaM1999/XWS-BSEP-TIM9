@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	auth "dislinkt/common/domain"
 	saga "dislinkt/common/saga/messaging"
 	events "dislinkt/common/saga/promote_job"
@@ -37,7 +38,7 @@ func (handler *PromoteJobCommandHandler) handle(command *events.PromoteJobComman
 			reply.Type = events.UnknownReply
 			break
 		}
-		job, err := handler.jobOfferService.CreateJob((*domain.JobOffer)(&command.JobOffer))
+		job, err := handler.jobOfferService.CreateJob(context.TODO(), (*domain.JobOffer)(&command.JobOffer))
 		if err != nil {
 			return
 		}

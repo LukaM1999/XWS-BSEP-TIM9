@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"crypto/rand"
+	"dislinkt/common/tracer"
 	"dislinkt/profile_service/domain"
 	"encoding/base32"
 	"errors"
@@ -41,7 +42,11 @@ func NewProfileMongoDBStore(client *mongo.Client) domain.ProfileStore {
 	}
 }
 
-func (store *ProfileMongoDBStore) Get(profileId string) (*domain.Profile, error) {
+func (store *ProfileMongoDBStore) Get(ctx context.Context, profileId string) (*domain.Profile, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	id, err := primitive.ObjectIDFromHex(profileId)
 	if err != nil {
 		return nil, err
@@ -50,13 +55,21 @@ func (store *ProfileMongoDBStore) Get(profileId string) (*domain.Profile, error)
 	return store.filterOne(filter)
 }
 
-func (store *ProfileMongoDBStore) GetAll(search string) ([]*domain.Profile, error) {
+func (store *ProfileMongoDBStore) GetAll(ctx context.Context, search string) ([]*domain.Profile, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetAll Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	filter := bson.D{{"fullName", bson.M{"$regex": "^.*" + search + ".*$"}}}
 	return store.filter(filter, search)
 }
 
-func (store *ProfileMongoDBStore) Create(profile *domain.Profile) error {
-	result, err := store.profiles.InsertOne(context.TODO(), profile)
+func (store *ProfileMongoDBStore) Create(ctx context.Context, profile *domain.Profile) error {
+	span := tracer.StartSpanFromContext(ctx, "Create Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result, err := store.profiles.InsertOne(ctx, profile)
 	if err != nil {
 		return err
 	}
@@ -64,13 +77,17 @@ func (store *ProfileMongoDBStore) Create(profile *domain.Profile) error {
 	return nil
 }
 
-func (store *ProfileMongoDBStore) Update(profileId string, profile *domain.Profile) error {
+func (store *ProfileMongoDBStore) Update(ctx context.Context, profileId string, profile *domain.Profile) error {
+	span := tracer.StartSpanFromContext(ctx, "Update Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	id, err := primitive.ObjectIDFromHex(profileId)
 	if err != nil {
 		return err
 	}
 	result, err := store.profiles.ReplaceOne(
-		context.TODO(),
+		ctx,
 		bson.M{"_id": id},
 		profile,
 	)
@@ -83,8 +100,12 @@ func (store *ProfileMongoDBStore) Update(profileId string, profile *domain.Profi
 	return nil
 }
 
-func (store *ProfileMongoDBStore) DeleteAll() error {
-	_, err := store.profiles.DeleteMany(context.TODO(), bson.D{{}})
+func (store *ProfileMongoDBStore) DeleteAll(ctx context.Context) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteAll Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := store.profiles.DeleteMany(ctx, bson.D{{}})
 	if err != nil {
 		return err
 	}
@@ -112,12 +133,16 @@ func (store *ProfileMongoDBStore) filterOne(filter interface{}) (profile *domain
 	return
 }
 
-func (store *ProfileMongoDBStore) Delete(id string) error {
+func (store *ProfileMongoDBStore) Delete(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	profileId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
-	_, err = store.profiles.DeleteOne(context.TODO(), bson.M{"_id": profileId})
+	_, err = store.profiles.DeleteOne(ctx, bson.M{"_id": profileId})
 	if err != nil {
 		return err
 	}
@@ -137,12 +162,20 @@ func decode(cursor *mongo.Cursor) (profiles []*domain.Profile, err error) {
 	return
 }
 
-func (store *ProfileMongoDBStore) GetByToken(token string) (*domain.Profile, error) {
+func (store *ProfileMongoDBStore) GetByToken(ctx context.Context, token string) (*domain.Profile, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetByToken Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	filter := bson.M{"agentToken": token}
 	return store.filterOne(filter)
 }
 
-func (store *ProfileMongoDBStore) GenerateToken(id primitive.ObjectID) (string, error) {
+func (store *ProfileMongoDBStore) GenerateToken(ctx context.Context, id primitive.ObjectID) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GenerateToken Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	filter := bson.M{"_id": id}
 	profile, err := store.filterOne(filter)
 	if err != nil {
@@ -150,7 +183,7 @@ func (store *ProfileMongoDBStore) GenerateToken(id primitive.ObjectID) (string, 
 	}
 	token := getToken(10)
 	profile.AgentToken = token
-	err = store.Update(profile.Id.Hex(), profile)
+	err = store.Update(ctx, profile.Id.Hex(), profile)
 	if err != nil {
 		return "", err
 	}

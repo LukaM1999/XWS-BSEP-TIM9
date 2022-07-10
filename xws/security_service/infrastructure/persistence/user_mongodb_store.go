@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	auth "dislinkt/common/domain"
+	"dislinkt/common/tracer"
 	"dislinkt/security_service/domain"
 	"dislinkt/security_service/infrastructure/api"
 	"go.mongodb.org/mongo-driver/bson"
@@ -43,18 +44,30 @@ func NewUserMongoDBStore(client *mongo.Client) domain.UserStore {
 	}
 }
 
-func (store *UserMongoDBStore) Get(username string) (*auth.User, error) {
+func (store *UserMongoDBStore) Get(ctx context.Context, username string) (*auth.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	filter := bson.M{"username": username}
 	return store.filterOne(filter)
 }
 
-func (store *UserMongoDBStore) GetAll() ([]*auth.User, error) {
+func (store *UserMongoDBStore) GetAll(ctx context.Context) ([]*auth.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetAll Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	filter := bson.D{{}}
 	return store.filter(filter)
 }
 
-func (store *UserMongoDBStore) Register(user *auth.User) (*auth.User, error) {
-	result, err := store.users.InsertOne(context.TODO(), user)
+func (store *UserMongoDBStore) Register(ctx context.Context, user *auth.User) (*auth.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "Register Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result, err := store.users.InsertOne(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -62,84 +75,116 @@ func (store *UserMongoDBStore) Register(user *auth.User) (*auth.User, error) {
 	return user, nil
 }
 
-func (store *UserMongoDBStore) Update(id primitive.ObjectID, username string) (string, error) {
+func (store *UserMongoDBStore) Update(ctx context.Context, id primitive.ObjectID, username string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "Update Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	filter := bson.M{"_id": id}
 	update := bson.M{"$set": bson.M{"username": username}}
-	_, err := store.users.UpdateOne(context.TODO(), filter, update)
+	_, err := store.users.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return "", err
 	}
 	return username, nil
 }
 
-func (store *UserMongoDBStore) Delete(id primitive.ObjectID) error {
+func (store *UserMongoDBStore) Delete(ctx context.Context, id primitive.ObjectID) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	filter := bson.M{"_id": id}
-	_, err := store.users.DeleteOne(context.TODO(), filter)
+	_, err := store.users.DeleteOne(ctx, filter)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *UserMongoDBStore) DeleteAll() error {
-	_, err := store.users.DeleteMany(context.TODO(), bson.D{{}})
+func (store *UserMongoDBStore) DeleteAll(ctx context.Context) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteAll Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := store.users.DeleteMany(ctx, bson.D{{}})
 	if err != nil {
 		return err
 	}
-	_, err = store.rolePermissions.DeleteMany(context.TODO(), bson.D{{}})
+	_, err = store.rolePermissions.DeleteMany(ctx, bson.D{{}})
 	if err != nil {
 		return err
 	}
-	_, err = store.userVerifications.DeleteMany(context.TODO(), bson.D{{}})
+	_, err = store.userVerifications.DeleteMany(ctx, bson.D{{}})
 	if err != nil {
 		return err
 	}
-	_, err = store.passwordRecoveries.DeleteMany(context.TODO(), bson.D{{}})
+	_, err = store.passwordRecoveries.DeleteMany(ctx, bson.D{{}})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *UserMongoDBStore) CreateRolePermission(rolePermission *auth.RolePermission) (*auth.RolePermission, error) {
-	_, err := store.rolePermissions.InsertOne(context.TODO(), rolePermission)
+func (store *UserMongoDBStore) CreateRolePermission(ctx context.Context, rolePermission *auth.RolePermission) (*auth.RolePermission, error) {
+	span := tracer.StartSpanFromContext(ctx, "CreateRolePermission Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := store.rolePermissions.InsertOne(ctx, rolePermission)
 	if err != nil {
 		return nil, err
 	}
 	return rolePermission, nil
 }
 
-func (store *UserMongoDBStore) CreatePasswordRecovery(passwordRecovery *domain.PasswordRecovery) error {
-	_, err := store.passwordRecoveries.InsertOne(context.TODO(), passwordRecovery)
+func (store *UserMongoDBStore) CreatePasswordRecovery(ctx context.Context, passwordRecovery *domain.PasswordRecovery) error {
+	span := tracer.StartSpanFromContext(ctx, "CreatePasswordRecovery Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := store.passwordRecoveries.InsertOne(ctx, passwordRecovery)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *UserMongoDBStore) CreateUserVerification(userVerification *domain.UserVerification) (*domain.UserVerification, error) {
-	_, err := store.userVerifications.InsertOne(context.TODO(), userVerification)
+func (store *UserMongoDBStore) CreateUserVerification(ctx context.Context, userVerification *domain.UserVerification) (*domain.UserVerification, error) {
+	span := tracer.StartSpanFromContext(ctx, "CreateUserVerification Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := store.userVerifications.InsertOne(ctx, userVerification)
 	if err != nil {
 		return nil, err
 	}
 	return userVerification, nil
 }
 
-func (store *UserMongoDBStore) SaveOTPSecret(username string, secret string) error {
+func (store *UserMongoDBStore) SaveOTPSecret(ctx context.Context, username string, secret string) error {
+	span := tracer.StartSpanFromContext(ctx, "SaveOTPSecret Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	otpSecret := auth.OTPSecret{
 		Username: username,
 		Secret:   secret,
 	}
-	_, err := store.otpSecrets.InsertOne(context.TODO(), otpSecret)
+	_, err := store.otpSecrets.InsertOne(ctx, otpSecret)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *UserMongoDBStore) GetOTPSecret(username string) (string, error) {
+func (store *UserMongoDBStore) GetOTPSecret(ctx context.Context, username string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetOTPSecret Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	filter := bson.M{"username": username}
-	result := store.otpSecrets.FindOne(context.TODO(), filter)
+	result := store.otpSecrets.FindOne(ctx, filter)
 	var otpSecret auth.OTPSecret
 	err := result.Decode(&otpSecret)
 	if err != nil {
@@ -221,7 +266,11 @@ func decodeVerification(cursor *mongo.Cursor) (verifications []*domain.UserVerif
 	return
 }
 
-func (store *UserMongoDBStore) VerifyUser(token string) (string, error) {
+func (store *UserMongoDBStore) VerifyUser(ctx context.Context, token string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "VerifyUser Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	userVerification, err := store.filterOneVerification(bson.M{"token": token})
 	if err != nil {
 		return "", err
@@ -232,20 +281,24 @@ func (store *UserMongoDBStore) VerifyUser(token string) (string, error) {
 	if userVerification.TimeCreated.AddDate(0, 0, 1).Before(time.Now()) {
 		return "Verification expired.", nil
 	}
-	_, err = store.userVerifications.UpdateOne(context.TODO(), bson.M{"token": token}, bson.M{"$set": bson.M{"isVerified": true}})
+	_, err = store.userVerifications.UpdateOne(ctx, bson.M{"token": token}, bson.M{"$set": bson.M{"isVerified": true}})
 	if err != nil {
 		return "", err
 	}
 	return "Successfully verified!", nil
 }
 
-func (store *UserMongoDBStore) UpdateUserVerification(id primitive.ObjectID, userVerification *domain.UserVerification) error {
+func (store *UserMongoDBStore) UpdateUserVerification(ctx context.Context, id primitive.ObjectID) error {
+	span := tracer.StartSpanFromContext(ctx, "UpdateUserVerification Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	userVerifications, err := store.filterVerification(bson.M{"_id": id})
 	if err != nil {
 		return err
 	}
 	for _, userVerification := range userVerifications {
-		_, err := store.userVerifications.UpdateOne(context.TODO(), bson.M{"_id": userVerification.Id}, bson.M{"$set": bson.M{"userVerification": userVerification}})
+		_, err := store.userVerifications.UpdateOne(ctx, bson.M{"_id": userVerification.Id}, bson.M{"$set": bson.M{"userVerification": userVerification}})
 		if err != nil {
 			return err
 		}
@@ -253,7 +306,11 @@ func (store *UserMongoDBStore) UpdateUserVerification(id primitive.ObjectID, use
 	return nil
 }
 
-func (store *UserMongoDBStore) IsVerified(username string) (bool, error) {
+func (store *UserMongoDBStore) IsVerified(ctx context.Context, username string) (bool, error) {
+	span := tracer.StartSpanFromContext(ctx, "IsVerified Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	userVerification, err := store.filterOneVerification(bson.M{"username": username})
 	if err != nil {
 		return false, err
@@ -261,7 +318,11 @@ func (store *UserMongoDBStore) IsVerified(username string) (bool, error) {
 	return userVerification.IsVerified, nil
 }
 
-func (store *UserMongoDBStore) UpdatePassword(token string, password string) (string, error) {
+func (store *UserMongoDBStore) UpdatePassword(ctx context.Context, token string, password string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "UpdatePassword Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	passwordRecovery, err := store.filterOnePasswordRecovery(bson.M{"token": token})
 	if err != nil {
 		return "", err
@@ -272,16 +333,16 @@ func (store *UserMongoDBStore) UpdatePassword(token string, password string) (st
 	if passwordRecovery.TimeCreated.AddDate(0, 0, 1).Before(time.Now()) {
 		return "Recovery expired.", nil
 	}
-	_, err = store.passwordRecoveries.UpdateOne(context.TODO(), bson.M{"token": token}, bson.M{"$set": bson.M{"isRecovered": true}})
+	_, err = store.passwordRecoveries.UpdateOne(ctx, bson.M{"token": token}, bson.M{"$set": bson.M{"isRecovered": true}})
 	if err != nil {
 		return "", err
 	}
-	_, err = store.users.UpdateOne(context.TODO(), bson.M{"username": passwordRecovery.Username},
+	_, err = store.users.UpdateOne(ctx, bson.M{"username": passwordRecovery.Username},
 		bson.M{"$set": bson.M{"password": api.HashPassword(password)}})
 	if err != nil {
 		return "", err
 	}
-	_, err = store.userVerifications.UpdateOne(context.TODO(), bson.M{"username": passwordRecovery.Username},
+	_, err = store.userVerifications.UpdateOne(ctx, bson.M{"username": passwordRecovery.Username},
 		bson.M{"$set": bson.M{"isVerified": true}})
 	if err != nil {
 		return "", err

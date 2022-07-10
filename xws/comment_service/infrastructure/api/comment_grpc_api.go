@@ -6,6 +6,7 @@ import (
 	"dislinkt/comment_service/domain"
 	"dislinkt/common/loggers"
 	pb "dislinkt/common/proto/comment_service"
+	"dislinkt/common/tracer"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -24,7 +25,11 @@ func NewCommentHandler(service *application.CommentService) *CommentHandler {
 }
 
 func (handler *CommentHandler) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
-	Comments, err := handler.service.Get(request.PostId)
+	span := tracer.StartSpanFromContext(ctx, "Get Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	Comments, err := handler.service.Get(ctx, request.PostId)
 	if err != nil {
 		log.WithField("postId", request.PostId).Errorf("Cannot get comments: %v", err)
 		return nil, err
@@ -40,8 +45,12 @@ func (handler *CommentHandler) Get(ctx context.Context, request *pb.GetRequest) 
 }
 
 func (handler *CommentHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Create Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	comment := mapPbToComment(request.Comment)
-	_, err := handler.service.Create(comment)
+	_, err := handler.service.Create(ctx, comment)
 	if err != nil {
 		log.Errorf("Cannot create comment: %v", err)
 		return nil, err
@@ -53,7 +62,11 @@ func (handler *CommentHandler) Create(ctx context.Context, request *pb.CreateReq
 }
 
 func (handler *CommentHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
-	err := handler.service.Delete(request.Id)
+	span := tracer.StartSpanFromContext(ctx, "Delete Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	err := handler.service.Delete(ctx, request.Id)
 	if err != nil {
 		log.Errorf("Cannot delete comment: %v", err)
 		return nil, err
@@ -64,12 +77,16 @@ func (handler *CommentHandler) Delete(ctx context.Context, request *pb.DeleteReq
 
 func (handler *CommentHandler) UpdateCommentCreator(ctx context.Context,
 	request *pb.UpdateCommentCreatorRequest) (*pb.UpdateCommentCreatorResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "UpdateCommentCreator Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	creatorId, err := primitive.ObjectIDFromHex(request.Id)
 	if err != nil {
 		log.Errorf("Cannot parse creatorId: %v", err)
 		return nil, err
 	}
-	err = handler.service.UpdateCommentCreator(creatorId, &domain.CommentCreator{
+	err = handler.service.UpdateCommentCreator(ctx, creatorId, &domain.CommentCreator{
 		Id:        creatorId,
 		FirstName: request.CommentCreator.FirstName,
 		LastName:  request.CommentCreator.LastName,
@@ -86,12 +103,16 @@ func (handler *CommentHandler) UpdateCommentCreator(ctx context.Context,
 
 func (handler *CommentHandler) DeletePostComments(ctx context.Context,
 	request *pb.DeletePostCommentsRequest) (*pb.DeletePostCommentsResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "DeletePostComments Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	postId, err := primitive.ObjectIDFromHex(request.PostId)
 	if err != nil {
 		log.Errorf("Cannot parse postId: %v", err)
 		return nil, err
 	}
-	err = handler.service.DeletePostComments(postId)
+	err = handler.service.DeletePostComments(ctx, postId)
 	if err != nil {
 		log.Errorf("Cannot delete comments: %v", err)
 		return nil, err
@@ -101,7 +122,11 @@ func (handler *CommentHandler) DeletePostComments(ctx context.Context,
 }
 
 func (handler *CommentHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
-	logs, err := handler.service.GetLogs()
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	logs, err := handler.service.GetLogs(ctx)
 	if err != nil {
 		log.Errorf("GLF")
 		return nil, err

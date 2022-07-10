@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	saga "dislinkt/common/saga/messaging"
 	events "dislinkt/common/saga/update_profile"
 	"dislinkt/connection_service/application"
@@ -39,7 +40,7 @@ func (handler *UpdateProfileCommandHandler) handle(command *events.UpdateProfile
 		if command.Profile.IsPrivate == command.OldIsPrivate {
 			return
 		}
-		err := handler.connectionService.UpdatePrivacy(command.Profile.Id.Hex())
+		err := handler.connectionService.UpdatePrivacy(context.TODO(), command.Profile.Id.Hex())
 		if err != nil {
 			reply.Type = events.ProfileNotUpdated
 			break
@@ -50,7 +51,7 @@ func (handler *UpdateProfileCommandHandler) handle(command *events.UpdateProfile
 		if command.Profile.IsPrivate == command.OldIsPrivate {
 			return
 		}
-		err := handler.connectionService.UpdatePrivacy(command.Profile.Id.Hex())
+		err := handler.connectionService.UpdatePrivacy(context.TODO(), command.Profile.Id.Hex())
 		if err != nil {
 			return
 		}

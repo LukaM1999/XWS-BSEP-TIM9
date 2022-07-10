@@ -1,7 +1,9 @@
 package application
 
 import (
+	"context"
 	auth "dislinkt/common/domain"
+	"dislinkt/common/tracer"
 	"dislinkt/job_offer_service/domain"
 	"os"
 	"regexp"
@@ -21,15 +23,27 @@ func NewJobOfferService(store domain.JobOfferStore, orchestrator *PromoteJobOrch
 	}
 }
 
-func (service *JobOfferService) GetJob(id int) (*domain.JobOffer, error) {
-	return service.store.GetJob(id)
+func (service *JobOfferService) GetJob(ctx context.Context, id int) (*domain.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetJob Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetJob(ctx, id)
 }
 
-func (service *JobOfferService) CreateJob(job *domain.JobOffer) (*domain.JobOffer, error) {
-	return service.store.CreateJob(job)
+func (service *JobOfferService) CreateJob(ctx context.Context, job *domain.JobOffer) (*domain.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "CreateJob Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.CreateJob(ctx, job)
 }
 
-func (service *JobOfferService) PromoteJob(job *domain.JobOffer, token string, username string) (*domain.JobOffer, error) {
+func (service *JobOfferService) PromoteJob(ctx context.Context, job *domain.JobOffer, token string, username string) (*domain.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "PromoteJob Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	err := service.orchestrator.Start(token, username, *job)
 	if err != nil {
 		return nil, err
@@ -37,19 +51,35 @@ func (service *JobOfferService) PromoteJob(job *domain.JobOffer, token string, u
 	return job, nil
 }
 
-func (service *JobOfferService) Delete(id int) error {
-	return service.store.Delete(id)
+func (service *JobOfferService) Delete(ctx context.Context, id int) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Delete(ctx, id)
 }
 
-func (service *JobOfferService) DeleteSkill(skillName string) error {
-	return service.store.DeleteSkill(skillName)
+func (service *JobOfferService) DeleteSkill(ctx context.Context, skillName string) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteSkill Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.DeleteSkill(ctx, skillName)
 }
 
-func (service *JobOfferService) GetRecommendations(profileId string, skills []string) ([]*domain.JobRecommendation, error) {
-	return service.store.GetRecommendations(profileId, skills)
+func (service *JobOfferService) GetRecommendations(ctx context.Context, profileId string, skills []string) ([]*domain.JobRecommendation, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetRecommendations Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetRecommendations(ctx, profileId, skills)
 }
 
-func (service *JobOfferService) GetLogs() ([]auth.Log, error) {
+func (service *JobOfferService) GetLogs(ctx context.Context) ([]auth.Log, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	logPathPrefix := "../../logs/"
 	if os.Getenv("OS_ENV") == "docker" {
 		logPathPrefix = "./logs/"
@@ -89,10 +119,18 @@ func (service *JobOfferService) GetLogs() ([]auth.Log, error) {
 	return logs, nil
 }
 
-func (service *JobOfferService) GetJobs() ([]*domain.JobOffer, error) {
-	return service.store.GetJobs()
+func (service *JobOfferService) GetJobs(ctx context.Context) ([]*domain.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetJobs Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetJobs(ctx)
 }
 
-func (service *JobOfferService) GetMyJobs(profileId string) ([]*domain.JobOffer, error) {
-	return service.store.GetMyJobs(profileId)
+func (service *JobOfferService) GetMyJobs(ctx context.Context, profileId string) ([]*domain.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetMyJobs Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetMyJobs(ctx, profileId)
 }

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	saga "dislinkt/common/saga/messaging"
 	events "dislinkt/common/saga/update_profile"
 	"dislinkt/profile_service/application"
@@ -42,7 +43,7 @@ func (handler *UpdateProfileCommandHandler) handle(command *events.UpdateProfile
 		oldProfile.LastName = command.OldLastName
 		oldProfile.IsPrivate = command.OldIsPrivate
 		oldProfile.FullName = command.OldFirstName + " " + command.OldLastName
-		err := handler.profileService.RollbackUpdate(mapAuthProfileToProfile(&oldProfile))
+		err := handler.profileService.RollbackUpdate(context.TODO(), mapAuthProfileToProfile(&oldProfile))
 		if err != nil {
 			return
 		}

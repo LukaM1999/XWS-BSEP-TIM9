@@ -4,6 +4,7 @@ import (
 	"context"
 	"dislinkt/common/loggers"
 	pb "dislinkt/common/proto/reaction_service"
+	"dislinkt/common/tracer"
 	"dislinkt/reaction_service/application"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -23,7 +24,11 @@ func NewReactionHandler(service *application.ReactionService) *ReactionHandler {
 }
 
 func (handler *ReactionHandler) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
-	Reactions, err := handler.service.Get(request.PostId)
+	span := tracer.StartSpanFromContext(ctx, "Get Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	Reactions, err := handler.service.Get(ctx, request.PostId)
 	if err != nil {
 		log.WithField("postId", request.PostId).Errorf("Cannot get reactions: %v", err)
 		return nil, err
@@ -39,8 +44,12 @@ func (handler *ReactionHandler) Get(ctx context.Context, request *pb.GetRequest)
 }
 
 func (handler *ReactionHandler) Reaction(ctx context.Context, request *pb.ReactionRequest) (*pb.ReactionResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Reaction Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	reaction := mapPbToReaction(request.Reaction)
-	reaction, err := handler.service.Reaction(reaction)
+	reaction, err := handler.service.Reaction(ctx, reaction)
 	if err != nil {
 		log.Errorf("Cannot react: %v", err)
 		return nil, err
@@ -52,7 +61,11 @@ func (handler *ReactionHandler) Reaction(ctx context.Context, request *pb.Reacti
 }
 
 func (handler *ReactionHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
-	err := handler.service.Delete(request.Id)
+	span := tracer.StartSpanFromContext(ctx, "Delete Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	err := handler.service.Delete(ctx, request.Id)
 	if err != nil {
 		log.Errorf("Cannot delete reaction: %v", err)
 		return nil, err
@@ -63,12 +76,16 @@ func (handler *ReactionHandler) Delete(ctx context.Context, request *pb.DeleteRe
 
 func (handler *ReactionHandler) DeletePostReactions(ctx context.Context,
 	request *pb.DeletePostReactionsRequest) (*pb.DeletePostReactionsResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "DeletePostReactions Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	postId, err := primitive.ObjectIDFromHex(request.PostId)
 	if err != nil {
 		log.Errorf("Cannot parse postId: %v", err)
 		return nil, err
 	}
-	err = handler.service.DeletePostReactions(postId)
+	err = handler.service.DeletePostReactions(ctx, postId)
 	if err != nil {
 		log.Errorf("Cannot delete reactions: %v", err)
 		return nil, err
@@ -78,7 +95,11 @@ func (handler *ReactionHandler) DeletePostReactions(ctx context.Context,
 }
 
 func (handler *ReactionHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
-	logs, err := handler.service.GetLogs()
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	logs, err := handler.service.GetLogs(ctx)
 	if err != nil {
 		log.Errorf("GLF")
 		return nil, err

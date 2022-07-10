@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"dislinkt/common/tracer"
 	"dislinkt/connection_service/domain"
 	"dislinkt/connection_service/ent"
 	"dislinkt/connection_service/ent/blockeduser"
@@ -33,7 +34,11 @@ func NewConnectionPostgresStore(host string, port string) domain.ConnectionStore
 	}
 }
 
-func (store *ConnectionPostgresStore) Get(userId string) ([]*domain.Connection, error) {
+func (store *ConnectionPostgresStore) Get(ctx context.Context, userId string) ([]*domain.Connection, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
@@ -42,7 +47,7 @@ func (store *ConnectionPostgresStore) Get(userId string) ([]*domain.Connection, 
 	all, err := client.Connection.Query().
 		Where(connection.Or(connection.HasUserWith(user.PrimaryKeyEQ(userId)),
 			connection.HasConnectionWith(user.PrimaryKeyEQ(userId)))).
-		All(context.TODO())
+		All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +64,11 @@ func (store *ConnectionPostgresStore) Get(userId string) ([]*domain.Connection, 
 	return connections, nil
 }
 
-func (store *ConnectionPostgresStore) CreateUser(primaryKey string) error {
+func (store *ConnectionPostgresStore) CreateUser(ctx context.Context, primaryKey string) error {
+	span := tracer.StartSpanFromContext(ctx, "CreateUser Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
@@ -68,14 +77,18 @@ func (store *ConnectionPostgresStore) CreateUser(primaryKey string) error {
 	_, err = client.User.
 		Create().
 		SetPrimaryKey(primaryKey).
-		Save(context.TODO())
+		Save(ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *ConnectionPostgresStore) CreateConnection(issuerKey string, subjectKey string) (*domain.Connection, error) {
+func (store *ConnectionPostgresStore) CreateConnection(ctx context.Context, issuerKey string, subjectKey string) (*domain.Connection, error) {
+	span := tracer.StartSpanFromContext(ctx, "CreateConnection Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
@@ -86,11 +99,11 @@ func (store *ConnectionPostgresStore) CreateConnection(issuerKey string, subject
 
 		}
 	}(client)
-	issuer, err := client.User.Query().Where(user.PrimaryKeyEQ(issuerKey)).Only(context.TODO())
+	issuer, err := client.User.Query().Where(user.PrimaryKeyEQ(issuerKey)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
-	subject, err := client.User.Query().Where(user.PrimaryKeyEQ(subjectKey)).Only(context.TODO())
+	subject, err := client.User.Query().Where(user.PrimaryKeyEQ(subjectKey)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +114,7 @@ func (store *ConnectionPostgresStore) CreateConnection(issuerKey string, subject
 		SetIsApproved(!subject.IsPrivate).
 		SetUserID(issuer.ID).
 		SetConnectionID(subject.ID).
-		Save(context.TODO())
+		Save(ctx)
 
 	if err != nil {
 		return nil, err
@@ -116,64 +129,76 @@ func (store *ConnectionPostgresStore) CreateConnection(issuerKey string, subject
 
 }
 
-func (store *ConnectionPostgresStore) DeleteAll() error {
+func (store *ConnectionPostgresStore) DeleteAll(ctx context.Context) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteAll Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	_, err = client.Connection.Delete().Exec(context.TODO())
+	_, err = client.Connection.Delete().Exec(ctx)
 	if err != nil {
 		return err
 	}
-	_, err = client.BlockedUser.Delete().Exec(context.TODO())
+	_, err = client.BlockedUser.Delete().Exec(ctx)
 	if err != nil {
 		return err
 	}
-	_, err = client.User.Delete().Exec(context.TODO())
+	_, err = client.User.Delete().Exec(ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *ConnectionPostgresStore) Delete(id int) error {
+func (store *ConnectionPostgresStore) Delete(ctx context.Context, id int) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	err = client.Connection.DeleteOneID(id).Exec(context.TODO())
+	err = client.Connection.DeleteOneID(id).Exec(ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *ConnectionPostgresStore) DeleteUser(userId string) error {
+func (store *ConnectionPostgresStore) DeleteUser(ctx context.Context, userId string) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteUser Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	_, err = client.User.Delete().Where(user.PrimaryKeyEQ(userId)).Exec(context.TODO())
+	_, err = client.User.Delete().Where(user.PrimaryKeyEQ(userId)).Exec(ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *ConnectionPostgresStore) UpdateConnection(id int) (*domain.Connection, error) {
+func (store *ConnectionPostgresStore) UpdateConnection(ctx context.Context, id int) (*domain.Connection, error) {
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	oldConnection, err := client.Connection.Query().Where(connection.ID(id)).Only(context.TODO())
+	oldConnection, err := client.Connection.Query().Where(connection.ID(id)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
-	newConnection, err := oldConnection.Update().SetIsApproved(!oldConnection.IsApproved).Save(context.TODO())
+	newConnection, err := oldConnection.Update().SetIsApproved(!oldConnection.IsApproved).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -186,17 +211,21 @@ func (store *ConnectionPostgresStore) UpdateConnection(id int) (*domain.Connecti
 	}, nil
 }
 
-func (store *ConnectionPostgresStore) UpdatePrivacy(userKey string) error {
+func (store *ConnectionPostgresStore) UpdatePrivacy(ctx context.Context, userKey string) error {
+	span := tracer.StartSpanFromContext(ctx, "UpdatePrivacy Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	oldUser, err := client.User.Query().Where(user.PrimaryKeyEQ(userKey)).Only(context.TODO())
+	oldUser, err := client.User.Query().Where(user.PrimaryKeyEQ(userKey)).Only(ctx)
 	if err != nil {
 		return err
 	}
-	newUser, err := oldUser.Update().SetIsPrivate(!oldUser.IsPrivate).Save(context.TODO())
+	newUser, err := oldUser.Update().SetIsPrivate(!oldUser.IsPrivate).Save(ctx)
 	if err != nil {
 		return err
 	}
@@ -206,11 +235,15 @@ func (store *ConnectionPostgresStore) UpdatePrivacy(userKey string) error {
 	client.Connection.Update().
 		Where(connection.SubjectPrimaryKeyEQ(userKey), connection.IsApprovedEQ(false)).
 		SetIsApproved(true).
-		Save(context.TODO())
+		Save(ctx)
 	return nil
 }
 
-func (store *ConnectionPostgresStore) GetRecommendations(userId string) ([]string, error) {
+func (store *ConnectionPostgresStore) GetRecommendations(ctx context.Context, userId string) ([]string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetRecommendations Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
@@ -221,7 +254,7 @@ func (store *ConnectionPostgresStore) GetRecommendations(userId string) ([]strin
 			connection.HasConnectionWith(user.PrimaryKeyEQ(userId))),
 			connection.IsApprovedEQ(true))).
 		QueryUser().Where(user.PrimaryKeyNEQ(userId)).
-		All(context.TODO())
+		All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +263,7 @@ func (store *ConnectionPostgresStore) GetRecommendations(userId string) ([]strin
 			connection.HasConnectionWith(user.PrimaryKeyEQ(userId))),
 			connection.IsApprovedEQ(true))).
 		QueryConnection().Where(user.PrimaryKeyNEQ(userId)).
-		All(context.TODO())
+		All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +279,7 @@ func (store *ConnectionPostgresStore) GetRecommendations(userId string) ([]strin
 				connection.IsApprovedEQ(true)).
 			QueryUser().Where(user.PrimaryKeyNEQ(connectedUser.PrimaryKey)).
 			Select(user.FieldPrimaryKey).
-			Strings(context.TODO())
+			Strings(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -258,7 +291,7 @@ func (store *ConnectionPostgresStore) GetRecommendations(userId string) ([]strin
 				connection.IsApprovedEQ(true)).
 			QueryConnection().Where(user.PrimaryKeyNEQ(connectedUser.PrimaryKey)).
 			Select(user.FieldPrimaryKey).
-			Strings(context.TODO())
+			Strings(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -286,13 +319,17 @@ func (store *ConnectionPostgresStore) GetRecommendations(userId string) ([]strin
 	return recommendationIds, nil
 }
 
-func (store *ConnectionPostgresStore) BlockUser(issuerId string, subjectId string) (bool, error) {
+func (store *ConnectionPostgresStore) BlockUser(ctx context.Context, issuerId string, subjectId string) (bool, error) {
+	span := tracer.StartSpanFromContext(ctx, "BlockUser Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	issuer, err := client.User.Query().Where(user.PrimaryKeyEQ(issuerId)).Only(context.TODO())
+	issuer, err := client.User.Query().Where(user.PrimaryKeyEQ(issuerId)).Only(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -300,7 +337,7 @@ func (store *ConnectionPostgresStore) BlockUser(issuerId string, subjectId strin
 		SetBlockedByID(issuer.ID).
 		SetIssuerPrimaryKey(issuer.PrimaryKey).
 		SetSubjectPrimaryKey(subjectId).
-		Save(context.TODO())
+		Save(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -310,14 +347,18 @@ func (store *ConnectionPostgresStore) BlockUser(issuerId string, subjectId strin
 			connection.And(connection.HasUserWith(user.PrimaryKeyEQ(subjectId)),
 				connection.HasConnectionWith(user.PrimaryKeyEQ(issuerId)))),
 			connection.IsApprovedEQ(true)).
-		Exec(context.TODO())
+		Exec(ctx)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func (store *ConnectionPostgresStore) GetBlockedUsers(userId string) ([]string, error) {
+func (store *ConnectionPostgresStore) GetBlockedUsers(ctx context.Context, userId string) ([]string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetBlockedUsers Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
@@ -326,14 +367,18 @@ func (store *ConnectionPostgresStore) GetBlockedUsers(userId string) ([]string, 
 	blockedUsers, err := client.BlockedUser.Query().
 		Where(blockeduser.IssuerPrimaryKey(userId)).
 		Select(blockeduser.FieldSubjectPrimaryKey).
-		Strings(context.TODO())
+		Strings(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return blockedUsers, nil
 }
 
-func (store *ConnectionPostgresStore) GetBlockers(userId string) ([]string, error) {
+func (store *ConnectionPostgresStore) GetBlockers(ctx context.Context, userId string) ([]string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetBlockers Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
@@ -342,14 +387,18 @@ func (store *ConnectionPostgresStore) GetBlockers(userId string) ([]string, erro
 	blockers, err := client.BlockedUser.Query().
 		Where(blockeduser.SubjectPrimaryKey(userId)).
 		Select(blockeduser.FieldIssuerPrimaryKey).
-		Strings(context.TODO())
+		Strings(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return blockers, nil
 }
 
-func (store *ConnectionPostgresStore) UnblockUser(issuerId string, subjectId string) (bool, error) {
+func (store *ConnectionPostgresStore) UnblockUser(ctx context.Context, issuerId string, subjectId string) (bool, error) {
+	span := tracer.StartSpanFromContext(ctx, "UnblockUser Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
@@ -358,14 +407,18 @@ func (store *ConnectionPostgresStore) UnblockUser(issuerId string, subjectId str
 	_, err = client.BlockedUser.Delete().
 		Where(blockeduser.And(blockeduser.IssuerPrimaryKey(issuerId),
 			blockeduser.SubjectPrimaryKey(subjectId))).
-		Exec(context.TODO())
+		Exec(ctx)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func (store *ConnectionPostgresStore) GetConnection(user1Id string, user2Id string) (*domain.Connection, error) {
+func (store *ConnectionPostgresStore) GetConnection(ctx context.Context, user1Id string, user2Id string) (*domain.Connection, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetConnection Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.connectionString)
 	if err != nil {
 		log.Fatal(err)
@@ -376,7 +429,7 @@ func (store *ConnectionPostgresStore) GetConnection(user1Id string, user2Id stri
 			connection.HasConnectionWith(user.PrimaryKeyEQ(user2Id))),
 			connection.And(connection.HasConnectionWith(user.PrimaryKeyEQ(user1Id)),
 				connection.HasUserWith(user.PrimaryKeyEQ(user2Id))))).
-		Only(context.TODO())
+		Only(ctx)
 	if err != nil || connection == nil {
 		return nil, nil
 	}

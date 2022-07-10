@@ -43,13 +43,13 @@ var rolePermissions = []*auth.RolePermission{
 		},
 	},
 	{
-		Role:        "user",
+		Role: "user",
 		Permissions: []string{
-			//"read:profile",
-			//"search:all-profiles",
-			//"write:block",
-			//"write:unblock",
-			//"write:profile-token",
+			"read:profile",
+			"search:all-profiles",
+			"write:block",
+			"write:unblock",
+			"write:profile-token",
 		},
 	},
 }

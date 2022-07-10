@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"context"
 	"dislinkt/common/auth"
 	"dislinkt/common/client"
 	"dislinkt/common/loggers"
@@ -98,18 +99,18 @@ func (server *Server) initMongoClient() *mongo.Client {
 
 func (server *Server) initPostStore(client *mongo.Client) domain.PostStore {
 	store := persistence.NewPostMongoDBStore(client)
-	err := store.DeleteAll()
+	err := store.DeleteAll(context.TODO())
 	if err != nil {
 		return nil
 	}
 	for _, connection := range connections {
-		err := store.CreateConnection(connection)
+		err := store.CreateConnection(context.TODO(), connection)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 	for _, post := range posts {
-		err := store.Create(post)
+		err := store.Create(context.TODO(), post)
 		if err != nil {
 			log.Fatal(err)
 		}

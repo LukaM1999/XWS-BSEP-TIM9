@@ -8,6 +8,7 @@ import (
 	"dislinkt/common/loggers"
 	pbProfile "dislinkt/common/proto/profile_service"
 	pb "dislinkt/common/proto/security_service"
+	"dislinkt/common/tracer"
 	"dislinkt/security_service/application"
 	securityDomain "dislinkt/security_service/domain"
 	"fmt"
@@ -44,8 +45,12 @@ func NewUserHandler(service *application.SecurityService,
 }
 
 func (handler *UserHandler) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Login Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	username := request.Username
-	User, err := handler.service.Get(username)
+	User, err := handler.service.Get(ctx, username)
 	if err != nil {
 		log.WithField("username", username).Errorf("GUF: %v", err)
 		return nil, err
@@ -59,7 +64,11 @@ func (handler *UserHandler) Get(ctx context.Context, request *pb.GetRequest) (*p
 }
 
 func (handler *UserHandler) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	Users, err := handler.service.GetAll()
+	span := tracer.StartSpanFromContext(ctx, "GetAll Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	Users, err := handler.service.GetAll(ctx)
 	if err != nil {
 		log.Errorf("AUF: %v", err)
 		return nil, err
@@ -76,7 +85,10 @@ func (handler *UserHandler) GetAll(ctx context.Context, request *pb.GetAllReques
 }
 
 func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	//log.Info("Registering user")
+	span := tracer.StartSpanFromContext(ctx, "Register Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+	log.Info("Registering user")
 	request.User.Role = "user"
 	mappedUser := mapPbToUser(request.User)
 	if err := handler.validate.Struct(mappedUser); err != nil {
@@ -84,7 +96,7 @@ func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterReq
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 	mappedUser.Password = HashPassword(mappedUser.Password)
-	registeredUser, err := handler.service.Register(mappedUser, request.FirstName, request.LastName, request.Email)
+	registeredUser, err := handler.service.Register(ctx, mappedUser, request.FirstName, request.LastName, request.Email)
 	if err != nil {
 		log.Errorf("RUF: %v", err)
 		return nil, err
@@ -99,12 +111,16 @@ func (handler UserHandler) Register(ctx context.Context, request *pb.RegisterReq
 }
 
 func (handler *UserHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Update Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	id, err := primitive.ObjectIDFromHex(request.Id)
 	if err != nil {
 		log.Errorf("PIDF: %v", err)
 		return nil, err
 	}
-	username, err := handler.service.Update(id, request.Username)
+	username, err := handler.service.Update(ctx, id, request.Username)
 	if err != nil {
 		log.WithField("id", id).Errorf("UUF: %v", err)
 		return nil, err
@@ -114,11 +130,15 @@ func (handler *UserHandler) Update(ctx context.Context, request *pb.UpdateReques
 }
 
 func (handler *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-	//log.Info("Logging in user")
+	span := tracer.StartSpanFromContext(ctx, "Login Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	log.Info("Logging in user")
 	loggerUsername := log.WithFields(logrus.Fields{
 		"username": req.Username,
 	})
-	user, err := handler.service.Get(req.GetUsername())
+	user, err := handler.service.Get(ctx, req.GetUsername())
 	if err != nil {
 		loggerUsername.Errorf("GUF: %v", err)
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
@@ -126,7 +146,7 @@ func (handler *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*p
 	loggerId := log.WithFields(logrus.Fields{
 		"userId": user.Id.Hex(),
 	})
-	isVerified, err := handler.service.IsVerified(req.GetUsername())
+	isVerified, err := handler.service.IsVerified(ctx, req.GetUsername())
 	if err != nil {
 		loggerId.Errorf("IUVF: %v", err)
 		return nil, err
@@ -150,7 +170,11 @@ func (handler *UserHandler) Login(ctx context.Context, req *pb.LoginRequest) (*p
 }
 
 func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb.PasswordlessLoginRequest) (*pb.LoginResponse, error) {
-	secret, err := handler.service.GetOTPSecret(req.GetUsername())
+	span := tracer.StartSpanFromContext(ctx, "TwoFactorAuthentication Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	secret, err := handler.service.GetOTPSecret(ctx, req.GetUsername())
 	if err != nil || secret == "" {
 		log.WithField("username", req.GetUsername()).Error("GOSF")
 		return nil, status.Errorf(codes.Internal, "No passwordless login setup: %v", err)
@@ -163,7 +187,7 @@ func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb
 		}).Errorf("OTPF")
 		return nil, status.Errorf(codes.Internal, "OTP is invalid")
 	}
-	user, err := handler.service.Get(req.GetUsername())
+	user, err := handler.service.Get(ctx, req.GetUsername())
 	if err != nil {
 		log.WithField("username", req.GetUsername()).Error("GUF")
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
@@ -171,7 +195,7 @@ func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb
 	loggerId := log.WithFields(logrus.Fields{
 		"userId": user.Id,
 	})
-	isVerified, err := handler.service.IsVerified(req.GetUsername())
+	isVerified, err := handler.service.IsVerified(ctx, req.GetUsername())
 	if err != nil {
 		loggerId.Errorf("IUVF")
 		return nil, err
@@ -190,11 +214,15 @@ func (handler *UserHandler) TwoFactorAuthentication(ctx context.Context, req *pb
 }
 
 func (handler *UserHandler) SetupOTP(ctx context.Context, req *pb.SetupOTPRequest) (*pb.SetupOTPResponse, error) {
-	//log.Info("Setting up OTP")
+	span := tracer.StartSpanFromContext(ctx, "SetupOTP Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	log.Info("Setting up OTP")
 	loggerUsername := log.WithFields(logrus.Fields{
 		"username": req.Username,
 	})
-	user, err := handler.service.Get(req.GetUsername())
+	user, err := handler.service.Get(ctx, req.GetUsername())
 	if err != nil {
 		loggerUsername.Errorf("GUF")
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
@@ -203,7 +231,7 @@ func (handler *UserHandler) SetupOTP(ctx context.Context, req *pb.SetupOTPReques
 		"userId": user.Id,
 	})
 
-	secret, qrCode, err := handler.service.SetupOTP(req.GetUsername())
+	secret, qrCode, err := handler.service.SetupOTP(ctx, req.GetUsername())
 	if err != nil {
 		loggerUsername.Errorf("SOTPF")
 		return nil, status.Errorf(codes.Internal, "cannot setup OTP: %v", err)
@@ -217,7 +245,11 @@ func (handler *UserHandler) SetupOTP(ctx context.Context, req *pb.SetupOTPReques
 }
 
 func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.PasswordlessLoginRequest) (*pb.LoginResponse, error) {
-	secret, err := handler.service.GetOTPSecret(req.GetUsername())
+	span := tracer.StartSpanFromContext(ctx, "PasswordlessLogin Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	secret, err := handler.service.GetOTPSecret(ctx, req.GetUsername())
 	if err != nil || secret == "" {
 		log.WithField("username", req.GetUsername()).Error("GOSF")
 		return nil, status.Errorf(codes.Internal, "No passwordless login setup: %v", err)
@@ -230,7 +262,7 @@ func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.Passw
 		}).Errorf("OTPF")
 		return nil, status.Errorf(codes.Internal, "OTP is invalid")
 	}
-	user, err := handler.service.Get(req.GetUsername())
+	user, err := handler.service.Get(ctx, req.GetUsername())
 	if err != nil {
 		log.WithField("username", req.GetUsername()).Error("GUF")
 		return nil, status.Errorf(codes.Internal, "cannot find user: %v", err)
@@ -238,7 +270,7 @@ func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.Passw
 	loggerId := log.WithFields(logrus.Fields{
 		"userId": user.Id,
 	})
-	isVerified, err := handler.service.IsVerified(req.GetUsername())
+	isVerified, err := handler.service.IsVerified(ctx, req.GetUsername())
 	if err != nil {
 		loggerId.Errorf("IUVF")
 		return nil, err
@@ -257,7 +289,11 @@ func (handler *UserHandler) PasswordlessLogin(ctx context.Context, req *pb.Passw
 }
 
 func (handler *UserHandler) VerifyUser(ctx context.Context, req *pb.VerifyUserRequest) (*httpbody.HttpBody, error) {
-	message, err := handler.service.VerifyUser(req.GetToken())
+	span := tracer.StartSpanFromContext(ctx, "VerifyUser Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	message, err := handler.service.VerifyUser(ctx, req.GetToken())
 	if err != nil {
 		log.WithField("token", req.GetToken()).Errorf("IUVF")
 		return nil, err
@@ -283,12 +319,16 @@ func (handler *UserHandler) VerifyUser(ctx context.Context, req *pb.VerifyUserRe
 }
 
 func (handler *UserHandler) RecoverPassword(ctx context.Context, req *pb.RecoverPasswordRequest) (*pb.RecoverPasswordResponse, error) {
-	token, err := handler.service.GenerateVerificationToken()
+	span := tracer.StartSpanFromContext(ctx, "RecoverPassword Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	token, err := handler.service.GenerateVerificationToken(ctx)
 	if err != nil {
 		log.Errorf("CVTF")
 		return nil, err
 	}
-	err = handler.service.CreatePasswordRecovery(&securityDomain.PasswordRecovery{
+	err = handler.service.CreatePasswordRecovery(ctx, &securityDomain.PasswordRecovery{
 		Id:          primitive.NewObjectID(),
 		Username:    req.Username,
 		Token:       token,
@@ -299,7 +339,7 @@ func (handler *UserHandler) RecoverPassword(ctx context.Context, req *pb.Recover
 		log.Errorf("CPWRF")
 		return nil, err
 	}
-	err = handler.service.SendRecoverPasswordEmail(req.GetEmail(), req.GetUsername(), token)
+	err = handler.service.SendRecoverPasswordEmail(ctx, req.GetEmail(), req.GetUsername(), token)
 	if err != nil {
 		log.WithField("email", req.GetEmail()).Errorf("SREF")
 		return nil, err
@@ -309,7 +349,11 @@ func (handler *UserHandler) RecoverPassword(ctx context.Context, req *pb.Recover
 }
 
 func (handler *UserHandler) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordRequest) (*pb.UpdatePasswordResponse, error) {
-	err := handler.service.UpdatePassword(req.GetToken(), req.GetPassword())
+	span := tracer.StartSpanFromContext(ctx, "UpdatePassword Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	err := handler.service.UpdatePassword(ctx, req.GetToken(), req.GetPassword())
 	if err != nil {
 		log.WithField("token", req.GetToken()).Errorf("UUPF")
 		return nil, err
@@ -318,7 +362,11 @@ func (handler *UserHandler) UpdatePassword(ctx context.Context, req *pb.UpdatePa
 }
 
 func (handler *UserHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
-	logs, err := handler.service.GetLogs()
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	logs, err := handler.service.GetLogs(ctx)
 	if err != nil {
 		log.Errorf("GLF")
 		return nil, err

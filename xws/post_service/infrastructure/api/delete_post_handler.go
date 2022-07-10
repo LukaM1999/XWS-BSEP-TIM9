@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	events "dislinkt/common/saga/delete_post"
 	saga "dislinkt/common/saga/messaging"
 	"dislinkt/post_service/application"
@@ -32,7 +33,7 @@ func (handler *DeletePostCommandHandler) handle(command *events.DeletePostComman
 	}
 	switch command.Type {
 	case events.DeletePost:
-		err := handler.postService.Delete(command.PostId)
+		var err = handler.postService.Delete(context.TODO(), command.PostId)
 		if err != nil {
 			return
 		}

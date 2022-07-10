@@ -5,6 +5,7 @@ import (
 	"dislinkt/common/loggers"
 	pb "dislinkt/common/proto/connection_service"
 	pbPost "dislinkt/common/proto/post_service"
+	"dislinkt/common/tracer"
 	"dislinkt/connection_service/application"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
@@ -26,7 +27,11 @@ func NewConnectionHandler(service *application.ConnectionService, postClient pbP
 }
 
 func (handler *ConnectionHandler) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
-	Connections, err := handler.service.Get(request.UserId)
+	span := tracer.StartSpanFromContext(ctx, "Get Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	Connections, err := handler.service.Get(ctx, request.UserId)
 	if err != nil {
 		log.WithField("userId", request.UserId).Errorf("Cannot get connections: %v", err)
 		return nil, err
@@ -42,23 +47,11 @@ func (handler *ConnectionHandler) Get(ctx context.Context, request *pb.GetReques
 }
 
 func (handler *ConnectionHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
-	//connection := mapPbToConnection(request.Connection)
-	//newConnection, err := handler.service.Create(connection)
-	//if err != nil {
-	//	log.Errorf("Cannot create connection: %v", err)
-	//	return nil, err
-	//}
-	//if newConnection.IsApproved {
-	//	_, err = handler.postClient.CreateConnection(context.TODO(), &pbPost.CreateConnectionRequest{
-	//		Connection: mapConnectionToPostConnectionPb(newConnection),
-	//	})
-	//	if err != nil {
-	//		log.Errorf("Cannot create connection: %v", err)
-	//		handler.service.Delete(newConnection.Id.Hex())
-	//		return nil, err
-	//	}
-	//}
-	newConnection, err := handler.service.Create(request.Connection.IssuerId, request.Connection.SubjectId)
+	span := tracer.StartSpanFromContext(ctx, "Create Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	newConnection, err := handler.service.Create(ctx, request.Connection.IssuerId, request.Connection.SubjectId)
 	if err != nil {
 		log.Errorf("Cannot create connection: %v", err)
 		return nil, err
@@ -70,34 +63,42 @@ func (handler *ConnectionHandler) Create(ctx context.Context, request *pb.Create
 }
 
 func (handler *ConnectionHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Delete Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	id, err := strconv.Atoi(request.Id)
 	if err != nil {
 		log.WithField("connectionId", request.Id).Errorf("Cannot convert connection id to int: %v", err)
 		return nil, err
 	}
-	err = handler.service.Delete(id)
+	err = handler.service.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Cannot delete connection: %v", err)
 		return nil, err
 	}
-	handler.postClient.DeleteConnection(context.TODO(), &pbPost.DeleteRequest{Id: request.Id})
+	handler.postClient.DeleteConnection(ctx, &pbPost.DeleteRequest{Id: request.Id})
 	log.Info("Connection deleted")
 	return &pb.DeleteResponse{}, nil
 }
 
 func (handler *ConnectionHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Update Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	id, err := strconv.Atoi(request.Id)
 	if err != nil {
 		log.WithField("connectionId", request.Id).Errorf("Cannot convert connection id to int: %v", err)
 		return nil, err
 	}
-	connection, err := handler.service.UpdateConnection(id)
+	connection, err := handler.service.UpdateConnection(ctx, id)
 	if err != nil {
 		log.WithField("connectionId", request.Id).Errorf("Cannot update connection: %v", err)
 		return nil, err
 	}
 	if connection.IsApproved {
-		_, err = handler.postClient.CreateConnection(context.TODO(), &pbPost.CreateConnectionRequest{
+		_, err = handler.postClient.CreateConnection(ctx, &pbPost.CreateConnectionRequest{
 			Connection: mapConnectionToPostConnectionPb(connection),
 		})
 		if err != nil {
@@ -112,7 +113,11 @@ func (handler *ConnectionHandler) Update(ctx context.Context, request *pb.Update
 }
 
 func (handler *ConnectionHandler) GetRecommendations(ctx context.Context, request *pb.GetRecommendationsRequest) (*pb.GetRecommendationsResponse, error) {
-	Connections, err := handler.service.GetRecommendations(request.UserId)
+	span := tracer.StartSpanFromContext(ctx, "GetRecommendations Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	Connections, err := handler.service.GetRecommendations(ctx, request.UserId)
 	if err != nil {
 		log.WithField("userId", request.UserId).Errorf("Cannot get connections: %v", err)
 		return nil, err
@@ -127,7 +132,11 @@ func (handler *ConnectionHandler) GetRecommendations(ctx context.Context, reques
 }
 
 func (handler *ConnectionHandler) BlockUser(ctx context.Context, request *pb.BlockUserRequest) (*pb.BlockUserResponse, error) {
-	success, err := handler.service.BlockUser(ctx.Value("userId").(string), request.UserId)
+	span := tracer.StartSpanFromContext(ctx, "BlockUser Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	success, err := handler.service.BlockUser(ctx, ctx.Value("userId").(string), request.UserId)
 	if err != nil {
 		log.WithField("userId", request.UserId).Errorf("Cannot block user: %v", err)
 		return nil, err
@@ -137,7 +146,11 @@ func (handler *ConnectionHandler) BlockUser(ctx context.Context, request *pb.Blo
 }
 
 func (handler *ConnectionHandler) GetBlockedUsers(ctx context.Context, request *pb.GetBlockedUsersRequest) (*pb.GetBlockedUsersResponse, error) {
-	users, err := handler.service.GetBlockedUsers(request.UserId)
+	span := tracer.StartSpanFromContext(ctx, "GetBlockedUsers Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	users, err := handler.service.GetBlockedUsers(ctx, request.UserId)
 	if err != nil {
 		log.WithField("userId", request.UserId).Errorf("Cannot get blocked users: %v", err)
 		return nil, err
@@ -152,7 +165,11 @@ func (handler *ConnectionHandler) GetBlockedUsers(ctx context.Context, request *
 }
 
 func (handler *ConnectionHandler) GetBlockers(ctx context.Context, request *pb.GetBlockersRequest) (*pb.GetBlockersResponse, error) {
-	users, err := handler.service.GetBlockers(request.UserId)
+	span := tracer.StartSpanFromContext(ctx, "GetBlockers Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	users, err := handler.service.GetBlockers(ctx, request.UserId)
 	if err != nil {
 		log.WithField("userId", request.UserId).Errorf("Cannot get blockers: %v", err)
 		return nil, err
@@ -167,7 +184,11 @@ func (handler *ConnectionHandler) GetBlockers(ctx context.Context, request *pb.G
 }
 
 func (handler *ConnectionHandler) UnblockUser(ctx context.Context, request *pb.UnblockUserRequest) (*pb.UnblockUserResponse, error) {
-	success, err := handler.service.UnblockUser(ctx.Value("userId").(string), request.UserId)
+	span := tracer.StartSpanFromContext(ctx, "UnblockUser Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	success, err := handler.service.UnblockUser(ctx, ctx.Value("userId").(string), request.UserId)
 	if err != nil {
 		log.WithField("userId", request.UserId).Errorf("Cannot unblock user: %v", err)
 		return nil, err
@@ -179,7 +200,11 @@ func (handler *ConnectionHandler) UnblockUser(ctx context.Context, request *pb.U
 }
 
 func (handler *ConnectionHandler) GetConnection(ctx context.Context, request *pb.GetConnectionRequest) (*pb.GetConnectionResponse, error) {
-	connection, err := handler.service.GetConnection(request.User1Id, request.User2Id)
+	span := tracer.StartSpanFromContext(ctx, "GetConnection Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	connection, err := handler.service.GetConnection(ctx, request.User1Id, request.User2Id)
 	if err != nil {
 		log.WithField("userId", request.User1Id).Errorf("Cannot get connection: %v", err)
 		return nil, err
@@ -195,7 +220,11 @@ func (handler *ConnectionHandler) GetConnection(ctx context.Context, request *pb
 }
 
 func (handler *ConnectionHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
-	logs, err := handler.service.GetLogs()
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	logs, err := handler.service.GetLogs(ctx)
 	if err != nil {
 		log.Errorf("GLF")
 		return nil, err

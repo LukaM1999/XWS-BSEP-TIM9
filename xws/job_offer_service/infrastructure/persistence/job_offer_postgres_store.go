@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"dislinkt/common/tracer"
 	"dislinkt/job_offer_service/domain"
 	"dislinkt/job_offer_service/ent"
 	"dislinkt/job_offer_service/ent/joboffer"
@@ -33,13 +34,17 @@ func NewJobOfferPostgresStore(host string, port string) domain.JobOfferStore {
 	}
 }
 
-func (store *JobOfferPostgresStore) GetJobs() ([]*domain.JobOffer, error) {
+func (store *JobOfferPostgresStore) GetJobs(ctx context.Context) ([]*domain.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetJobs Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.jobOfferString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	all, err := client.JobOffer.Query().All(context.TODO())
+	all, err := client.JobOffer.Query().All(ctx)
 
 	if err != nil {
 		return nil, err
@@ -48,7 +53,7 @@ func (store *JobOfferPostgresStore) GetJobs() ([]*domain.JobOffer, error) {
 	var jobOffers = make([]*domain.JobOffer, 0)
 
 	for _, jobOffer := range all {
-		skills, err := client.JobOffer.QueryRequires(jobOffer).All(context.TODO())
+		skills, err := client.JobOffer.QueryRequires(jobOffer).All(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -70,13 +75,17 @@ func (store *JobOfferPostgresStore) GetJobs() ([]*domain.JobOffer, error) {
 	return jobOffers, nil
 }
 
-func (store *JobOfferPostgresStore) GetMyJobs(profileId string) ([]*domain.JobOffer, error) {
+func (store *JobOfferPostgresStore) GetMyJobs(ctx context.Context, profileId string) ([]*domain.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetMyJobs Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.jobOfferString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	all, err := client.JobOffer.Query().Where(joboffer.ProfileID(profileId)).All(context.TODO())
+	all, err := client.JobOffer.Query().Where(joboffer.ProfileID(profileId)).All(ctx)
 
 	if err != nil {
 		return nil, err
@@ -85,7 +94,7 @@ func (store *JobOfferPostgresStore) GetMyJobs(profileId string) ([]*domain.JobOf
 	var jobOffers = make([]*domain.JobOffer, 0)
 
 	for _, jobOffer := range all {
-		skills, err := client.JobOffer.QueryRequires(jobOffer).All(context.TODO())
+		skills, err := client.JobOffer.QueryRequires(jobOffer).All(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -107,18 +116,22 @@ func (store *JobOfferPostgresStore) GetMyJobs(profileId string) ([]*domain.JobOf
 	return jobOffers, nil
 }
 
-func (store *JobOfferPostgresStore) GetJob(id int) (*domain.JobOffer, error) {
+func (store *JobOfferPostgresStore) GetJob(ctx context.Context, id int) (*domain.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetJob Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.jobOfferString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	jobOffer, err := client.JobOffer.Query().Where(joboffer.ID(id)).Only(context.TODO())
+	jobOffer, err := client.JobOffer.Query().Where(joboffer.ID(id)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	skills, err := client.JobOffer.QueryRequires(jobOffer).All(context.TODO())
+	skills, err := client.JobOffer.QueryRequires(jobOffer).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +153,11 @@ func (store *JobOfferPostgresStore) GetJob(id int) (*domain.JobOffer, error) {
 	}, nil
 }
 
-func (store *JobOfferPostgresStore) CreateJob(jobOffer *domain.JobOffer) (*domain.JobOffer, error) {
+func (store *JobOfferPostgresStore) CreateJob(ctx context.Context, jobOffer *domain.JobOffer) (*domain.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "CreateJob Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.jobOfferString)
 	if err != nil {
 		log.Fatal(err)
@@ -154,9 +171,9 @@ func (store *JobOfferPostgresStore) CreateJob(jobOffer *domain.JobOffer) (*domai
 
 	var skills []*ent.Skill
 	for _, s := range jobOffer.Skills {
-		newSkill, err := client.Skill.Create().SetName(s).Save(context.TODO())
+		newSkill, err := client.Skill.Create().SetName(s).Save(ctx)
 		if err != nil {
-			existingSkill, err := client.Skill.Query().Where(skill.NameEQ(s)).Only(context.TODO())
+			existingSkill, err := client.Skill.Query().Where(skill.NameEQ(s)).Only(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -173,7 +190,7 @@ func (store *JobOfferPostgresStore) CreateJob(jobOffer *domain.JobOffer) (*domai
 		SetCriteria(jobOffer.Criteria).
 		SetCreatedAt(jobOffer.CreatedAt).
 		AddRequires(skills...).
-		Save(context.TODO())
+		Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -189,50 +206,66 @@ func (store *JobOfferPostgresStore) CreateJob(jobOffer *domain.JobOffer) (*domai
 
 }
 
-func (store *JobOfferPostgresStore) DeleteAll() error {
+func (store *JobOfferPostgresStore) DeleteAll(ctx context.Context) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteAll Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.jobOfferString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	_, err = client.JobOffer.Delete().Exec(context.TODO())
+	_, err = client.JobOffer.Delete().Exec(ctx)
 	if err != nil {
 		return err
 	}
-	_, err = client.Skill.Delete().Exec(context.TODO())
+	_, err = client.Skill.Delete().Exec(ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *JobOfferPostgresStore) Delete(id int) error {
+func (store *JobOfferPostgresStore) Delete(ctx context.Context, id int) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.jobOfferString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	err = client.JobOffer.DeleteOneID(id).Exec(context.TODO())
+	err = client.JobOffer.DeleteOneID(id).Exec(ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *JobOfferPostgresStore) DeleteSkill(skillName string) error {
+func (store *JobOfferPostgresStore) DeleteSkill(ctx context.Context, skillName string) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteSkill Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.jobOfferString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	_, err = client.Skill.Delete().Where(skill.NameEQ(skillName)).Exec(context.TODO())
+	_, err = client.Skill.Delete().Where(skill.NameEQ(skillName)).Exec(ctx)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *JobOfferPostgresStore) GetRecommendations(profileId string, skills []string) ([]*domain.JobRecommendation, error) {
+func (store *JobOfferPostgresStore) GetRecommendations(ctx context.Context, profileId string, skills []string) ([]*domain.JobRecommendation, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetRecommendations Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	client, err := ent.Open("postgres", store.jobOfferString)
 	if err != nil {
 		log.Fatal(err)
@@ -243,7 +276,7 @@ func (store *JobOfferPostgresStore) GetRecommendations(profileId string, skills 
 		QueryRequires().
 		Where(skill.NameIn(skills...)).
 		QueryRequired().
-		All(context.TODO())
+		All(ctx)
 
 	if err != nil {
 		return nil, err
@@ -256,7 +289,7 @@ func (store *JobOfferPostgresStore) GetRecommendations(profileId string, skills 
 			Where(joboffer.IDEQ(jobOffer.ID)).
 			QueryRequires().
 			Where(skill.NameIn(skills...)).
-			Count(context.TODO())
+			Count(ctx)
 		if err != nil {
 			return nil, err
 		}

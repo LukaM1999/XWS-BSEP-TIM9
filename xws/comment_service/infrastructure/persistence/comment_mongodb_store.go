@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"dislinkt/comment_service/domain"
+	"dislinkt/common/tracer"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -24,7 +25,11 @@ func NewCommentMongoDBStore(client *mongo.Client) domain.CommentStore {
 	}
 }
 
-func (store *CommentMongoDBStore) Get(postId string) ([]*domain.Comment, error) {
+func (store *CommentMongoDBStore) Get(ctx context.Context, postId string) ([]*domain.Comment, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	id, err := primitive.ObjectIDFromHex(postId)
 	if err != nil {
 		return nil, err
@@ -33,8 +38,12 @@ func (store *CommentMongoDBStore) Get(postId string) ([]*domain.Comment, error) 
 	return store.filter(filter)
 }
 
-func (store *CommentMongoDBStore) Create(comment *domain.Comment) (*domain.Comment, error) {
-	result, err := store.comments.InsertOne(context.TODO(), comment)
+func (store *CommentMongoDBStore) Create(ctx context.Context, comment *domain.Comment) (*domain.Comment, error) {
+	span := tracer.StartSpanFromContext(ctx, "Create Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	result, err := store.comments.InsertOne(ctx, comment)
 	if err != nil {
 		return nil, err
 	}
@@ -42,33 +51,45 @@ func (store *CommentMongoDBStore) Create(comment *domain.Comment) (*domain.Comme
 	return comment, nil
 }
 
-func (store *CommentMongoDBStore) DeleteAll() error {
-	_, err := store.comments.DeleteMany(context.TODO(), bson.D{{}})
+func (store *CommentMongoDBStore) DeleteAll(ctx context.Context) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteAll Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := store.comments.DeleteMany(ctx, bson.D{{}})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *CommentMongoDBStore) Delete(id string) error {
+func (store *CommentMongoDBStore) Delete(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	commentId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
-	_, err = store.comments.DeleteOne(context.TODO(), bson.M{"_id": commentId})
+	_, err = store.comments.DeleteOne(ctx, bson.M{"_id": commentId})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *CommentMongoDBStore) UpdateCommentCreator(creatorId primitive.ObjectID, creator *domain.CommentCreator) error {
+func (store *CommentMongoDBStore) UpdateCommentCreator(ctx context.Context, creatorId primitive.ObjectID, creator *domain.CommentCreator) error {
+	span := tracer.StartSpanFromContext(ctx, "UpdateCommentCreator Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	comments, err := store.filter(bson.M{"commentCreator._id": creatorId})
 	if err != nil {
 		return err
 	}
 	for _, comment := range comments {
-		_, err := store.comments.UpdateOne(context.TODO(), bson.M{"_id": comment.Id}, bson.M{"$set": bson.M{"commentCreator": creator}})
+		_, err := store.comments.UpdateOne(ctx, bson.M{"_id": comment.Id}, bson.M{"$set": bson.M{"commentCreator": creator}})
 		if err != nil {
 			return err
 		}
@@ -76,8 +97,12 @@ func (store *CommentMongoDBStore) UpdateCommentCreator(creatorId primitive.Objec
 	return nil
 }
 
-func (store *CommentMongoDBStore) DeletePostComments(postId primitive.ObjectID) error {
-	_, err := store.comments.DeleteMany(context.TODO(), bson.M{"postId": postId})
+func (store *CommentMongoDBStore) DeletePostComments(ctx context.Context, postId primitive.ObjectID) error {
+	span := tracer.StartSpanFromContext(ctx, "DeletePostComments Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	_, err := store.comments.DeleteMany(ctx, bson.M{"postId": postId})
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ import (
 	pbComment "dislinkt/common/proto/comment_service"
 	pb "dislinkt/common/proto/post_service"
 	pbReaction "dislinkt/common/proto/reaction_service"
+	"dislinkt/common/tracer"
 	"dislinkt/post_service/application"
 	"dislinkt/post_service/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -31,7 +32,11 @@ func NewPostHandler(service *application.PostService, commentClient pbComment.Co
 }
 
 func (handler *PostHandler) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
-	Post, err := handler.service.Get(request.Id)
+	span := tracer.StartSpanFromContext(ctx, "Get Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	Post, err := handler.service.Get(ctx, request.Id)
 	if err != nil {
 		log.WithField("postId", request.Id).Errorf("Cannot get post: %v", err)
 		return nil, err
@@ -44,7 +49,11 @@ func (handler *PostHandler) Get(ctx context.Context, request *pb.GetRequest) (*p
 }
 
 func (handler *PostHandler) GetProfilePosts(ctx context.Context, request *pb.GetPostRequest) (*pb.GetPostsResponse, error) {
-	Posts, err := handler.service.GetProfilePosts(request.ProfileId)
+	span := tracer.StartSpanFromContext(ctx, "GetProfilePosts Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	Posts, err := handler.service.GetProfilePosts(ctx, request.ProfileId)
 	if err != nil {
 		log.WithField("profileId", request.ProfileId).Errorf("Cannot get profile posts: %v", err)
 		return nil, err
@@ -60,7 +69,11 @@ func (handler *PostHandler) GetProfilePosts(ctx context.Context, request *pb.Get
 }
 
 func (handler *PostHandler) GetConnectionPosts(ctx context.Context, request *pb.GetPostRequest) (*pb.GetPostsResponse, error) {
-	Posts, err := handler.service.GetConnectionPosts(request.ProfileId)
+	span := tracer.StartSpanFromContext(ctx, "GetConnectionPosts Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	Posts, err := handler.service.GetConnectionPosts(ctx, request.ProfileId)
 	if err != nil {
 		log.WithField("profileId", request.ProfileId).Errorf("Cannot get connection posts: %v", err)
 		return nil, err
@@ -76,8 +89,12 @@ func (handler *PostHandler) GetConnectionPosts(ctx context.Context, request *pb.
 }
 
 func (handler *PostHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Create Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	post := mapPbToPost(request.Post)
-	err := handler.service.Create(post)
+	err := handler.service.Create(ctx, post)
 	if err != nil {
 		log.Errorf("Cannot create post: %v", err)
 		return nil, err
@@ -89,9 +106,13 @@ func (handler *PostHandler) Create(ctx context.Context, request *pb.CreateReques
 }
 
 func (handler *PostHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Update Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	id := request.Id
 	post := mapPbToPost(request.Post)
-	err := handler.service.Update(id, post)
+	err := handler.service.Update(ctx, id, post)
 	if err != nil {
 		log.WithField("postId", id).Errorf("Cannot update post: %v", err)
 		return nil, err
@@ -103,7 +124,11 @@ func (handler *PostHandler) Update(ctx context.Context, request *pb.UpdateReques
 }
 
 func (handler *PostHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
-	err := handler.service.Delete(request.Id)
+	span := tracer.StartSpanFromContext(ctx, "Delete Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	err := handler.service.Delete(ctx, request.Id)
 	if err != nil {
 		log.WithField("postId", request.Id).Errorf("Cannot delete post: %v", err)
 		return nil, err
@@ -113,8 +138,12 @@ func (handler *PostHandler) Delete(ctx context.Context, request *pb.DeleteReques
 }
 
 func (handler *PostHandler) CreateConnection(ctx context.Context, request *pb.CreateConnectionRequest) (*pb.CreateConnectionResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CreateConnection Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	connection := mapPbToConnection(request.Connection)
-	err := handler.service.CreateConnection(connection)
+	err := handler.service.CreateConnection(ctx, connection)
 	if err != nil {
 		return nil, err
 	}
@@ -125,12 +154,16 @@ func (handler *PostHandler) CreateConnection(ctx context.Context, request *pb.Cr
 }
 
 func (handler *PostHandler) DeleteConnection(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "DeleteConnection Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	id, err := primitive.ObjectIDFromHex(request.Id)
 	if err != nil {
 		log.Errorf("Cannot parse connectionId: %v", err)
 		return nil, err
 	}
-	err = handler.service.DeleteConnection(id)
+	err = handler.service.DeleteConnection(ctx, id)
 	if err != nil {
 		log.Errorf("Cannot delete connection: %v", err)
 		return nil, err
@@ -140,6 +173,10 @@ func (handler *PostHandler) DeleteConnection(ctx context.Context, request *pb.De
 }
 
 func (handler *PostHandler) UpdateProfile(ctx context.Context, request *pb.UpdateProfileRequest) (*pb.UpdateProfileResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "UpdateProfile Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	id, err := primitive.ObjectIDFromHex(request.Profile.Id)
 	if err != nil {
 		log.Errorf("Cannot parse profileId: %v", err)
@@ -150,7 +187,7 @@ func (handler *PostHandler) UpdateProfile(ctx context.Context, request *pb.Updat
 		FirstName: request.Profile.FirstName,
 		LastName:  request.Profile.LastName,
 	}
-	err = handler.service.UpdateProfile(profile.Id, profile)
+	err = handler.service.UpdateProfile(ctx, profile.Id, profile)
 	if err != nil {
 		log.WithField("profileId", profile.Id).Errorf("Cannot update profile: %v", err)
 		return nil, err
@@ -162,7 +199,11 @@ func (handler *PostHandler) UpdateProfile(ctx context.Context, request *pb.Updat
 }
 
 func (handler *PostHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
-	logs, err := handler.service.GetLogs()
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	logs, err := handler.service.GetLogs(ctx)
 	if err != nil {
 		log.Errorf("GLF")
 		return nil, err
@@ -182,11 +223,15 @@ func (handler *PostHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequ
 }
 
 func (handler *PostHandler) UpdatePostImage(ctx context.Context, request *pb.UpdatePostImageRequest) (*pb.UpdatePostImageResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "UpdatePostImage Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	id, err := primitive.ObjectIDFromHex(request.Id)
 	if err != nil {
 		return nil, err
 	}
-	post, err := handler.service.UpdatePostImage(id, request.Url)
+	post, err := handler.service.UpdatePostImage(ctx, id, request.Url)
 	if err != nil {
 		log.WithField("postId", id).Errorf("Cannot update post: %v", err)
 		return nil, err

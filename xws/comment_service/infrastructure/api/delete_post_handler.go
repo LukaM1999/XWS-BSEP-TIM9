@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"dislinkt/comment_service/application"
 	events "dislinkt/common/saga/delete_post"
 	saga "dislinkt/common/saga/messaging"
@@ -37,7 +38,7 @@ func (handler *DeletePostCommandHandler) handle(command *events.DeletePostComman
 		if err != nil {
 			return
 		}
-		err = handler.commentService.DeletePostComments(id)
+		err = handler.commentService.DeletePostComments(context.TODO(), id)
 		if err != nil {
 			return
 		}

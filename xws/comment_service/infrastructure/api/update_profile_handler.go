@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"dislinkt/comment_service/application"
 	"dislinkt/comment_service/domain"
 	saga "dislinkt/common/saga/messaging"
@@ -45,7 +46,7 @@ func (handler *UpdateProfileCommandHandler) handle(command *events.UpdateProfile
 			FirstName: command.Profile.FirstName,
 			LastName:  command.Profile.LastName,
 		}
-		err := handler.commentService.UpdateCommentCreator(newProfile.Id, newProfile)
+		err := handler.commentService.UpdateCommentCreator(context.TODO(), newProfile.Id, newProfile)
 		if err != nil {
 			return
 		}
@@ -57,7 +58,7 @@ func (handler *UpdateProfileCommandHandler) handle(command *events.UpdateProfile
 			FirstName: command.OldFirstName,
 			LastName:  command.OldLastName,
 		}
-		err := handler.commentService.UpdateCommentCreator(oldProfile.Id, oldProfile)
+		err := handler.commentService.UpdateCommentCreator(context.TODO(), oldProfile.Id, oldProfile)
 		if err != nil {
 			return
 		}

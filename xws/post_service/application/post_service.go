@@ -1,8 +1,10 @@
 package application
 
 import (
+	"context"
 	auth "dislinkt/common/domain"
 	pbProfile "dislinkt/common/proto/profile_service"
+	"dislinkt/common/tracer"
 	"dislinkt/post_service/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
@@ -25,32 +27,60 @@ func NewPostService(store domain.PostStore, profileClient pbProfile.ProfileServi
 	}
 }
 
-func (service *PostService) Get(id string) (*domain.Post, error) {
-	return service.store.Get(id)
+func (service *PostService) Get(ctx context.Context, id string) (*domain.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Get(ctx, id)
 }
 
-func (service *PostService) GetProfilePosts(profileId string) ([]*domain.Post, error) {
-	return service.store.GetProfilePosts(profileId)
+func (service *PostService) GetProfilePosts(ctx context.Context, profileId string) ([]*domain.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetProfilePosts Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetProfilePosts(ctx, profileId)
 }
 
-func (service *PostService) GetConnectionPosts(profileId string) ([]*domain.Post, error) {
-	return service.store.GetConnectionPosts(profileId)
+func (service *PostService) GetConnectionPosts(ctx context.Context, profileId string) ([]*domain.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetConnectionPosts Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetConnectionPosts(ctx, profileId)
 }
 
-func (service *PostService) Create(profile *domain.Post) error {
-	return service.store.Create(profile)
+func (service *PostService) Create(ctx context.Context, profile *domain.Post) error {
+	span := tracer.StartSpanFromContext(ctx, "Create Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Create(ctx, profile)
 }
 
-func (service *PostService) Update(id string, post *domain.Post) error {
-	return service.store.Update(id, post)
+func (service *PostService) Update(ctx context.Context, id string, post *domain.Post) error {
+	span := tracer.StartSpanFromContext(ctx, "Update Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Update(ctx, id, post)
 }
 
-func (service *PostService) UpdateProfile(id primitive.ObjectID, profile *domain.Profile) error {
-	return service.store.UpdateProfile(id, profile)
+func (service *PostService) UpdateProfile(ctx context.Context, id primitive.ObjectID, profile *domain.Profile) error {
+	span := tracer.StartSpanFromContext(ctx, "UpdateProfile Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.UpdateProfile(ctx, id, profile)
 }
 
-func (service *PostService) Delete(id string) error {
-	err := service.store.Delete(id)
+func (service *PostService) Delete(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	err := service.store.Delete(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -61,15 +91,27 @@ func (service *PostService) Delete(id string) error {
 	return nil
 }
 
-func (service *PostService) CreateConnection(connection *domain.Connection) error {
-	return service.store.CreateConnection(connection)
+func (service *PostService) CreateConnection(ctx context.Context, connection *domain.Connection) error {
+	span := tracer.StartSpanFromContext(ctx, "CreateConnection Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.CreateConnection(ctx, connection)
 }
 
-func (service *PostService) DeleteConnection(id primitive.ObjectID) error {
-	return service.store.DeleteConnection(id)
+func (service *PostService) DeleteConnection(ctx context.Context, id primitive.ObjectID) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteConnection Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.DeleteConnection(ctx, id)
 }
 
-func (service *PostService) GetLogs() ([]auth.Log, error) {
+func (service *PostService) GetLogs(ctx context.Context) ([]auth.Log, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	logPathPrefix := "../../logs/"
 	if os.Getenv("OS_ENV") == "docker" {
 		logPathPrefix = "./logs/"
@@ -109,6 +151,10 @@ func (service *PostService) GetLogs() ([]auth.Log, error) {
 	return logs, nil
 }
 
-func (service *PostService) UpdatePostImage(id primitive.ObjectID, url string) (*domain.Post, error) {
-	return service.store.UpdatePostImage(id, url)
+func (service *PostService) UpdatePostImage(ctx context.Context, id primitive.ObjectID, url string) (*domain.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "UpdatePostImage Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.UpdatePostImage(ctx, id, url)
 }

@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"context"
 	"dislinkt/common/auth"
 	"dislinkt/common/loggers"
 	reaction "dislinkt/common/proto/reaction_service"
@@ -70,12 +71,12 @@ func (server *Server) initMongoClient() *mongo.Client {
 
 func (server *Server) initReactionStore(client *mongo.Client) domain.ReactionStore {
 	store := persistence.NewReactionMongoDBStore(client)
-	err := store.DeleteAll()
+	err := store.DeleteAll(context.TODO())
 	if err != nil {
 		return nil
 	}
 	for _, Reaction := range reactions {
-		_, err := store.Reaction(Reaction)
+		_, err := store.Reaction(context.TODO(), Reaction)
 		if err != nil {
 			log.Fatal(err)
 		}

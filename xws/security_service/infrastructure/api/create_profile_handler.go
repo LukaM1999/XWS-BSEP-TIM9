@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	events "dislinkt/common/saga/create_profile"
 	saga "dislinkt/common/saga/messaging"
 	"dislinkt/security_service/application"
@@ -36,14 +37,14 @@ func (handler *CreateProfileCommandHandler) handle(command *events.CreateProfile
 		logger := log.WithFields(logrus.Fields{
 			"userId": command.Profile.Id.Hex(),
 		})
-		token, err := handler.securityService.GenerateVerificationToken()
+		token, err := handler.securityService.GenerateVerificationToken(context.TODO())
 		if err != nil {
-			handler.securityService.Delete(command.Profile.Id)
+			handler.securityService.Delete(context.TODO(), command.Profile.Id)
 			logger.Errorf("CVTF: %v", err)
 			reply.Type = events.ProfileNotCreated
 			break
 		}
-		userVerification, err := handler.securityService.CreateUserVerification(&securityDomain.UserVerification{
+		userVerification, err := handler.securityService.CreateUserVerification(context.TODO(), &securityDomain.UserVerification{
 			Id:          primitive.NewObjectID(),
 			Username:    command.Profile.Username,
 			Token:       token,
@@ -51,20 +52,20 @@ func (handler *CreateProfileCommandHandler) handle(command *events.CreateProfile
 			IsVerified:  false,
 		})
 		if err != nil {
-			handler.securityService.Delete(command.Profile.Id)
+			handler.securityService.Delete(context.TODO(), command.Profile.Id)
 			logger.Errorf("CUVF: %v", err)
 			reply.Type = events.ProfileNotCreated
 			break
 		}
-		err = handler.securityService.SendVerificationEmail(command.Profile.Username, command.Profile.Email, userVerification.Token)
+		err = handler.securityService.SendVerificationEmail(context.TODO(), command.Profile.Username, command.Profile.Email, userVerification.Token)
 		if err != nil {
 			logger.Errorf("SVEF: %v", err)
-			handler.securityService.Delete(command.Profile.Id)
+			handler.securityService.Delete(context.TODO(), command.Profile.Id)
 			reply.Type = events.ProfileNotCreated
 		}
 		break
 	case events.RollbackCreatedProfile:
-		err := handler.securityService.Delete(command.Profile.Id)
+		err := handler.securityService.Delete(context.TODO(), command.Profile.Id)
 		if err != nil {
 			return
 		}

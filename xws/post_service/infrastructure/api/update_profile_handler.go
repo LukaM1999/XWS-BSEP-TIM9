@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	saga "dislinkt/common/saga/messaging"
 	events "dislinkt/common/saga/update_profile"
 	"dislinkt/post_service/application"
@@ -45,7 +46,7 @@ func (handler *UpdateProfileCommandHandler) handle(command *events.UpdateProfile
 			FirstName: command.Profile.FirstName,
 			LastName:  command.Profile.LastName,
 		}
-		err := handler.postService.UpdateProfile(newProfile.Id, newProfile)
+		err := handler.postService.UpdateProfile(context.TODO(), newProfile.Id, newProfile)
 		if err != nil {
 			return
 		}
@@ -57,7 +58,7 @@ func (handler *UpdateProfileCommandHandler) handle(command *events.UpdateProfile
 			FirstName: command.OldFirstName,
 			LastName:  command.OldLastName,
 		}
-		err := handler.postService.UpdateProfile(oldProfile.Id, oldProfile)
+		err := handler.postService.UpdateProfile(context.TODO(), oldProfile.Id, oldProfile)
 		if err != nil {
 			return
 		}

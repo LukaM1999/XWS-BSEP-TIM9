@@ -1,8 +1,10 @@
 package application
 
 import (
+	"context"
 	auth "dislinkt/common/domain"
 	"dislinkt/common/loggers"
+	"dislinkt/common/tracer"
 	"dislinkt/profile_service/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
@@ -25,29 +27,49 @@ func NewProfileService(store domain.ProfileStore, orchestrator *UpdateProfileOrc
 	}
 }
 
-func (service *ProfileService) Get(profileId string) (*domain.Profile, error) {
-	return service.store.Get(profileId)
+func (service *ProfileService) Get(ctx context.Context, profileId string) (*domain.Profile, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Get(ctx, profileId)
 }
 
-func (service *ProfileService) GetAll(search string) ([]*domain.Profile, error) {
-	return service.store.GetAll(search)
+func (service *ProfileService) GetAll(ctx context.Context, search string) ([]*domain.Profile, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetAll Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetAll(ctx, search)
 }
 
-func (service *ProfileService) Create(profile *domain.Profile) error {
-	return service.store.Create(profile)
+func (service *ProfileService) Create(ctx context.Context, profile *domain.Profile) error {
+	span := tracer.StartSpanFromContext(ctx, "Create Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Create(ctx, profile)
 }
 
-func (service *ProfileService) RollbackUpdate(profile *domain.Profile) error {
-	return service.store.Update(profile.Id.Hex(), profile)
+func (service *ProfileService) RollbackUpdate(ctx context.Context, profile *domain.Profile) error {
+	span := tracer.StartSpanFromContext(ctx, "RollbackUpdate Store")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Update(ctx, profile.Id.Hex(), profile)
 }
 
-func (service *ProfileService) Update(profileId string, profile *domain.Profile) error {
-	oldProfile, err := service.Get(profileId)
+func (service *ProfileService) Update(ctx context.Context, profileId string, profile *domain.Profile) error {
+	span := tracer.StartSpanFromContext(ctx, "Update Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	oldProfile, err := service.Get(ctx, profileId)
 	if err != nil {
 		log.WithField("profileId", profileId).Errorf("Cannot get profile: %v", err)
 		return err
 	}
-	err = service.store.Update(profileId, profile)
+	err = service.store.Update(ctx, profileId, profile)
 	if err != nil {
 		log.WithField("profileId", profileId).Errorf("Cannot update profile: %v", err)
 		return err
@@ -109,24 +131,40 @@ func (service *ProfileService) Update(profileId string, profile *domain.Profile)
 	return nil
 }
 
-func (service *ProfileService) Delete(id string) error {
-	return service.store.Delete(id)
+func (service *ProfileService) Delete(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Delete(ctx, id)
 }
 
-func (service *ProfileService) GetByToken(token string) (*domain.Profile, error) {
-	return service.store.GetByToken(token)
+func (service *ProfileService) GetByToken(ctx context.Context, token string) (*domain.Profile, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetByToken Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetByToken(ctx, token)
 }
 
-func (service *ProfileService) GenerateToken(profileId string) (string, error) {
+func (service *ProfileService) GenerateToken(ctx context.Context, profileId string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GenerateToken Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	id, err := primitive.ObjectIDFromHex(profileId)
 	if err != nil {
 		return "", err
 	}
 
-	return service.store.GenerateToken(id)
+	return service.store.GenerateToken(ctx, id)
 }
 
-func (service *ProfileService) GetLogs() ([]auth.Log, error) {
+func (service *ProfileService) GetLogs(ctx context.Context) ([]auth.Log, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	logPathPrefix := "../../logs/"
 	if os.Getenv("OS_ENV") == "docker" {
 		logPathPrefix = "./logs/"

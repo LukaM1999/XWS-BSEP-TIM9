@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	events "dislinkt/common/saga/create_profile"
 	saga "dislinkt/common/saga/messaging"
 	"dislinkt/profile_service/application"
@@ -51,7 +52,7 @@ func (handler *CreateProfileCommandHandler) handle(command *events.CreateProfile
 			Interests:      nil,
 			AgentToken:     "",
 		}
-		err := handler.profileService.Create(profile)
+		err := handler.profileService.Create(context.TODO(), profile)
 		if err != nil {
 			reply.Type = events.ProfileNotCreated
 			break
@@ -59,7 +60,7 @@ func (handler *CreateProfileCommandHandler) handle(command *events.CreateProfile
 		reply.Type = events.ProfileCreated
 		break
 	case events.RollbackCreatedProfile:
-		err := handler.profileService.Delete(command.Profile.Id.Hex())
+		err := handler.profileService.Delete(context.TODO(), command.Profile.Id.Hex())
 		if err != nil {
 			return
 		}

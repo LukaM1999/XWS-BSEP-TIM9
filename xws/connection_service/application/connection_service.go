@@ -1,7 +1,9 @@
 package application
 
 import (
+	"context"
 	auth "dislinkt/common/domain"
+	"dislinkt/common/tracer"
 	"dislinkt/connection_service/domain"
 	"os"
 	"regexp"
@@ -19,59 +21,115 @@ func NewConnectionService(store domain.ConnectionStore) *ConnectionService {
 	}
 }
 
-func (service *ConnectionService) Get(userId string) ([]*domain.Connection, error) {
-	return service.store.Get(userId)
+func (service *ConnectionService) Get(ctx context.Context, userId string) ([]*domain.Connection, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Get(ctx, userId)
 }
 
-func (service *ConnectionService) Create(issuerKey string, subjectKey string) (*domain.Connection, error) {
-	return service.store.CreateConnection(issuerKey, subjectKey)
+func (service *ConnectionService) Create(ctx context.Context, issuerKey string, subjectKey string) (*domain.Connection, error) {
+	span := tracer.StartSpanFromContext(ctx, "Create Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.CreateConnection(ctx, issuerKey, subjectKey)
 }
 
-func (service *ConnectionService) CreateUser(userId string) error {
-	return service.store.CreateUser(userId)
+func (service *ConnectionService) CreateUser(ctx context.Context, userId string) error {
+	span := tracer.StartSpanFromContext(ctx, "CreateUser Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.CreateUser(ctx, userId)
 }
 
-func (service *ConnectionService) Delete(id int) error {
-	return service.store.Delete(id)
+func (service *ConnectionService) Delete(ctx context.Context, id int) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Delete(ctx, id)
 }
 
-func (service *ConnectionService) DeleteUser(id string) error {
-	return service.store.DeleteUser(id)
+func (service *ConnectionService) DeleteUser(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContext(ctx, "DeleteUser Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.DeleteUser(ctx, id)
 }
 
-func (service *ConnectionService) UpdateConnection(id int) (*domain.Connection, error) {
-	return service.store.UpdateConnection(id)
+func (service *ConnectionService) UpdateConnection(ctx context.Context, id int) (*domain.Connection, error) {
+	span := tracer.StartSpanFromContext(ctx, "UpdateConnection Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.UpdateConnection(ctx, id)
 }
 
-func (service *ConnectionService) UpdatePrivacy(id string) error {
-	return service.store.UpdatePrivacy(id)
+func (service *ConnectionService) UpdatePrivacy(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContext(ctx, "UpdatePrivacy Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.UpdatePrivacy(ctx, id)
 }
 
-func (service *ConnectionService) GetRecommendations(userId string) ([]string, error) {
-	return service.store.GetRecommendations(userId)
+func (service *ConnectionService) GetRecommendations(ctx context.Context, userId string) ([]string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetRecommendations Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetRecommendations(ctx, userId)
 }
 
-func (service *ConnectionService) BlockUser(issuerId string, subjectId string) (bool, error) {
-	return service.store.BlockUser(issuerId, subjectId)
+func (service *ConnectionService) BlockUser(ctx context.Context, issuerId string, subjectId string) (bool, error) {
+	span := tracer.StartSpanFromContext(ctx, "BlockUser Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.BlockUser(ctx, issuerId, subjectId)
 }
 
-func (service *ConnectionService) GetBlockedUsers(userId string) ([]string, error) {
-	return service.store.GetBlockedUsers(userId)
+func (service *ConnectionService) GetBlockedUsers(ctx context.Context, userId string) ([]string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetBlockedUsers Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetBlockedUsers(ctx, userId)
 }
 
-func (service *ConnectionService) GetBlockers(userId string) ([]string, error) {
-	return service.store.GetBlockers(userId)
+func (service *ConnectionService) GetBlockers(ctx context.Context, userId string) ([]string, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetBlockers Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetBlockers(ctx, userId)
 }
 
-func (service *ConnectionService) UnblockUser(issuerId, subjectId string) (bool, error) {
-	return service.store.UnblockUser(issuerId, subjectId)
+func (service *ConnectionService) UnblockUser(ctx context.Context, issuerId, subjectId string) (bool, error) {
+	span := tracer.StartSpanFromContext(ctx, "UnblockUser Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.UnblockUser(ctx, issuerId, subjectId)
 }
 
-func (service *ConnectionService) GetConnection(user1Id string, user2Id string) (*domain.Connection, error) {
-	return service.store.GetConnection(user1Id, user2Id)
+func (service *ConnectionService) GetConnection(ctx context.Context, user1Id string, user2Id string) (*domain.Connection, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetConnection Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.GetConnection(ctx, user1Id, user2Id)
 }
 
-func (service *ConnectionService) GetLogs() ([]auth.Log, error) {
+func (service *ConnectionService) GetLogs(ctx context.Context) ([]auth.Log, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	
 	logPathPrefix := "../../logs/"
 	if os.Getenv("OS_ENV") == "docker" {
 		logPathPrefix = "./logs/"

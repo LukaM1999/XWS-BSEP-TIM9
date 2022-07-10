@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"context"
 	"dislinkt/common/auth"
 	"dislinkt/common/loggers"
 	job "dislinkt/common/proto/job_offer_service"
@@ -68,12 +69,12 @@ func (server *Server) Start() {
 
 func (server *Server) initJobOfferStore() domain.JobOfferStore {
 	store := persistence.NewJobOfferPostgresStore(server.config.JobOfferDBHost, server.config.JobOfferDBPort)
-	err := store.DeleteAll()
+	err := store.DeleteAll(context.TODO())
 	if err != nil {
 		return nil
 	}
 	for _, job := range jobOffers {
-		_, err := store.CreateJob(job)
+		_, err := store.CreateJob(context.TODO(), job)
 		if err != nil {
 			return nil
 		}

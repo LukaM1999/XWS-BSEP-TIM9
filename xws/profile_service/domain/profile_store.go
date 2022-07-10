@@ -1,14 +1,17 @@
 package domain
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"context"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type ProfileStore interface {
-	Get(profileId string) (*Profile, error)
-	GetAll(search string) ([]*Profile, error)
-	Create(profile *Profile) error
-	Update(profileId string, profile *Profile) error
-	DeleteAll() error
-	Delete(id string) error
-	GetByToken(token string) (*Profile, error)
-	GenerateToken(id primitive.ObjectID) (string, error)
+	Get(ctx context.Context, profileId string) (*Profile, error)
+	GetAll(ctx context.Context, search string) ([]*Profile, error)
+	Create(ctx context.Context, profile *Profile) error
+	Update(ctx context.Context, profileId string, profile *Profile) error
+	DeleteAll(ctx context.Context) error
+	Delete(ctx context.Context, id string) error
+	GetByToken(ctx context.Context, token string) (*Profile, error)
+	GenerateToken(ctx context.Context, id primitive.ObjectID) (string, error)
 }

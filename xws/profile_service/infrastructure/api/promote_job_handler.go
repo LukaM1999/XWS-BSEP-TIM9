@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	auth "dislinkt/common/domain"
 	saga "dislinkt/common/saga/messaging"
 	events "dislinkt/common/saga/promote_job"
@@ -35,7 +36,7 @@ func (handler *PromoteJobCommandHandler) handle(command *events.PromoteJobComman
 	}
 	switch command.Type {
 	case events.GetProfileByToken:
-		profile, err := handler.profileService.GetByToken(command.Token)
+		profile, err := handler.profileService.GetByToken(context.TODO(), command.Token)
 		if err != nil {
 			return
 		}

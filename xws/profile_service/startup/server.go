@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"context"
 	"dislinkt/common/auth"
 	"dislinkt/common/loggers"
 	profile "dislinkt/common/proto/profile_service"
@@ -40,7 +41,7 @@ func accessibleRoles() map[string]string {
 
 	return map[string]string{
 		//profileServicePath + "GetAll":        "search:all-profiles",
-		//profileServicePath + "GenerateToken": "write:profile-token",
+		profileServicePath + "GenerateToken": "write:profile-token",
 		//profileServicePath + "Get":    {"user"},
 		//profileServicePath + "Create": {"user"},
 		//profileServicePath + "Update": {"user"},
@@ -86,12 +87,12 @@ func (server *Server) initMongoClient() *mongo.Client {
 
 func (server *Server) initProfileStore(client *mongo.Client) domain.ProfileStore {
 	store := persistence.NewProfileMongoDBStore(client)
-	err := store.DeleteAll()
+	err := store.DeleteAll(context.TODO())
 	if err != nil {
 		return nil
 	}
 	for _, Profile := range profiles {
-		err := store.Create(Profile)
+		err := store.Create(context.TODO(), Profile)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,8 +1,10 @@
 package application
 
 import (
+	"context"
 	"dislinkt/comment_service/domain"
 	auth "dislinkt/common/domain"
+	"dislinkt/common/tracer"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"regexp"
@@ -20,27 +22,51 @@ func NewCommentService(store domain.CommentStore) *CommentService {
 	}
 }
 
-func (service *CommentService) Get(postId string) ([]*domain.Comment, error) {
-	return service.store.Get(postId)
+func (service *CommentService) Get(ctx context.Context, postId string) ([]*domain.Comment, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Get(ctx, postId)
 }
 
-func (service *CommentService) Create(comment *domain.Comment) (*domain.Comment, error) {
-	return service.store.Create(comment)
+func (service *CommentService) Create(ctx context.Context, comment *domain.Comment) (*domain.Comment, error) {
+	span := tracer.StartSpanFromContext(ctx, "Create Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Create(ctx, comment)
 }
 
-func (service *CommentService) Delete(id string) error {
-	return service.store.Delete(id)
+func (service *CommentService) Delete(ctx context.Context, id string) error {
+	span := tracer.StartSpanFromContext(ctx, "Delete Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.Delete(ctx, id)
 }
 
-func (service *CommentService) UpdateCommentCreator(creatorId primitive.ObjectID, creator *domain.CommentCreator) error {
-	return service.store.UpdateCommentCreator(creatorId, creator)
+func (service *CommentService) UpdateCommentCreator(ctx context.Context, creatorId primitive.ObjectID, creator *domain.CommentCreator) error {
+	span := tracer.StartSpanFromContext(ctx, "UpdateCommentCreator Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.UpdateCommentCreator(ctx, creatorId, creator)
 }
 
-func (service *CommentService) DeletePostComments(postId primitive.ObjectID) error {
-	return service.store.DeletePostComments(postId)
+func (service *CommentService) DeletePostComments(ctx context.Context, postId primitive.ObjectID) error {
+	span := tracer.StartSpanFromContext(ctx, "DeletePostComments Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	return service.store.DeletePostComments(ctx, postId)
 }
 
-func (service *CommentService) GetLogs() ([]auth.Log, error) {
+func (service *CommentService) GetLogs(ctx context.Context, ) ([]auth.Log, error) {
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Service")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	logPathPrefix := "../../logs/"
 	if os.Getenv("OS_ENV") == "docker" {
 		logPathPrefix = "./logs/"

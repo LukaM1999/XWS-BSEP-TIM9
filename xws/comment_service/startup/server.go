@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"context"
 	"dislinkt/comment_service/application"
 	"dislinkt/comment_service/domain"
 	"dislinkt/comment_service/infrastructure/api"
@@ -75,12 +76,12 @@ func (server *Server) initMongoClient() *mongo.Client {
 
 func (server *Server) initCommentStore(client *mongo.Client) domain.CommentStore {
 	store := persistence.NewCommentMongoDBStore(client)
-	err := store.DeleteAll()
+	err := store.DeleteAll(context.TODO())
 	if err != nil {
 		return nil
 	}
 	for _, Comment := range comments {
-		_, err := store.Create(Comment)
+		_, err := store.Create(context.TODO(), Comment)
 		if err != nil {
 			log.Fatal(err)
 		}

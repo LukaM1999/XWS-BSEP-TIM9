@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"context"
 	"dislinkt/common/auth"
 	"dislinkt/common/client"
 	"dislinkt/common/loggers"
@@ -74,24 +75,24 @@ func (server *Server) Start() {
 
 func (server *Server) initConnectionStore() domain.ConnectionStore {
 	store := persistence.NewConnectionPostgresStore(server.config.ConnectionDBHost, server.config.ConnectionDBPort)
-	err := store.DeleteAll()
+	err := store.DeleteAll(context.TODO())
 	if err != nil {
 		return nil
 	}
 	for _, user := range users {
-		err := store.CreateUser(user)
+		err := store.CreateUser(context.TODO(), user)
 		if err != nil {
 			return nil
 		}
 	}
 	for _, Connection := range connections {
-		_, err := store.CreateConnection(Connection.IssuerId, Connection.SubjectId)
+		_, err := store.CreateConnection(context.TODO(), Connection.IssuerId, Connection.SubjectId)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 	for _, BlockedUser := range blockedUsers {
-		_, err := store.BlockUser(BlockedUser.IssuerPrimaryKey, BlockedUser.SubjectPrimaryKey)
+		_, err := store.BlockUser(context.TODO(), BlockedUser.IssuerPrimaryKey, BlockedUser.SubjectPrimaryKey)
 		if err != nil {
 			log.Fatal(err)
 		}

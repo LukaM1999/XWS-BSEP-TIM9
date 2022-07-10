@@ -4,6 +4,7 @@ import (
 	"context"
 	"dislinkt/common/loggers"
 	pb "dislinkt/common/proto/profile_service"
+	"dislinkt/common/tracer"
 	"dislinkt/profile_service/application"
 	"dislinkt/profile_service/domain"
 	"strings"
@@ -31,8 +32,12 @@ func NewProfileHandler(service *application.ProfileService) *ProfileHandler {
 }
 
 func (handler *ProfileHandler) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Get Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	profileId := request.Id
-	Profile, err := handler.service.Get(*profileId)
+	Profile, err := handler.service.Get(ctx, *profileId)
 	if err != nil {
 		log.WithField("profileId", profileId).Errorf("Cannot get profile: %v", err)
 		return nil, err
@@ -45,7 +50,11 @@ func (handler *ProfileHandler) Get(ctx context.Context, request *pb.GetRequest) 
 }
 
 func (handler *ProfileHandler) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	Profiles, err := handler.service.GetAll(strings.ReplaceAll(*request.Search, " ", ""))
+	span := tracer.StartSpanFromContext(ctx, "GetAll Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	Profiles, err := handler.service.GetAll(ctx, strings.ReplaceAll(*request.Search, " ", ""))
 	if err != nil {
 		log.Errorf("Cannot get all profiles: %v", err)
 		return nil, err
@@ -61,6 +70,10 @@ func (handler *ProfileHandler) GetAll(ctx context.Context, request *pb.GetAllReq
 }
 
 func (handler ProfileHandler) Create(ctx context.Context, request *pb.CreateRequest) (*pb.CreateResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Create Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	empty := ""
 	emptyBool := false
 	value := &empty
@@ -77,7 +90,7 @@ func (handler ProfileHandler) Create(ctx context.Context, request *pb.CreateRequ
 		log.Errorf("Validation failed: %v", err)
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
-	err := handler.service.Create(profile)
+	err := handler.service.Create(ctx, profile)
 	if err != nil {
 		log.Errorf("Cannot create profile: %v", err)
 		return nil, err
@@ -89,8 +102,12 @@ func (handler ProfileHandler) Create(ctx context.Context, request *pb.CreateRequ
 }
 
 func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequest) (*pb.UpdateResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "Update Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
 	profile := mapPbToProfile(request.Profile)
-	err := handler.service.Update(*request.Id, profile)
+	err := handler.service.Update(ctx, *request.Id, profile)
 	if err != nil {
 		log.Errorf("Cannot update profile: %v", err)
 		return nil, err
@@ -102,7 +119,11 @@ func (handler ProfileHandler) Update(ctx context.Context, request *pb.UpdateRequ
 }
 
 func (handler *ProfileHandler) Delete(ctx context.Context, request *pb.DeleteRequest) (*pb.DeleteResponse, error) {
-	err := handler.service.Delete(*request.Id)
+	span := tracer.StartSpanFromContext(ctx, "Delete Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	err := handler.service.Delete(ctx, *request.Id)
 	if err != nil {
 		log.Errorf("Cannot delete profile: %v", err)
 		return nil, err
@@ -112,10 +133,14 @@ func (handler *ProfileHandler) Delete(ctx context.Context, request *pb.DeleteReq
 }
 
 func (handler *ProfileHandler) GenerateToken(ctx context.Context, request *pb.GenerateTokenRequest) (*pb.GenerateTokenResponse, error) {
-	//if ctx.Value("userId").(string) != *request.Id {
-	//	return nil, status.Errorf(codes.Unauthenticated, "user not authenticated")
-	//}
-	token, err := handler.service.GenerateToken(*request.Id)
+	span := tracer.StartSpanFromContext(ctx, "GenerateToken Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	if ctx.Value("userId").(string) != *request.Id {
+		return nil, status.Errorf(codes.Unauthenticated, "user not authenticated")
+	}
+	token, err := handler.service.GenerateToken(ctx, *request.Id)
 	if err != nil {
 		log.Errorf("Cannot generate token: %v", err)
 		return nil, err
@@ -127,7 +152,11 @@ func (handler *ProfileHandler) GenerateToken(ctx context.Context, request *pb.Ge
 }
 
 func (handler *ProfileHandler) GetByToken(ctx context.Context, request *pb.GetByTokenRequest) (*pb.GetByTokenResponse, error) {
-	Profile, err := handler.service.GetByToken(*request.Token)
+	span := tracer.StartSpanFromContext(ctx, "GetByToken Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	Profile, err := handler.service.GetByToken(ctx, *request.Token)
 	if err != nil {
 		log.WithField("token", request.Token).Errorf("Cannot get profile: %v", err)
 		return nil, err
@@ -140,7 +169,11 @@ func (handler *ProfileHandler) GetByToken(ctx context.Context, request *pb.GetBy
 }
 
 func (handler *ProfileHandler) GetLogs(ctx context.Context, request *pb.GetLogsRequest) (*pb.GetLogsResponse, error) {
-	logs, err := handler.service.GetLogs()
+	span := tracer.StartSpanFromContext(ctx, "GetLogs Handler")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(ctx, span)
+
+	logs, err := handler.service.GetLogs(ctx)
 	if err != nil {
 		log.Errorf("GLF")
 		return nil, err

@@ -1,6 +1,7 @@
 package startup
 
 import (
+	"context"
 	"dislinkt/common/auth"
 	"dislinkt/common/client"
 	"dislinkt/common/loggers"
@@ -88,24 +89,24 @@ func (server *Server) initMongoClient() *mongo.Client {
 
 func (server *Server) initUserStore(client *mongo.Client) domain.UserStore {
 	store := persistence.NewUserMongoDBStore(client)
-	err := store.DeleteAll()
+	err := store.DeleteAll(context.TODO())
 	if err != nil {
 		return nil
 	}
 	for _, User := range users {
-		_, err := store.Register(User)
+		_, err := store.Register(context.TODO(), User)
 		if err != nil {
 			log.Fatalf("RUF: %v", err)
 		}
 	}
 	for _, rolePermission := range rolePermissions {
-		_, err := store.CreateRolePermission(rolePermission)
+		_, err := store.CreateRolePermission(context.TODO(), rolePermission)
 		if err != nil {
 			log.Fatal("CRF: %v", err)
 		}
 	}
 	for _, userVerification := range userVerifications {
-		_, err := store.CreateUserVerification(userVerification)
+		_, err := store.CreateUserVerification(context.TODO(), userVerification)
 		if err != nil {
 			log.Fatal("CUVF: %v", err)
 		}

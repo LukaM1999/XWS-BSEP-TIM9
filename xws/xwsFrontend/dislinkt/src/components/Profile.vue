@@ -8,8 +8,8 @@
 }
 </style>
 <template >
-  <div class="row" style="margin-left: 10%; margin-top: 10%; margin-right: 10%">
-    <div class="col-3">
+  <div class="row" style="margin-left: 6%; margin-top: 10%; ">
+    <div class="col-2">
       <div class="row">
         <div class="col">
           <div class="centerx">
@@ -34,13 +34,6 @@
       <div class="row">
         <div class="col">
           <div class="centerx">
-            <vs-input label-placeholder="Date of birth" v-model="dateOfBirth"/>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <div class="centerx">
             <vs-input label-placeholder="Email" v-model="email"/>
           </div>
         </div>
@@ -48,28 +41,57 @@
       <div class="row">
         <div class="col">
           <div class="centerx">
+            <vs-input label-placeholder="Phone number" v-model="phoneNumber"/>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <div class="centerx">
+            <vs-input type="date"  label-placeholder="Date of birth" v-model="dateOfBirth"/>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <div class="centerx">
+            <textarea class="vs-input" maxlength="2500" style="width: 17.5rem; border-radius: 6%;" v-model="biography"
+                      placeholder="Biography"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <div class="centerx">
             <vs-input label-placeholder="Gender" v-model="gender"/>
           </div>
-          <vs-button block @click="updateProfile()" style="margin-top: 1em">
-            Save
-          </vs-button>
+          <div class="row">
+            <div class="col">
+              <div class="center con-checkbox">
+                <vs-checkbox v-model="isPrivate" :checked="isPrivate">
+                  Private
+                </vs-checkbox>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col" style="margin-left: 10rem;">
+              <vs-button block @click="updateProfile()" style="margin-top: 1em">
+                Save
+              </vs-button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-3">
+    <div class="col-2">
       <div class="row">
-        <div class="col">
+        <div class="col-2">
           <div class="centerx">
-            <vs-input label-placeholder="Biography" v-model="biography"/>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <div class="centerx">
-            <table style="margin-left: 3em">
+            <table style="margin-left: 4em">
               <th>
-                <h4 style="margin-top: 5pt">Skills</h4>
+                <h4>Skills</h4>
               </th>
               <tr v-for="item in skills" v-bind:key="item">
                 <td>
@@ -84,7 +106,7 @@
             </table>
           </div>
         </div>
-        <div class="col">
+        <div class="col-2" style="margin-left: 100px;">
           <vs-button icon :active="activeSkill == 0"
                      @click="activeSkill=!activeSkill">
             <i class='bx bx-plus'></i>
@@ -111,18 +133,18 @@
         </div>
       </div>
       <div class="row">
-        <div class="col">
+        <div class="col-2">
           <div class="centerx">
-            <table style="margin-left: 3em">
+            <table style="margin-left: 4em">
               <th>
-                <h4 style="margin-top: 5pt">Interests</h4>
+                <h4>Interests</h4>
               </th>
               <tr v-for="item in interests" v-bind:key="item">
                 <td>
                   <span>{{ item }}</span>
                 </td>
                 <td>
-                  <vs-button icon @click="deleteInterest(item)" style="height: 2em; width: 2em">
+                  <vs-button icon @click="deleteInterest(item)" style="height: 2em; width: 2em;">
                     <i class='bx bx-minus'></i>
                   </vs-button>
                 </td>
@@ -130,7 +152,7 @@
             </table>
           </div>
         </div>
-        <div class="col">
+        <div class="col-2" style="margin-left: 125px;">
           <vs-button icon :active="activeInterest == 0"
                      @click="activeInterest=!activeInterest">
             <i class='bx bx-plus'></i>
@@ -156,49 +178,12 @@
           </vs-dialog>
         </div>
       </div>
-      <div class="row">
-        <div class="col">
-          <div class="center con-checkbox">
-            <vs-checkbox v-model="isPrivate" :checked="isPrivate">
-              Private
-            </vs-checkbox>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <div class="centerx">
-            <vs-input label-placeholder="Phone number" v-model="phoneNumber"/>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <div class="centerx">
-            <vs-input disabled type="password" label-placeholder="Agent token" v-model="agentToken"/>
-          </div>
-          <vs-button block @click="generateAgentToken()" style="margin-top: 1em">
-            Generate agent token
-          </vs-button>
-          <vs-dialog v-model="activeToken">
-            <template #header>
-              <h4 class="not-margin">
-                New agent token
-              </h4>
-            </template>
-            <div class="con-form">
-              <div class="centerx" style="margin-bottom: 2em">
-                <vs-input disabled label-placeholder="Token" v-model="agentToken"/>
-              </div>
-            </div>
-          </vs-dialog>
-        </div>
-      </div>
+
     </div>
-    <div class="col-3">
+    <div class="col-2">
       <div class="row">
         <div class="col">
-          <h3 style="margin-top: 3pt">Education</h3>
+          <h4 style="margin-top: 3pt">Education</h4>
         </div>
         <div class="col">
           <vs-button
@@ -239,12 +224,15 @@
                 <vs-input label-placeholder="Description" v-model="description"/>
               </div>
             </div>
-
             <template #footer>
               <div class="footer-dialog">
-                <vs-button block @click="addEducation()">
-                  Save
-                </vs-button>
+                <div class="row">
+                  <div class="col-2">
+                    <vs-button style="width: 100px" block @click="addEducation()">
+                      Save
+                    </vs-button>
+                  </div>
+                </div>
               </div>
             </template>
           </vs-dialog>
@@ -289,10 +277,10 @@
         </div>
       </div>
     </div>
-    <div class="col-3">
+    <div class="col-2">
       <div class="row">
         <div class="col">
-          <h3 style="margin-top: 3pt">Work experience</h3>
+          <h4 style="margin-top: 3pt">Work experience</h4>
         </div>
         <div class="col">
           <vs-button
@@ -423,7 +411,32 @@
         </div>
       </div>
       <div class="row justify-content-end align-content-end">
-        <div class="col justify-content-end d-flex align-self-end">
+
+      </div>
+    </div>
+    <div class="col-2">
+      <div class="centerx">
+        <vs-input disabled type="password" label-placeholder="Agent token" v-model="agentToken"/>
+      </div>
+      <vs-button block @click="generateAgentToken()" style="margin-top: 1em">
+        Generate agent token
+      </vs-button>
+      <vs-dialog v-model="activeToken">
+        <template #header>
+          <h4 class="not-margin">
+            New agent token
+          </h4>
+        </template>
+        <div class="con-form">
+          <div class="centerx" style="margin-bottom: 2em">
+            <vs-input disabled label-placeholder="Token" v-model="agentToken"/>
+          </div>
+        </div>
+      </vs-dialog>
+    </div>
+    <div class="col-2">
+      <div class="row">
+        <div class="col" style="margin-left: 80px; margin-bottom: 20px;">
           <vs-button primary icon size="xl" @click="openNotificationPrompt">
             <span class='bx bx-bell bx-lg'></span>
           </vs-button>
@@ -480,6 +493,9 @@ export default {
   beforeMount() {
   },
   methods: {
+    format(value, event) {
+      return moment(value).format('YYYY-MM-DD')
+    },
     openNotificationPrompt(){
       this.$OneSignal.showCategorySlidedown({
       })

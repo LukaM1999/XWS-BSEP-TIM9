@@ -148,9 +148,9 @@ export default {
     },
     async beforeMount() {
       await this.getProfile()
+      await this.getJobs();
       await this.getRecommendations();
       await this.getJobOffer();
-      await this.getJobs();
     },
     async mounted() {
       for(let j of this.jobs){
@@ -161,7 +161,7 @@ export default {
     computed: {
       filteredJobs() {
         let tempJobs = this.jobs;
-        if (this.jobSearch === '') return [];
+        if (this.jobSearch == '') return [];
         tempJobs = tempJobs.filter((r) => {
           return r.company?.toLowerCase().includes(this.jobSearch.toLowerCase()) ||
           r.position?.toLowerCase().includes(this.jobSearch.toLowerCase())

@@ -1,10 +1,10 @@
 <style>
 .vs-input{
-    width: auto;
-    font-size: 15pt;
+  width: auto;
+  font-size: 15pt;
 }
 .row{
-    margin-bottom: 25px;
+  margin-bottom: 25px;
 }
 </style>
 <template >
@@ -48,16 +48,14 @@
       <div class="row">
         <div class="col">
           <div class="centerx">
-            <vs-input type="date"  label-placeholder="Date of birth" v-model="dateOfBirth"/>
+            <vs-input type="date" label-placeholder="Date of birth" v-model="dateOfBirth"/>
           </div>
         </div>
       </div>
       <div class="row">
         <div class="col">
-          <div class="centerx">
-            <textarea class="vs-input" maxlength="2500" style="width: 17.5rem; border-radius: 6%;" v-model="biography"
+            <textarea class="vs-input" style="width: 17.5rem; height: 15rem; border-radius: 6%;" v-model="biography"
                       placeholder="Biography"/>
-          </div>
         </div>
       </div>
 
@@ -67,7 +65,7 @@
             <vs-input label-placeholder="Gender" v-model="gender"/>
           </div>
           <div class="row">
-            <div class="col">
+            <div class="col mt-4">
               <div class="center con-checkbox">
                 <vs-checkbox v-model="isPrivate" :checked="isPrivate">
                   Private
@@ -76,8 +74,8 @@
             </div>
           </div>
           <div class="row">
-            <div class="col" style="margin-left: 10rem;">
-              <vs-button block @click="updateProfile()" style="margin-top: 1em">
+            <div class="col">
+              <vs-button block @click="updateProfile()" style="width: 280px">
                 Save
               </vs-button>
             </div>
@@ -280,7 +278,7 @@
     <div class="col-2">
       <div class="row">
         <div class="col">
-          <h4 style="margin-top: 3pt">Work experience</h4>
+          <h4>Experience</h4>
         </div>
         <div class="col">
           <vs-button
@@ -418,7 +416,7 @@
       <div class="centerx">
         <vs-input disabled type="password" label-placeholder="Agent token" v-model="agentToken"/>
       </div>
-      <vs-button block @click="generateAgentToken()" style="margin-top: 1em">
+      <vs-button block @click="generateAgentToken()" style="margin-top: 1em; width: 150px; margin-left: 8rem">
         Generate agent token
       </vs-button>
       <vs-dialog v-model="activeToken">
@@ -645,7 +643,7 @@ export default {
       this.username = this.user.username;
       this.firstName = this.user.firstName;
       this.lastName = this.user.lastName;
-      this.dateOfBirth = this.user.dateOfBirth;
+      this.dateOfBirth = moment(this.user.dateOfBirth).format('YYYY-MM-DD');
       this.email = this.user.email;
       this.gender = this.user.gender;
       this.biography = this.user.biography;

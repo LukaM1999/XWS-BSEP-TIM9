@@ -12,9 +12,12 @@ import (
 	comment "dislinkt/common/proto/comment_service"
 	saga "dislinkt/common/saga/messaging"
 	"dislinkt/common/saga/messaging/nats"
+	"dislinkt/common/tracer"
 	"fmt"
+	otgo "github.com/opentracing/opentracing-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
+	"io"
 	"net"
 	"time"
 )
@@ -23,11 +26,17 @@ var log = loggers.NewCommentLogger()
 
 type Server struct {
 	config *config.Config
+	tracer otgo.Tracer
+	closer io.Closer
 }
 
 func NewServer(config *config.Config) *Server {
+	tracer, closer := tracer.Init("comment-service")
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config: config,
+		tracer: tracer,
+		closer: closer,
 	}
 }
 

@@ -7,14 +7,17 @@ import (
 	job "dislinkt/common/proto/job_offer_service"
 	saga "dislinkt/common/saga/messaging"
 	"dislinkt/common/saga/messaging/nats"
+	"dislinkt/common/tracer"
 	"dislinkt/job_offer_service/application"
 	"dislinkt/job_offer_service/domain"
 	"dislinkt/job_offer_service/infrastructure/api"
 	"dislinkt/job_offer_service/infrastructure/persistence"
 	"dislinkt/job_offer_service/startup/config"
 	"fmt"
+	otgo "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"io"
 	"net"
 	"time"
 )
@@ -23,11 +26,17 @@ var log = loggers.NewJobLogger()
 
 type Server struct {
 	config *config.Config
+	tracer otgo.Tracer
+	closer io.Closer
 }
 
 func NewServer(config *config.Config) *Server {
+	tracer, closer := tracer.Init("job-offer-service")
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config: config,
+		tracer: tracer,
+		closer: closer,
 	}
 }
 

@@ -7,15 +7,18 @@ import (
 	profile "dislinkt/common/proto/profile_service"
 	saga "dislinkt/common/saga/messaging"
 	"dislinkt/common/saga/messaging/nats"
+	"dislinkt/common/tracer"
 	"dislinkt/profile_service/application"
 	"dislinkt/profile_service/domain"
 	"dislinkt/profile_service/infrastructure/api"
 	"dislinkt/profile_service/infrastructure/persistence"
 	"dislinkt/profile_service/startup/config"
 	"fmt"
+	otgo "github.com/opentracing/opentracing-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"io"
 	"net"
 	"time"
 )
@@ -24,11 +27,17 @@ var log = loggers.NewProfileLogger()
 
 type Server struct {
 	config *config.Config
+	tracer otgo.Tracer
+	closer io.Closer
 }
 
 func NewServer(config *config.Config) *Server {
+	tracer, closer := tracer.Init("profile-service")
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config: config,
+		tracer: tracer,
+		closer: closer,
 	}
 }
 

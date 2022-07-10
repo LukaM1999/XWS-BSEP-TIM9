@@ -7,15 +7,18 @@ import (
 	reaction "dislinkt/common/proto/reaction_service"
 	saga "dislinkt/common/saga/messaging"
 	"dislinkt/common/saga/messaging/nats"
+	"dislinkt/common/tracer"
 	"dislinkt/reaction_service/application"
 	"dislinkt/reaction_service/domain"
 	"dislinkt/reaction_service/infrastructure/api"
 	"dislinkt/reaction_service/infrastructure/persistence"
 	"dislinkt/reaction_service/startup/config"
 	"fmt"
+	otgo "github.com/opentracing/opentracing-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"io"
 	"net"
 	"time"
 )
@@ -24,11 +27,17 @@ var log = loggers.NewReactionLogger()
 
 type Server struct {
 	config *config.Config
+	tracer otgo.Tracer
+	closer io.Closer
 }
 
 func NewServer(config *config.Config) *Server {
+	tracer, closer := tracer.Init("reaction-service")
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config: config,
+		tracer: tracer,
+		closer: closer,
 	}
 }
 

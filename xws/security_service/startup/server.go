@@ -9,6 +9,7 @@ import (
 	security "dislinkt/common/proto/security_service"
 	saga "dislinkt/common/saga/messaging"
 	"dislinkt/common/saga/messaging/nats"
+	"dislinkt/common/tracer"
 	"dislinkt/security_service/application"
 	"dislinkt/security_service/domain"
 	"dislinkt/security_service/infrastructure/api"
@@ -16,10 +17,12 @@ import (
 	"dislinkt/security_service/startup/config"
 	"fmt"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	otgo "github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"io"
 	"net"
 	"net/http"
 	"time"
@@ -29,11 +32,17 @@ var log = loggers.NewSecurityLogger()
 
 type Server struct {
 	config *config.Config
+	tracer otgo.Tracer
+	closer io.Closer
 }
 
 func NewServer(config *config.Config) *Server {
+	tracer, closer := tracer.Init("security-service")
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config: config,
+		tracer: tracer,
+		closer: closer,
 	}
 }
 

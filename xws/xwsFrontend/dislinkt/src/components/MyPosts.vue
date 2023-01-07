@@ -47,6 +47,7 @@ export default {
         throw error;
       });
       loading.close();
+      if(!response.data?.posts) return;
       this.posts = response.data.posts;
       this.sortPosts()
     },

@@ -45,7 +45,6 @@ var rolePermissions = []*auth.RolePermission{
 	{
 		Role: "user",
 		Permissions: []string{
-			"read:profile",
 			"search:all-profiles",
 			"write:block",
 			"write:unblock",

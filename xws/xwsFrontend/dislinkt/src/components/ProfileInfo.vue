@@ -200,7 +200,7 @@
               <h3>People you may know</h3>
             </template>
             <template #text>
-              <div v-for="(item, i) in suggestions" v-bind:key="i">
+              <div v-for="(item, i) in recommendations" v-bind:key="i">
                 <vs-card>
                   <template #text>
                     <h6>
@@ -259,6 +259,7 @@
 import axios from "axios";
 import moment from "moment";
 import Post from "@/components/Post";
+import {router} from "@/main"
 
 export default {
   name: "ProfileInfo",
@@ -282,7 +283,7 @@ export default {
       phoneNumber: "",
       workExperience: [],
       education: [],
-      recomendations: [],
+      recommendations: [],
       posts: [],
       isConnected: false,
       isBlocked: false,
@@ -292,9 +293,9 @@ export default {
     }
   },
   mounted() {
-    this.id = localStorage.getItem('searchId')
+    this.id = localStorage.getItem('searchId') || router.currentRoute.params.id;
     this.getProfile();
-    this.getRecomendations();
+    this.getRecommendations();
     this.getMyPosts();
     this.getIsConnected();
     this.getIsBlocked();
@@ -341,12 +342,12 @@ export default {
       }
       loading.close();
     },
-    async getRecomendations() {
+    async getRecommendations() {
       const loading = this.$vs.loading();
       const response = await axios.get(`${process.env.VUE_APP_BACKEND}/connection/user/${this.$store.getters.user?.id}/recommendation`).catch(error => {
         this.$vs.notification({
           title: 'Error',
-          text: 'Error getting recomendations',
+          text: 'Error getting recommendations',
           color: 'danger',
           position: 'top-right'
         });
@@ -363,7 +364,7 @@ export default {
           });
           throw error;
         });
-        this.recomendations.push(profile);
+        this.recommendations.push(profile);
       }
       loading.close();
     },

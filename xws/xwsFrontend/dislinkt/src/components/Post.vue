@@ -11,7 +11,7 @@
         <p>
           {{ post.content.text }}
         </p>
-        <div v-if="post.content.links.length > 0">
+        <div v-if="post.content.links && post.content.links.length > 0">
           <div class="row" :key="i" v-for="(link, i) in post.content.links">
             <a :href="link">{{link}}</a>
           </div>
@@ -36,7 +36,7 @@
             {{ numOfComments }}
           </span>
         </vs-button>
-        <vs-button v-if="ifUsersPost" danger icon @click="deletePost">
+        <vs-button v-if="ifUsersPost()" danger icon @click="deletePost">
           <i class='bx bx-x'></i>
         </vs-button>
       </template>
@@ -119,9 +119,10 @@ export default {
   },
   methods: {
     currentUser(comment){
-      return comment.commentCreator.id === this.user.id
+      return comment.commentCreator.id === this.user?.id
     },
     async getProfile() {
+      if(!this.$store.getters.user?.id) return;
       const response = await axios.get(`${process.env.VUE_APP_BACKEND}/profile/${this.$store.getters.user?.id}`)
       if (response.data) {
         this.user = response.data.profile
@@ -138,10 +139,10 @@ export default {
           });
           throw e;
         })
-      if (response.data.reactions.length > 0) {
+      if (response.data?.reactions?.length > 0) {
         this.reactions = response.data.reactions
-        this.likes = response.data.reactions.filter(r => r.type !== "DISLIKE").length
-        this.dislikes = response.data.reactions.filter(r => r.type === "DISLIKE").length
+        this.likes = response.data.reactions.filter(r => r.type !== "DISLIKE").length || 0
+        this.dislikes = response.data.reactions.filter(r => r.type === "DISLIKE").length || 0
       }
     },
     async getComments() {
@@ -155,8 +156,8 @@ export default {
           });
           throw e;
         })
-      if (response.data.comments?.length > 0) {
-        this.numOfComments = response.data.comments.length
+      if (response.data?.comments?.length > 0) {
+        this.numOfComments = response.data.comments.length || 0
         this.comments = response.data.comments
         this.comments = this.comments.sort((a, b) => moment(a.dateCreated) - moment(b.dateCreated))
       }
@@ -330,7 +331,7 @@ export default {
       this.resetCommentDialog()
     },
     ifUsersPost(){
-      return this.user.id === this.post.userId
+      return this.user.id === this.post.profile.id
     },
     async deletePost(){
       const response = await axios.delete(`${process.env.VUE_APP_BACKEND}/post/${this.post.id}`)

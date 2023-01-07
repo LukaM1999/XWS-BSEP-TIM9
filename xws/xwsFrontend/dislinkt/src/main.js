@@ -159,7 +159,7 @@ const routes = [
         component: MyConnections
       },
       {
-        path: 'profile-info',
+        path: 'profile-info/:id',
         name: 'profileInfo',
         component: ProfileInfo
       },

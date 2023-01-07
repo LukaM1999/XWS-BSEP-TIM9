@@ -106,6 +106,7 @@ export default {
           throw error;
         });
       loading.close();
+      if(!response.data?.connections) return;
       this.connections = response.data.connections
       for (const connection of this.connections) {
         await this.getConnectionFullName(connection)
@@ -144,6 +145,7 @@ export default {
           throw error;
         });
       loading.close();
+      if(!response.data?.recommendations) return;
       const recommendations = response.data.recommendations
        for (const recommendation of recommendations) {
          await this.getRecommendationFullName(recommendation)

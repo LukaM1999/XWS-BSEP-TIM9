@@ -52,6 +52,7 @@ export default {
         throw error;
       });
       loading.close();
+      if(!response.data?.posts) return;
       for (let post of response.data.posts) {
         this.posts.push(post)
       }
